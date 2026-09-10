@@ -14,6 +14,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import pg from 'pg';
+const { Client } = pg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +43,7 @@ const PROJECT_REF = SUPABASE_URL.replace('https://', '').split('.')[0];
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 const ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 const DATABASE_URL = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+const DB_PASSWORD = process.env.SUPABASE_DB_PASSWORD || process.env.DB_PASSWORD;
 
 const migrationFilePath = path.join(rootDir, 'supabase', 'migrations', '001_initial.sql');
 
@@ -58,6 +61,34 @@ async function runMigration() {
 
   const sqlContent = fs.readFileSync(migrationFilePath, 'utf8');
   console.log(`Tamanho do script SQL: ${sqlContent.length} bytes`);
+
+  // Método 1: Conexão direta PostgreSQL via pg (se DATABASE_URL ou DB_PASSWORD estiverem presentes)
+  if (DATABASE_URL || DB_PASSWORD) {
+    console.log('\nTentando conexão direta via PostgreSQL (pg)...');
+    try {
+      const clientConfig = DATABASE_URL
+        ? { connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } }
+        : {
+            host: 'aws-0-sa-east-1.pooler.supabase.com',
+            port: 6543,
+            user: `postgres.${PROJECT_REF}`,
+            password: DB_PASSWORD,
+            database: 'postgres',
+            ssl: { rejectUnauthorized: false },
+          };
+
+      const pgClient = new Client(clientConfig);
+      await pgClient.connect();
+      console.log('Conectado ao PostgreSQL do Supabase com sucesso!');
+      console.log('Executando o script 001_initial.sql no banco...');
+      await pgClient.query(sqlContent);
+      console.log('✅ Migrations executadas com sucesso no banco de dados Supabase!');
+      await pgClient.end();
+      process.exit(0);
+    } catch (pgErr) {
+      console.warn('⚠️ Falha ao executar via PostgreSQL:', pgErr.message);
+    }
+  }
 
   // Método 1: Supabase Management API via Access Token
   if (ACCESS_TOKEN) {
