@@ -77,25 +77,31 @@ BEGIN
     WHERE id = v_master_id;
   END IF;
 
-  -- Registra identidade no Supabase Auth
-  INSERT INTO auth.identities (
-    id,
-    user_id,
-    identity_data,
-    provider,
-    last_sign_in_at,
-    created_at,
-    updated_at
-  ) VALUES (
-    v_master_id,
-    v_master_id,
-    format('{"sub":"%s","email":"%s"}', v_master_id, 'master@hypetatu.com.br')::jsonb,
-    'email',
-    now(),
-    now(),
-    now()
-  ) ON CONFLICT (provider, id) DO UPDATE
-  SET identity_data = EXCLUDED.identity_data, updated_at = now();
+  -- Registra identidade no Supabase Auth de forma segura
+  BEGIN
+    DELETE FROM auth.identities WHERE user_id = v_master_id;
+    INSERT INTO auth.identities (
+      id,
+      provider_id,
+      user_id,
+      identity_data,
+      provider,
+      last_sign_in_at,
+      created_at,
+      updated_at
+    ) VALUES (
+      gen_random_uuid(),
+      v_master_id::text,
+      v_master_id,
+      format('{"sub":"%s","email":"%s"}', v_master_id, 'master@hypetatu.com.br')::jsonb,
+      'email',
+      now(),
+      now(),
+      now()
+    );
+  EXCEPTION WHEN OTHERS THEN
+    NULL; -- Prossegue mesmo se a versão específica do Supabase gerenciar identities internamente
+  END;
 
   -- Insere na tabela public.usuarios com role 'master'
   INSERT INTO public.usuarios (id, nome, email, role, slug, status)
@@ -155,25 +161,31 @@ BEGIN
     WHERE id = v_recepcao_id;
   END IF;
 
-  -- Registra identidade no Supabase Auth
-  INSERT INTO auth.identities (
-    id,
-    user_id,
-    identity_data,
-    provider,
-    last_sign_in_at,
-    created_at,
-    updated_at
-  ) VALUES (
-    v_recepcao_id,
-    v_recepcao_id,
-    format('{"sub":"%s","email":"%s"}', v_recepcao_id, 'recepcao@hypetatu.com.br')::jsonb,
-    'email',
-    now(),
-    now(),
-    now()
-  ) ON CONFLICT (provider, id) DO UPDATE
-  SET identity_data = EXCLUDED.identity_data, updated_at = now();
+  -- Registra identidade no Supabase Auth de forma segura
+  BEGIN
+    DELETE FROM auth.identities WHERE user_id = v_recepcao_id;
+    INSERT INTO auth.identities (
+      id,
+      provider_id,
+      user_id,
+      identity_data,
+      provider,
+      last_sign_in_at,
+      created_at,
+      updated_at
+    ) VALUES (
+      gen_random_uuid(),
+      v_recepcao_id::text,
+      v_recepcao_id,
+      format('{"sub":"%s","email":"%s"}', v_recepcao_id, 'recepcao@hypetatu.com.br')::jsonb,
+      'email',
+      now(),
+      now(),
+      now()
+    );
+  EXCEPTION WHEN OTHERS THEN
+    NULL; -- Prossegue mesmo se a versão específica do Supabase gerenciar identities internamente
+  END;
 
   -- Insere na tabela public.usuarios com role 'recepcionista'
   INSERT INTO public.usuarios (id, nome, email, role, slug, status)
