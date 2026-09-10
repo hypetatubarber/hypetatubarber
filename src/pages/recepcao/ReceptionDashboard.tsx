@@ -3,11 +3,12 @@ import { useLocation } from 'react-router-dom';
 import { MonthCalendar } from '../../components/calendar/MonthCalendar';
 import { SalonDayColumns } from '../../components/calendar/SalonDayColumns';
 import { AppointmentModal } from '../../components/appointments/AppointmentModal';
+import { SolicitarRotativoModal } from '../../components/appointments/SolicitarRotativoModal';
 import { ClientList } from '../../components/clients/ClientList';
 import { ProductList } from '../../components/stock/ProductList';
 import { api } from '../../services/api';
 import { Agendamento, Usuario, CategoriaServico } from '../../types';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus, Sparkles, Flame } from 'lucide-react';
 
 export const ReceptionDashboard: React.FC = () => {
   const location = useLocation();
@@ -17,8 +18,9 @@ export const ReceptionDashboard: React.FC = () => {
   const [colaboradores, setColaboradores] = useState<Usuario[]>([]);
   const [categorias, setCategorias] = useState<CategoriaServico[]>([]);
 
-  // Modal
+  // Modais
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
+  const [isRotativoModalOpen, setIsRotativoModalOpen] = useState(false);
   const [appointmentToEdit, setAppointmentToEdit] = useState<Agendamento | null>(null);
   const [initialSlotData, setInitialSlotData] = useState<{ colabId?: string; time?: string }>({});
 
@@ -102,17 +104,27 @@ export const ReceptionDashboard: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            setAppointmentToEdit(null);
-            setInitialSlotData({});
-            setIsAppModalOpen(true);
-          }}
-          className="bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-[#FFFFFF] font-oswald uppercase font-bold text-xs py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          + Novo Agendamento
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          <button
+            onClick={() => setIsRotativoModalOpen(true)}
+            className="bg-[rgba(81,117,102,0.18)] hover:bg-[rgba(81,117,102,0.30)] text-[#517566] dark:text-[#6FCF97] border border-[rgba(81,117,102,0.40)] font-oswald uppercase font-bold text-xs py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all"
+          >
+            <Flame className="w-4 h-4 text-[#27AE60]" />
+            Chamar Rotativo
+          </button>
+
+          <button
+            onClick={() => {
+              setAppointmentToEdit(null);
+              setInitialSlotData({});
+              setIsAppModalOpen(true);
+            }}
+            className="bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-[#FFFFFF] font-oswald uppercase font-bold text-xs py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            + Novo Agendamento
+          </button>
+        </div>
       </div>
 
       {/* Conteúdo Conforme a Rota */}
@@ -131,6 +143,7 @@ export const ReceptionDashboard: React.FC = () => {
             categorias={categorias}
             onSlotClick={handleSlotClick}
             onAppointmentClick={handleAppointmentClick}
+            onChamarRotativo={() => setIsRotativoModalOpen(true)}
           />
         </div>
       )}
@@ -138,7 +151,7 @@ export const ReceptionDashboard: React.FC = () => {
       {activeTab === 'clientes' && <ClientList />}
       {activeTab === 'estoque' && <ProductList readOnly={true} />}
 
-      {/* Modal de Agendamento */}
+      {/* Modal de Agendamento Padrão */}
       <AppointmentModal
         isOpen={isAppModalOpen}
         onClose={() => setIsAppModalOpen(false)}
@@ -147,6 +160,14 @@ export const ReceptionDashboard: React.FC = () => {
         initialTime={initialSlotData.time}
         initialColaboradorId={initialSlotData.colabId}
         onSaved={loadData}
+      />
+
+      {/* Modal de Solicitação de Tatuador Rotativo */}
+      <SolicitarRotativoModal
+        isOpen={isRotativoModalOpen}
+        onClose={() => setIsRotativoModalOpen(false)}
+        initialDate={selectedDate}
+        onSuccess={loadData}
       />
     </div>
   );

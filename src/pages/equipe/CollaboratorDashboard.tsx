@@ -8,8 +8,9 @@ import { AppointmentStatusBadge } from '../../components/appointments/Appointmen
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { JobsRotativoList } from '../../components/collaborator/JobsRotativoList';
 import { Usuario, Agendamento, UsoProduto } from '../../types';
-import { CheckCircle2, Clock, PackagePlus, Scissors, ShieldAlert, Bell } from 'lucide-react';
+import { CheckCircle2, Clock, PackagePlus, Scissors, ShieldAlert, Bell, Flame } from 'lucide-react';
 
 export const CollaboratorDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -116,13 +117,34 @@ export const CollaboratorDashboard: React.FC = () => {
           />
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[rgba(140,189,173,0.12)] border border-[rgba(140,189,173,0.25)] text-[#517566] text-[10px] font-oswald uppercase tracking-wider font-semibold mb-1">
-              <Scissors className="w-3 h-3" />
-              Portal do Profissional
+              {colaborador.tipo_colaborador === 'rotativo' ? (
+                <>
+                  <Flame className="w-3 h-3 text-[#517566] dark:text-[#8CBDAD]" />
+                  Tatuador Rotativo
+                </>
+              ) : (
+                <>
+                  <Scissors className="w-3 h-3" />
+                  Portal do Profissional
+                </>
+              )}
             </div>
             <h1 className="font-display uppercase tracking-wide text-xl sm:text-2xl text-[var(--text-primary)]">
               {colaborador.nome}
             </h1>
             <p className="text-xs text-[var(--text-secondary)] font-inter">{colaborador.especialidade || 'Colaborador Hype Tatu'}</p>
+            {colaborador.estilos_tatuagem && colaborador.estilos_tatuagem.length > 0 && (
+              <div className="flex items-center gap-1 flex-wrap mt-2">
+                {colaborador.estilos_tatuagem.map((est) => (
+                  <span
+                    key={est}
+                    className="text-[10px] font-oswald uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--bg-surface-alt)] border border-[var(--border)] text-[var(--text-secondary)]"
+                  >
+                    {est}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -161,18 +183,24 @@ export const CollaboratorDashboard: React.FC = () => {
 
       {/* ABA 1: HOJE EM DESTAQUE */}
       {activeTab === 'hoje' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-[#517566]" />
-              <h2 className="font-display uppercase tracking-wide text-lg text-[var(--text-primary)]">
-                Seus Atendimentos de Hoje ({todayAgendamentos.length})
-              </h2>
+        <div className="space-y-6">
+          {/* Seção Especial de Jobs para Tatuadores Rotativos */}
+          {colaborador.tipo_colaborador === 'rotativo' && (
+            <JobsRotativoList colaborador={colaborador} onJobAccepted={loadData} />
+          )}
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-[#517566]" />
+                <h2 className="font-display uppercase tracking-wide text-lg text-[var(--text-primary)]">
+                  Seus Atendimentos de Hoje ({todayAgendamentos.length})
+                </h2>
+              </div>
+              <span className="text-xs text-[var(--text-secondary)] font-inter">
+                {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </span>
             </div>
-            <span className="text-xs text-[var(--text-secondary)] font-inter">
-              {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </span>
-          </div>
 
           <TodaySchedule
             agendamentos={todayAgendamentos}
@@ -180,6 +208,7 @@ export const CollaboratorDashboard: React.FC = () => {
             onOpenMaterialModal={handleOpenMaterialModal}
           />
         </div>
+      </div>
       )}
 
       {/* ABA 2: MINHA AGENDA (Calendário Pessoal) */}

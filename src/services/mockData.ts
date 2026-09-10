@@ -3,7 +3,7 @@
  * Garante funcionamento perfeito mesmo sem chaves ativas do Supabase.
  */
 
-import { Usuario, Cliente, CategoriaServico, Servico, Agendamento, Produto, UsoProduto, MovimentacaoEstoque, Notificacao, Conversa, Mensagem } from '../types';
+import { Usuario, Cliente, CategoriaServico, Servico, Agendamento, Produto, UsoProduto, MovimentacaoEstoque, Notificacao, Conversa, Mensagem, SolicitacaoRotativo } from '../types';
 
 const STORAGE_KEYS = {
   USUARIOS: 'hype_usuarios_v1',
@@ -17,6 +17,7 @@ const STORAGE_KEYS = {
   NOTIFICACOES: 'hype_notificacoes_v1',
   CONVERSAS: 'hype_conversas_v1',
   MENSAGENS: 'hype_mensagens_v1',
+  SOLICITACOES_ROTATIVO: 'hype_solicitacoes_rotativo_v1',
 };
 
 // Data formatada para hoje no formato YYYY-MM-DD
@@ -93,11 +94,51 @@ const INITIAL_USUARIOS: Usuario[] = [
     nome: 'Tatuador 1 (Lucas Rocha)',
     email: 'tatuador1@gmail.com',
     role: 'colaborador',
+    tipo_colaborador: 'fixo',
     slug: 'tatuador1',
     especialidade: 'Tatuador • Realismo & Blackwork',
+    estilos_tatuagem: ['Realismo', 'Blackwork'],
+    telefone: '(71) 99111-2233',
+    comissao_porcentagem: 50,
+    status_disponibilidade: 'disponivel',
+    notificacoes_ativas: true,
     foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
     status: 'ativo',
     criado_em: '2026-09-10T17:28:11.664289+00:00',
+  },
+  {
+    id: 'rotativo-gabriel-1',
+    nome: 'Gabriel Santos (Rotativo)',
+    email: 'gabriel.rotativo@hypetatu.com.br',
+    role: 'colaborador',
+    tipo_colaborador: 'rotativo',
+    slug: 'gabriel-rotativo',
+    especialidade: 'Tatuador Rotativo • Fineline & Minimalismo',
+    estilos_tatuagem: ['Fineline', 'Minimalista', 'Lettering', 'Blackwork'],
+    telefone: '(71) 99333-4455',
+    comissao_porcentagem: 60,
+    status_disponibilidade: 'disponivel',
+    notificacoes_ativas: true,
+    foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+    status: 'ativo',
+    criado_em: '2026-09-10T17:35:00.000000+00:00',
+  },
+  {
+    id: 'rotativo-bia-2',
+    nome: 'Bia Ink (Rotativa)',
+    email: 'bia.rotativa@hypetatu.com.br',
+    role: 'colaborador',
+    tipo_colaborador: 'rotativo',
+    slug: 'bia-rotativa',
+    especialidade: 'Tatuadora Rotativa • Realismo & Aquarela',
+    estilos_tatuagem: ['Realismo', 'Aquarela', 'Botânica', 'Old School'],
+    telefone: '(71) 99444-5566',
+    comissao_porcentagem: 65,
+    status_disponibilidade: 'disponivel',
+    notificacoes_ativas: true,
+    foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    status: 'ativo',
+    criado_em: '2026-09-10T17:36:00.000000+00:00',
   },
 ];
 
@@ -457,6 +498,7 @@ export class MockDatabase {
   private static notificacoes: Notificacao[] = loadFromStorage(STORAGE_KEYS.NOTIFICACOES, INITIAL_NOTIFICACOES);
   private static conversas: Conversa[] = loadFromStorage(STORAGE_KEYS.CONVERSAS, INITIAL_CONVERSAS);
   private static mensagens: Mensagem[] = loadFromStorage(STORAGE_KEYS.MENSAGENS, INITIAL_MENSAGENS);
+  private static solicitacoesRotativo: SolicitacaoRotativo[] = loadFromStorage(STORAGE_KEYS.SOLICITACOES_ROTATIVO, []);
 
   // Usuários
   static getUsuarios(): Usuario[] {
@@ -788,5 +830,136 @@ export class MockDatabase {
     saveToStorage(STORAGE_KEYS.CONVERSAS, this.conversas);
     window.dispatchEvent(new CustomEvent('hype_conversas_updated', { detail: conv }));
     return conv;
+  }
+
+  // ==========================================================================
+  // TATUADORES ROTATIVOS & SOLICITAÇÕES DE JOBS
+  // ==========================================================================
+  static getSolicitacoesRotativo(): SolicitacaoRotativo[] {
+    return [...this.solicitacoesRotativo].sort(
+      (a, b) => new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()
+    );
+  }
+
+  static getRotativosDisponiveis(): Usuario[] {
+    return this.usuarios.filter(
+      u =>
+        u.role === 'colaborador' &&
+        u.tipo_colaborador === 'rotativo' &&
+        u.status === 'ativo' &&
+        u.status_disponibilidade !== 'indisponivel'
+    );
+  }
+
+  static saveSolicitacaoRotativo(sol: SolicitacaoRotativo): SolicitacaoRotativo {
+    const idx = this.solicitacoesRotativo.findIndex(s => s.id === sol.id);
+    if (idx >= 0) {
+      this.solicitacoesRotativo[idx] = sol;
+    } else {
+      this.solicitacoesRotativo.unshift(sol);
+    }
+    saveToStorage(STORAGE_KEYS.SOLICITACOES_ROTATIVO, this.solicitacoesRotativo);
+    window.dispatchEvent(new CustomEvent('hype_solicitacoes_rotativo_changed', { detail: sol }));
+    return sol;
+  }
+
+  static aceitarJobRotativo(jobId: string, rotativoId: string): { solicitacao: SolicitacaoRotativo; agendamento: Agendamento } {
+    const job = this.solicitacoesRotativo.find(s => s.id === jobId);
+    if (!job) {
+      throw new Error('Solicitação de job não encontrada.');
+    }
+    if (job.status === 'aceito') {
+      throw new Error(`Este job já foi aceito por ${job.aceito_por_nome || 'outro tatuador'}.`);
+    }
+
+    const rotativo = this.usuarios.find(u => u.id === rotativoId);
+    if (!rotativo) {
+      throw new Error('Colaborador rotativo não encontrado.');
+    }
+
+    const now = new Date().toISOString();
+    job.status = 'aceito';
+    job.aceito_por_id = rotativo.id;
+    job.aceito_por_nome = rotativo.nome;
+    job.aceito_em = now;
+    saveToStorage(STORAGE_KEYS.SOLICITACOES_ROTATIVO, this.solicitacoesRotativo);
+
+    // 1. Cliente: encontrar ou criar
+    let clienteId = job.cliente_id;
+    if (!clienteId) {
+      const existingCli = this.clientes.find(c => c.nome.toLowerCase() === job.cliente_nome.toLowerCase());
+      if (existingCli) {
+        clienteId = existingCli.id;
+      } else {
+        const novoCli: Cliente = {
+          id: 'cli-' + Date.now(),
+          nome: job.cliente_nome,
+          telefone: job.cliente_telefone || '(71) 99999-0000',
+          tags: ['Tatuagem', 'Job Rotativo'],
+          criado_em: now,
+        };
+        this.clientes.push(novoCli);
+        saveToStorage(STORAGE_KEYS.CLIENTES, this.clientes);
+        clienteId = novoCli.id;
+      }
+    }
+
+    // 2. Serviço correspondente
+    const servicoTattoo =
+      this.servicos.find(s => s.categoria_id === 'cat-tattoo' && s.nome.toLowerCase().includes(job.tamanho)) ||
+      this.servicos.find(s => s.categoria_id === 'cat-tattoo') ||
+      this.servicos[0];
+
+    // 3. Criar agendamento automaticamente
+    const novoAgendamento: Agendamento = {
+      id: 'ag-rotativo-' + Date.now(),
+      cliente_id: clienteId,
+      colaborador_id: rotativo.id,
+      servico_id: servicoTattoo.id,
+      data: job.data,
+      hora_inicio: job.hora_inicio,
+      hora_fim: job.hora_fim,
+      status: 'confirmado',
+      observacoes: `[JOB ROTATIVO ACEITO] Profissional: ${rotativo.nome} | Estilo: ${job.estilo} | Porte: ${job.tamanho.toUpperCase()} | Estimado: R$ ${job.valor_estimado}. ${job.observacoes || ''}`,
+      criado_em: now,
+      cliente: this.clientes.find(c => c.id === clienteId),
+      colaborador: rotativo,
+      servico: servicoTattoo,
+    };
+    this.agendamentos.push(novoAgendamento);
+    saveToStorage(STORAGE_KEYS.AGENDAMENTOS, this.agendamentos);
+
+    // 4. Notificar a Recepção e Master (NÃO notificar o cliente — recepcionista faz isso manualmente)
+    const destinatarios = this.usuarios.filter(u => u.role === 'recepcionista' || u.role === 'master');
+    destinatarios.forEach(dest => {
+      this.notificacoes.unshift({
+        id: 'notif-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+        usuario_id: dest.id,
+        titulo: '🔔 Job Aceito por Rotativo!',
+        mensagem: `${rotativo.nome} aceitou o job de ${job.data} às ${job.hora_inicio} (${job.cliente_nome} — ${job.estilo})`,
+        lida: false,
+        link: '/recepcao',
+        criado_em: now,
+      });
+    });
+    saveToStorage(STORAGE_KEYS.NOTIFICACOES, this.notificacoes);
+
+    window.dispatchEvent(new CustomEvent('hype_solicitacoes_rotativo_changed', { detail: job }));
+    window.dispatchEvent(new CustomEvent('hype_agendamentos_changed', { detail: novoAgendamento }));
+    window.dispatchEvent(new CustomEvent('hype_notificacoes_changed'));
+
+    return { solicitacao: job, agendamento: novoAgendamento };
+  }
+
+  static recusarJobRotativo(jobId: string, rotativoId: string): SolicitacaoRotativo {
+    const job = this.solicitacoesRotativo.find(s => s.id === jobId);
+    if (!job) throw new Error('Job não encontrado.');
+    if (!job.recusado_por_ids) job.recusado_por_ids = [];
+    if (!job.recusado_por_ids.includes(rotativoId)) {
+      job.recusado_por_ids.push(rotativoId);
+      saveToStorage(STORAGE_KEYS.SOLICITACOES_ROTATIVO, this.solicitacoesRotativo);
+      window.dispatchEvent(new CustomEvent('hype_solicitacoes_rotativo_changed', { detail: job }));
+    }
+    return job;
   }
 }

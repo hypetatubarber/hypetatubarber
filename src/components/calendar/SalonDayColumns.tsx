@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Usuario, Agendamento, CategoriaServico } from '../../types';
 import { AppointmentStatusBadge } from '../appointments/AppointmentStatusBadge';
-import { Plus, Filter, Clock, Scissors } from 'lucide-react';
+import { Plus, Filter, Clock, Scissors, Flame, Sparkles } from 'lucide-react';
 
 interface Props {
   selectedDate: string; // YYYY-MM-DD
@@ -10,6 +10,7 @@ interface Props {
   categorias: CategoriaServico[];
   onSlotClick: (colaboradorId: string, time: string) => void;
   onAppointmentClick: (agendamento: Agendamento) => void;
+  onChamarRotativo?: () => void;
 }
 
 export const SalonDayColumns: React.FC<Props> = ({
@@ -19,6 +20,7 @@ export const SalonDayColumns: React.FC<Props> = ({
   categorias,
   onSlotClick,
   onAppointmentClick,
+  onChamarRotativo,
 }) => {
   // Filtros
   const [selectedColaboradorId, setSelectedColaboradorId] = useState<string>('all');
@@ -32,10 +34,34 @@ export const SalonDayColumns: React.FC<Props> = ({
     timeSlots.push(`${String(hour).padStart(2, '0')}:30`);
   }
 
-  // Filtra colaboradores de acordo com os filtros
+  // Identifica tatuadores fixos da casa
+  const tatuadoresFixos = colaboradores.filter(
+    (c) =>
+      c.tipo_colaborador !== 'rotativo' &&
+      (c.especialidade?.toLowerCase().includes('tatu') ||
+        c.especialidade?.toLowerCase().includes('tattoo'))
+  );
+
+  // Agendamentos de hoje
+  const agendamentosHoje = agendamentos.filter(
+    (a) => a.data === selectedDate && a.status !== 'cancelado'
+  );
+
+  // Verifica se todos os tatuadores fixos possuem agendamentos no dia
+  const todosTatuadoresOcupados =
+    tatuadoresFixos.length > 0 &&
+    tatuadoresFixos.every((tf) =>
+      agendamentosHoje.some((a) => a.colaborador_id === tf.id)
+    );
+
+  // Filtra colaboradores: exibe fixos + rotativos que possuem agendamento no dia (ou todos se selecionado no filtro)
   const filteredColaboradores = colaboradores.filter((colab) => {
-    if (selectedColaboradorId !== 'all' && colab.id !== selectedColaboradorId) {
-      return false;
+    if (selectedColaboradorId !== 'all') {
+      return colab.id === selectedColaboradorId;
+    }
+    // Se for rotativo, exibe na agenda do dia se tiver agendamento naquele dia
+    if (colab.tipo_colaborador === 'rotativo') {
+      return agendamentosHoje.some((a) => a.colaborador_id === colab.id);
     }
     return true;
   });
@@ -125,9 +151,42 @@ export const SalonDayColumns: React.FC<Props> = ({
               <option value="concluido">Concluído</option>
               <option value="cancelado">Cancelado</option>
             </select>
+
+            {/* Botão Chamar Rotativo */}
+            {onChamarRotativo && (
+              <button
+                type="button"
+                onClick={onChamarRotativo}
+                className="px-3 py-1.5 rounded-lg bg-[rgba(81,117,102,0.15)] hover:bg-[rgba(81,117,102,0.30)] text-[#517566] dark:text-[#6FCF97] border border-[rgba(81,117,102,0.40)] text-xs font-oswald uppercase tracking-wider font-bold flex items-center gap-1.5 transition-all shadow-sm shrink-0"
+                title="Chamar tatuador rotativo para atender cliente hoje"
+              >
+                <Flame className="w-3.5 h-3.5 text-[#27AE60]" />
+                Chamar Rotativo
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Banner Inteligente de Alta Demanda (quando todos os tatuadores estão ocupados) */}
+      {todosTatuadoresOcupados && onChamarRotativo && (
+        <div className="bg-[rgba(81,117,102,0.12)] border-b border-[rgba(81,117,102,0.30)] py-2 px-4 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-[#517566] dark:text-[#6FCF97]">
+            <Flame className="w-4 h-4 text-[#27AE60] shrink-0 animate-pulse" />
+            <span className="font-inter">
+              <strong>Agenda de Tatuagem Cheia:</strong> Todos os tatuadores fixos possuem clientes marcados neste dia.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onChamarRotativo}
+            className="px-3 py-1 rounded-md bg-[#27AE60] hover:bg-[#219653] text-white text-[11px] font-oswald uppercase tracking-wider font-bold shrink-0 transition-colors shadow-sm flex items-center gap-1"
+          >
+            <Sparkles className="w-3 h-3" />
+            Chamar Rotativo Agora
+          </button>
+        </div>
+      )}
 
       {/* Grid de Colunas Estilo Salão */}
       <div className="flex-1 overflow-x-auto overflow-y-auto">
@@ -140,22 +199,44 @@ export const SalonDayColumns: React.FC<Props> = ({
             </div>
 
             {/* Colunas dos Colaboradores */}
-            {filteredColaboradores.map((colab) => (
-              <div
-                key={colab.id}
-                className="w-56 sm:w-64 p-3 shrink-0 border-r border-[#DDE1E7] flex items-center gap-2.5 bg-[#F5F7F9]"
-              >
-                <img
-                  src={colab.foto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
-                  alt={colab.nome}
-                  className="w-8 h-8 rounded-full object-cover border border-[#8CBDAD]/40"
-                />
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-xs font-oswald uppercase tracking-wider text-[#0B0E11] truncate">{colab.nome}</h4>
-                  <p className="text-[10px] text-[#8A96A3] truncate font-inter">{colab.especialidade || 'Colaborador'}</p>
+            {filteredColaboradores.map((colab) => {
+              const isRotativo = colab.tipo_colaborador === 'rotativo';
+              return (
+                <div
+                  key={colab.id}
+                  className={`w-56 sm:w-64 p-3 shrink-0 border-r border-[#DDE1E7] flex items-center gap-2.5 ${
+                    isRotativo ? 'bg-[rgba(81,117,102,0.08)]' : 'bg-[#F5F7F9]'
+                  }`}
+                >
+                  <div className="relative shrink-0">
+                    <img
+                      src={colab.foto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
+                      alt={colab.nome}
+                      className="w-8 h-8 rounded-full object-cover border border-[#8CBDAD]/40"
+                    />
+                    {isRotativo && (
+                      <span
+                        className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#27AE60] border border-white flex items-center justify-center"
+                        title="Tatuador Rotativo"
+                      >
+                        <Flame className="w-2 h-2 text-white" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-xs font-oswald uppercase tracking-wider text-[#0B0E11] truncate">{colab.nome}</h4>
+                      {isRotativo && (
+                        <span className="px-1.5 py-0.2 rounded text-[8px] font-oswald uppercase font-bold bg-[rgba(81,117,102,0.25)] text-[#27AE60] border border-[rgba(81,117,102,0.40)]">
+                          Rotativo
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-[#8A96A3] truncate font-inter">{colab.especialidade || 'Colaborador'}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Linhas de Horário (Grade 30 min) */}

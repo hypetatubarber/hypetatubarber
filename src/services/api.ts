@@ -7,7 +7,7 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { MockDatabase } from './mockData';
 import { evolutionApi } from './evolutionApi';
-import { Usuario, Cliente, CategoriaServico, Servico, Agendamento, Produto, UsoProduto, MovimentacaoEstoque, Notificacao, StatusAgendamento, Conversa, Mensagem } from '../types';
+import { Usuario, Cliente, CategoriaServico, Servico, Agendamento, Produto, UsoProduto, MovimentacaoEstoque, Notificacao, StatusAgendamento, Conversa, Mensagem, SolicitacaoRotativo } from '../types';
 
 export const api = {
   // ==========================================================================
@@ -648,5 +648,218 @@ export const api = {
       criado_em: now,
     });
     return { conversa: conversaMock, mensagem: msgMock };
+  },
+
+  // ==========================================================================
+  // TATUADORES ROTATIVOS & SOLICITAÇÕES DE JOBS
+  // ==========================================================================
+  async getRotativosDisponiveis(): Promise<Usuario[]> {
+    const usuarios = await this.getUsuarios();
+    return usuarios.filter(
+      u =>
+        u.role === 'colaborador' &&
+        u.tipo_colaborador === 'rotativo' &&
+        u.status === 'ativo' &&
+        u.status_disponibilidade !== 'indisponivel'
+    );
+  },
+
+  async getSolicitacoesRotativo(): Promise<SolicitacaoRotativo[]> {
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from('solicitacoes_rotativo')
+        .select('*')
+        .order('criado_em', { ascending: false });
+      if (error) {
+        console.error('[API Supabase] Erro ao buscar solicitações de rotativo:', error);
+        return MockDatabase.getSolicitacoesRotativo();
+      }
+      return data || [];
+    }
+    return MockDatabase.getSolicitacoesRotativo();
+  },
+
+  async criarSolicitacaoRotativo(
+    dados: Omit<SolicitacaoRotativo, 'id' | 'status' | 'criado_em'>
+  ): Promise<SolicitacaoRotativo> {
+    const solId = 'sol-rot-' + Date.now();
+    const now = new Date().toISOString();
+
+    const novaSolicitacao: SolicitacaoRotativo = {
+      ...dados,
+      id: solId,
+      status: 'aberto',
+      criado_em: now,
+    };
+
+    // 1. Salva a solicitação
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from('solicitacoes_rotativo')
+        .insert(novaSolicitacao)
+        .select()
+        .single();
+      if (error) {
+        console.error('[API Supabase] Erro ao criar solicitação de rotativo:', error);
+        throw error;
+      }
+    } else {
+      MockDatabase.saveSolicitacaoRotativo(novaSolicitacao);
+    }
+
+    // 2. Dispara notificação push para TODOS os rotativos disponíveis com notificações ativas simultaneamente
+    const rotativosDisponiveis = await this.getRotativosDisponiveis();
+    const rotativosComNotif = rotativosDisponiveis.filter(r => r.notificacoes_ativas !== false);
+
+    const mensagemPush = `🔔 Job disponível — Hype Tatu\nEstilo: ${dados.estilo} | Tamanho: ${dados.tamanho.toUpperCase()}\nData: ${dados.data} às ${dados.hora_inicio}\nValor: R$ ${Number(dados.valor_estimado).toFixed(2)}\nPrimeiro a aceitar fica com o job.`;
+
+    for (const rotativo of rotativosComNotif) {
+      await this.sendPushNotification(
+        rotativo.id,
+        '🔔 Job disponível — Hype Tatu',
+        mensagemPush,
+        `/equipe/${rotativo.slug || ''}`
+      ).catch(err => console.warn('Erro ao disparar push para rotativo:', rotativo.nome, err));
+    }
+
+    window.dispatchEvent(new CustomEvent('hype_solicitacoes_rotativo_changed', { detail: novaSolicitacao }));
+    return novaSolicitacao;
+  },
+
+  async aceitarJobRotativo(
+    jobId: string,
+    rotativoId: string
+  ): Promise<{ solicitacao: SolicitacaoRotativo; agendamento: Agendamento }> {
+    if (isSupabaseConfigured()) {
+      // 1. Consulta o job atual e faz verificação de trava (lock)
+      const { data: job, error: jobErr } = await supabase
+        .from('solicitacoes_rotativo')
+        .select('*')
+        .eq('id', jobId)
+        .single();
+
+      if (jobErr || !job) {
+        throw new Error('Solicitação de job não encontrada.');
+      }
+
+      if (job.status === 'aceito') {
+        throw new Error(`Este job já foi aceito por ${job.aceito_por_nome || 'outro tatuador'}.`);
+      }
+
+      const { data: rotativo } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', rotativoId)
+        .single();
+
+      if (!rotativo) {
+        throw new Error('Colaborador não encontrado.');
+      }
+
+      const now = new Date().toISOString();
+
+      // 2. Atualiza status do job
+      const { data: jobAtualizado, error: updErr } = await supabase
+        .from('solicitacoes_rotativo')
+        .update({
+          status: 'aceito',
+          aceito_por_id: rotativo.id,
+          aceito_por_nome: rotativo.nome,
+          aceito_em: now,
+        })
+        .eq('id', jobId)
+        .select()
+        .single();
+
+      if (updErr) throw updErr;
+
+      // 3. Cliente: encontra ou cria
+      let clienteId = job.cliente_id;
+      if (!clienteId) {
+        const { data: existingCli } = await supabase
+          .from('clientes')
+          .select('id')
+          .ilike('nome', job.cliente_nome)
+          .maybeSingle();
+
+        if (existingCli) {
+          clienteId = existingCli.id;
+        } else {
+          const { data: novoCli } = await supabase
+            .from('clientes')
+            .insert({
+              nome: job.cliente_nome,
+              telefone: job.cliente_telefone || '(71) 99999-0000',
+              tags: ['Tatuagem', 'Job Rotativo'],
+            })
+            .select('id')
+            .single();
+          clienteId = novoCli?.id;
+        }
+      }
+
+      // 4. Serviço
+      const servicos = await this.getServicos();
+      const servicoTattoo =
+        servicos.find(s => s.categoria_id === 'cat-tattoo' && s.nome.toLowerCase().includes(job.tamanho)) ||
+        servicos.find(s => s.categoria_id === 'cat-tattoo') ||
+        servicos[0];
+
+      // 5. Cria agendamento automaticamente
+      const novoAgendamento: Agendamento = {
+        id: 'ag-rot-' + Date.now(),
+        cliente_id: clienteId,
+        colaborador_id: rotativo.id,
+        servico_id: servicoTattoo.id,
+        data: job.data,
+        hora_inicio: job.hora_inicio,
+        hora_fim: job.hora_fim,
+        status: 'confirmado',
+        observacoes: `[JOB ROTATIVO ACEITO] Profissional: ${rotativo.nome} | Estilo: ${job.estilo} | Porte: ${job.tamanho.toUpperCase()} | Valor: R$ ${job.valor_estimado}. ${job.observacoes || ''}`,
+        criado_em: now,
+      };
+
+      const { data: agCreated, error: agErr } = await supabase
+        .from('agendamentos')
+        .insert(novoAgendamento)
+        .select(`*, cliente:clientes(*), colaborador:usuarios(*), servico:servicos(*)`)
+        .single();
+
+      if (agErr) throw agErr;
+
+      // 6. Notifica a recepção e o master (NÃO notificar o cliente — recepcionista faz isso manualmente)
+      const usuarios = await this.getUsuarios();
+      const destinatarios = usuarios.filter(u => u.role === 'recepcionista' || u.role === 'master');
+      for (const dest of destinatarios) {
+        await this.sendPushNotification(
+          dest.id,
+          '🔔 Job Aceito por Rotativo!',
+          `${rotativo.nome} aceitou o job de ${job.data} às ${job.hora_inicio} (${job.cliente_nome} — ${job.estilo})`,
+          '/recepcao'
+        ).catch(() => {});
+      }
+
+      window.dispatchEvent(new CustomEvent('hype_solicitacoes_rotativo_changed', { detail: jobAtualizado }));
+      window.dispatchEvent(new CustomEvent('hype_agendamentos_changed', { detail: agCreated }));
+      return { solicitacao: jobAtualizado, agendamento: agCreated };
+    }
+
+    // Modo Mock Offline
+    return MockDatabase.aceitarJobRotativo(jobId, rotativoId);
+  },
+
+  async recusarJobRotativo(jobId: string, rotativoId: string): Promise<void> {
+    if (isSupabaseConfigured()) {
+      const { data: job } = await supabase.from('solicitacoes_rotativo').select('recusado_por_ids').eq('id', jobId).single();
+      const recusados = job?.recusado_por_ids || [];
+      if (!recusados.includes(rotativoId)) {
+        await supabase
+          .from('solicitacoes_rotativo')
+          .update({ recusado_por_ids: [...recusados, rotativoId] })
+          .eq('id', jobId);
+      }
+      return;
+    }
+    MockDatabase.recusarJobRotativo(jobId, rotativoId);
   },
 };
