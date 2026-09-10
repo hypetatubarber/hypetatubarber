@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Mail, LogIn, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 export const LoginPage: React.FC = () => {
   const { loginWithEmail, currentUser, role, loading: authLoading } = useAuth();
@@ -55,6 +56,8 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const isConfigured = isSupabaseConfigured();
+
   return (
     <div className="min-h-screen bg-[#0B0E11] text-[#F2F5F7] flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
       {/* Luz ambiente (radial glow) oficial Hype Tatu */}
@@ -92,6 +95,19 @@ export const LoginPage: React.FC = () => {
           <p className="text-xs text-[#AAB6BE] text-center mb-6">
             Informe seu e-mail e senha para acessar seu painel
           </p>
+
+          {/* Aviso se Supabase não estiver configurado */}
+          {!isConfigured && (
+            <div className="mb-4 p-3 rounded-xl bg-amber-950/50 border border-amber-500/30 text-amber-200 text-xs">
+              <div className="font-bold flex items-center gap-1.5 text-amber-400 mb-1">
+                <AlertCircle className="w-4 h-4" />
+                Aviso: Supabase não detectado no ambiente
+              </div>
+              <p className="text-[11px] leading-relaxed text-amber-200/90">
+                As variáveis <code>VITE_SUPABASE_URL</code> ou <code>VITE_SUPABASE_ANON_KEY</code> não estão preenchidas. Adicione-as nas variáveis do Railway para ativar autenticação oficial em nuvem.
+              </p>
+            </div>
+          )}
 
           {/* Alerta de Erro */}
           {errorMessage && (
@@ -142,7 +158,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 px-4 rounded-xl bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-white font-bold text-xs uppercase tracking-wider transition duration-150 flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-2 py-3 px-4 rounded-xl bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-white font-oswald font-bold text-xs uppercase tracking-wider transition duration-150 flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

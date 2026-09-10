@@ -190,10 +190,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Validação de senha em modo local
-    if (cleanEmail === 'master@hypetatu.com.br' && pass !== 'Senhamaster@2024') {
+    if (cleanEmail === 'master@hypetatu.com.br' && pass !== 'HypeMaster@2024' && pass !== 'Senhamaster@2024') {
       throw new Error('Senha incorreta para usuário Master.');
     }
-    if (cleanEmail === 'recepcao@hypetatu.com.br' && pass !== 'SenhaRecepcao@2024') {
+    if (cleanEmail === 'recepcao@hypetatu.com.br' && pass !== 'HypeRecepcao@2024' && pass !== 'SenhaRecepcao@2024') {
       throw new Error('Senha incorreta para usuário Recepção.');
     }
 

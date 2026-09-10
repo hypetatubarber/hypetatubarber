@@ -10,44 +10,11 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ReceptionDashboard } from './pages/recepcao/ReceptionDashboard';
 import { CollaboratorDashboard } from './pages/equipe/CollaboratorDashboard';
 import { LoginPage } from './pages/login/LoginPage';
+import { LandingPage } from './pages/public/LandingPage';
 import { ConversasPage } from './pages/conversas/ConversasPage';
 import { WhatsAppConfigPage } from './pages/admin/WhatsAppConfigPage';
 import { NotFound } from './pages/NotFound';
 import { evolutionApi } from './services/evolutionApi';
-
-// Roteador Inteligente da Raiz
-const RootRedirect: React.FC = () => {
-  const { currentUser, role, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0B0E11] text-[#8CBDAD] font-bold text-sm">
-        Carregando Hype Tatu...
-      </div>
-    );
-  }
-
-  // Não autenticado -> tela de login
-  if (!currentUser || !role) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Redirecionamento estrito por role
-  if (role === 'master') {
-    return <Navigate to="/admin" replace />;
-  }
-
-  if (role === 'recepcionista') {
-    return <Navigate to="/recepcao" replace />;
-  }
-
-  if (role === 'colaborador') {
-    const slug = currentUser.slug || 'danilinho-barber';
-    return <Navigate to={`/equipe/${slug}`} replace />;
-  }
-
-  return <Navigate to="/login" replace />;
-};
 
 export const App: React.FC = () => {
   // Inicialização do Webhook da Evolution API
@@ -62,8 +29,8 @@ export const App: React.FC = () => {
           <AuthProvider>
             <NotificationProvider>
               <Routes>
-                {/* 1. Raiz Inteligente */}
-                <Route path="/" element={<RootRedirect />} />
+                {/* 1. Site Público (Landing Page dos Clientes) */}
+                <Route path="/" element={<LandingPage />} />
 
                 {/* 2. Tela de Login Única */}
                 <Route path="/login" element={<LoginPage />} />
