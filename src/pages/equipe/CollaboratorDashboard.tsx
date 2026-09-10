@@ -9,8 +9,9 @@ import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { JobsRotativoList } from '../../components/collaborator/JobsRotativoList';
+import { CollaboratorEarnings } from '../../components/collaborator/CollaboratorEarnings';
 import { Usuario, Agendamento, UsoProduto } from '../../types';
-import { CheckCircle2, Clock, PackagePlus, Scissors, ShieldAlert, Bell, Flame } from 'lucide-react';
+import { CheckCircle2, Clock, PackagePlus, Scissors, ShieldAlert, Bell, Flame, DollarSign } from 'lucide-react';
 
 export const CollaboratorDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -30,6 +31,7 @@ export const CollaboratorDashboard: React.FC = () => {
 
   const getActiveTab = () => {
     if (location.pathname.includes('/agenda')) return 'agenda';
+    if (location.pathname.includes('/ganhos')) return 'ganhos';
     if (location.pathname.includes('/materiais')) return 'materiais';
     if (location.pathname.includes('/notificacoes')) return 'notificacoes';
     return 'hoje';
@@ -325,6 +327,11 @@ export const CollaboratorDashboard: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* ABA 5: MEUS GANHOS & COMISSÕES */}
+      {activeTab === 'ganhos' && (
+        <CollaboratorEarnings colaborador={colaborador} />
       )}
 
       {/* Modal de Lançamento de Material */}

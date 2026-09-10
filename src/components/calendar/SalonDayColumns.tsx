@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Usuario, Agendamento, CategoriaServico } from '../../types';
+import { Clock, User, Scissors, Plus, Flame, Sparkles, Filter, DollarSign, CheckCircle2 } from 'lucide-react';
+import { Agendamento, Usuario, CategoriaServico } from '../../types';
 import { AppointmentStatusBadge } from '../appointments/AppointmentStatusBadge';
-import { Plus, Filter, Clock, Scissors, Flame, Sparkles } from 'lucide-react';
 
 interface Props {
   selectedDate: string; // YYYY-MM-DD
@@ -11,6 +11,7 @@ interface Props {
   onSlotClick: (colaboradorId: string, time: string) => void;
   onAppointmentClick: (agendamento: Agendamento) => void;
   onChamarRotativo?: () => void;
+  onRegistrarPagamento?: (agendamento: Agendamento) => void;
 }
 
 export const SalonDayColumns: React.FC<Props> = ({
@@ -21,6 +22,7 @@ export const SalonDayColumns: React.FC<Props> = ({
   onSlotClick,
   onAppointmentClick,
   onChamarRotativo,
+  onRegistrarPagamento,
 }) => {
   // Filtros
   const [selectedColaboradorId, setSelectedColaboradorId] = useState<string>('all');
@@ -282,9 +284,34 @@ export const SalonDayColumns: React.FC<Props> = ({
                                 {ag.servico?.nome || 'Serviço'}
                               </p>
                             </div>
-                            <div className="text-[10px] text-[var(--text-muted)] font-medium mt-1 font-inter">
-                              {ag.hora_inicio} às {ag.hora_fim}
+                            <div className="text-[10px] text-[var(--text-muted)] font-medium mt-1 font-inter flex items-center justify-between">
+                              <span>{ag.hora_inicio} às {ag.hora_fim}</span>
+                              {ag.servico && <span className="font-mono font-bold text-[var(--text-primary)]">R$ {ag.servico.preco.toFixed(2)}</span>}
                             </div>
+
+                            {/* Botão Registrar Pagamento se Concluído */}
+                            {ag.status === 'concluido' && (
+                              <div className="mt-2 pt-1.5 border-t border-[var(--border)]">
+                                {ag.pago ? (
+                                  <div className="w-full py-0.5 rounded bg-[rgba(39,174,96,0.12)] text-[#27AE60] text-[10px] font-oswald uppercase font-bold text-center flex items-center justify-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3" />
+                                    Pago
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onRegistrarPagamento?.(ag);
+                                    }}
+                                    className="w-full py-1 rounded bg-[#27AE60] hover:bg-[#219653] text-white text-[10px] font-oswald uppercase tracking-wider font-bold text-center flex items-center justify-center gap-1 transition-colors shadow-sm"
+                                  >
+                                    <DollarSign className="w-3 h-3" />
+                                    Registrar Pagamento
+                                  </button>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           // Continuação visual de agendamento longo (>30 min)

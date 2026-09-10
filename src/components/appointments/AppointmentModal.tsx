@@ -13,6 +13,7 @@ interface Props {
   initialTime?: string;
   initialColaboradorId?: string;
   onSaved: () => void;
+  onRegistrarPagamento?: (agendamento: Agendamento) => void;
 }
 
 export const AppointmentModal: React.FC<Props> = ({
@@ -23,6 +24,7 @@ export const AppointmentModal: React.FC<Props> = ({
   initialTime,
   initialColaboradorId,
   onSaved,
+  onRegistrarPagamento,
 }) => {
   const { showToast } = useToast();
   const { currentUser } = useAuth();
@@ -467,6 +469,35 @@ export const AppointmentModal: React.FC<Props> = ({
                 <option value="cancelado">Cancelado</option>
               </select>
             </div>
+
+            {/* Ação de Pagamento se Concluído */}
+            {status === 'concluido' && appointmentToEdit && (
+              <div className="p-3 rounded-xl bg-[rgba(39,174,96,0.08)] border border-[rgba(39,174,96,0.30)] flex items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-bold text-[var(--text-primary)] block font-inter">Pagamento do Atendimento</span>
+                  <span className="text-[11px] text-[var(--text-secondary)] font-inter">
+                    {appointmentToEdit.pago ? 'Pagamento já registrado no caixa.' : 'Atendimento finalizado. Lance o recebimento no caixa.'}
+                  </span>
+                </div>
+                {appointmentToEdit.pago ? (
+                  <span className="px-2.5 py-1 rounded-lg bg-[rgba(39,174,96,0.20)] text-[#27AE60] text-xs font-oswald uppercase font-bold flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5" /> Pago
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onRegistrarPagamento?.(appointmentToEdit);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-[#27AE60] hover:bg-[#219653] text-white text-xs font-oswald uppercase tracking-wider font-bold flex items-center gap-1 shadow-sm transition-all"
+                  >
+                    <DollarSign className="w-3.5 h-3.5" />
+                    Registrar Pagamento
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Observações */}
             <div>

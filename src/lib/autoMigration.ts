@@ -18,6 +18,9 @@ export const REQUIRED_TABLES = [
   'conversas',
   'mensagens',
   'notificacoes',
+  'pagamentos',
+  'custos_fixos',
+  'repasses_comissao',
 ] as const;
 
 export interface SchemaHealthReport {

@@ -10,6 +10,7 @@ import {
   Bell,
   Tag,
   MessageSquare,
+  DollarSign,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -24,9 +25,9 @@ export const BottomNav: React.FC = () => {
     if (role === 'master') {
       return [
         { to: '/admin', label: 'Painel', icon: LayoutDashboard, end: true },
+        { to: '/admin/financeiro', label: 'Financeiro', icon: DollarSign },
         { to: '/admin/conversas', label: 'Conversas', icon: MessageSquare, badge: whatsAppUnread },
         { to: '/admin/clientes', label: 'Clientes', icon: Contact },
-        { to: '/admin/estoque', label: 'Estoque', icon: Package },
       ];
     }
 
@@ -44,7 +45,7 @@ export const BottomNav: React.FC = () => {
     return [
       { to: `/equipe/${slug}`, label: 'Hoje', icon: CheckCircle2, end: true },
       { to: `/equipe/${slug}/agenda`, label: 'Agenda', icon: Calendar },
-      { to: `/equipe/${slug}/materiais`, label: 'Materiais', icon: ClipboardList },
+      { to: `/equipe/${slug}/ganhos`, label: 'Ganhos', icon: DollarSign },
       { to: `/equipe/${slug}/notificacoes`, label: 'Avisos', icon: Bell, badge: unreadCount },
     ];
   };

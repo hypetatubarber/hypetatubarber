@@ -3,7 +3,7 @@
  * Garante funcionamento perfeito mesmo sem chaves ativas do Supabase.
  */
 
-import { Usuario, Cliente, CategoriaServico, Servico, Agendamento, Produto, UsoProduto, MovimentacaoEstoque, Notificacao, Conversa, Mensagem, SolicitacaoRotativo } from '../types';
+import { Usuario, Cliente, CategoriaServico, Servico, Agendamento, Produto, UsoProduto, MovimentacaoEstoque, Notificacao, Conversa, Mensagem, SolicitacaoRotativo, Pagamento, CustoFixo, RepasseComissao } from '../types';
 
 const STORAGE_KEYS = {
   USUARIOS: 'hype_usuarios_v1',
@@ -18,6 +18,9 @@ const STORAGE_KEYS = {
   CONVERSAS: 'hype_conversas_v1',
   MENSAGENS: 'hype_mensagens_v1',
   SOLICITACOES_ROTATIVO: 'hype_solicitacoes_rotativo_v1',
+  PAGAMENTOS: 'hype_pagamentos_v1',
+  CUSTOS_FIXOS: 'hype_custos_fixos_v1',
+  REPASSES: 'hype_repasses_v1',
 };
 
 // Data formatada para hoje no formato YYYY-MM-DD
@@ -90,6 +93,26 @@ const INITIAL_USUARIOS: Usuario[] = [
     criado_em: '2026-09-10T17:29:43.142543+00:00',
   },
   {
+    id: 'user-colab-1',
+    nome: 'Danilinho Barber',
+    email: 'danilinho@hypetatu.com.br',
+    role: 'colaborador',
+    tipo_colaborador: 'fixo',
+    slug: 'danilinho-barber',
+    especialidade: 'Master Barber • Degradê & Barboterapia',
+    telefone: '(71) 99411-1967',
+    comissao_porcentagem: 50,
+    comissao_barbearia: 50,
+    comissao_tatuagem: 60,
+    comissao_piercing: 55,
+    tipo_repasse: 'semanal',
+    status_disponibilidade: 'disponivel',
+    notificacoes_ativas: true,
+    foto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80',
+    status: 'ativo',
+    criado_em: '2026-09-10T17:28:11.600000+00:00',
+  },
+  {
     id: '18c24c4b-0e19-4a79-9523-008d2c31365b',
     nome: 'Tatuador 1 (Lucas Rocha)',
     email: 'tatuador1@gmail.com',
@@ -99,7 +122,11 @@ const INITIAL_USUARIOS: Usuario[] = [
     especialidade: 'Tatuador • Realismo & Blackwork',
     estilos_tatuagem: ['Realismo', 'Blackwork'],
     telefone: '(71) 99111-2233',
-    comissao_porcentagem: 50,
+    comissao_porcentagem: 60,
+    comissao_barbearia: 50,
+    comissao_tatuagem: 60,
+    comissao_piercing: 55,
+    tipo_repasse: 'semanal',
     status_disponibilidade: 'disponivel',
     notificacoes_ativas: true,
     foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
@@ -117,6 +144,10 @@ const INITIAL_USUARIOS: Usuario[] = [
     estilos_tatuagem: ['Fineline', 'Minimalista', 'Lettering', 'Blackwork'],
     telefone: '(71) 99333-4455',
     comissao_porcentagem: 60,
+    comissao_barbearia: 50,
+    comissao_tatuagem: 60,
+    comissao_piercing: 55,
+    tipo_repasse: 'servico',
     status_disponibilidade: 'disponivel',
     notificacoes_ativas: true,
     foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
@@ -134,6 +165,10 @@ const INITIAL_USUARIOS: Usuario[] = [
     estilos_tatuagem: ['Realismo', 'Aquarela', 'Botânica', 'Old School'],
     telefone: '(71) 99444-5566',
     comissao_porcentagem: 65,
+    comissao_barbearia: 50,
+    comissao_tatuagem: 65,
+    comissao_piercing: 55,
+    tipo_repasse: 'servico',
     status_disponibilidade: 'disponivel',
     notificacoes_ativas: true,
     foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
@@ -467,6 +502,305 @@ const INITIAL_MENSAGENS: Mensagem[] = [
   },
 ];
 
+// ============================================================================
+// DADOS FINANCEIROS INICIAIS (CUSTOS FIXOS, PAGAMENTOS E REPASSES)
+// ============================================================================
+const INITIAL_CUSTOS_FIXOS: CustoFixo[] = [
+  { id: 'cf-1', nome: 'Aluguel do Salão & Ponto Comercial', valor_mensal: 3500.00, dia_vencimento: 10, categoria: 'Instalações', status_mes: { '2026-09': 'pago' }, criado_em: '2026-09-01T00:00:00Z' },
+  { id: 'cf-2', nome: 'Energia Elétrica (Coelba)', valor_mensal: 680.00, dia_vencimento: 15, categoria: 'Utilidades', status_mes: { '2026-09': 'pago' }, criado_em: '2026-09-01T00:00:00Z' },
+  { id: 'cf-3', nome: 'Água & Esgoto (Embasa)', valor_mensal: 145.00, dia_vencimento: 12, categoria: 'Utilidades', status_mes: { '2026-09': 'pago' }, criado_em: '2026-09-01T00:00:00Z' },
+  { id: 'cf-4', nome: 'Internet Fibra Óptica 600MB', valor_mensal: 180.00, dia_vencimento: 5, categoria: 'Tecnologia', status_mes: { '2026-09': 'pago' }, criado_em: '2026-09-01T00:00:00Z' },
+  { id: 'cf-5', nome: 'Sistema de Gestão & Nuvem Hype', valor_mensal: 250.00, dia_vencimento: 20, categoria: 'Software', status_mes: { '2026-09': 'pendente' }, criado_em: '2026-09-01T00:00:00Z' },
+  { id: 'cf-6', nome: 'Assessoria Contábil Especializada', valor_mensal: 600.00, dia_vencimento: 8, categoria: 'Serviços', status_mes: { '2026-09': 'pago' }, criado_em: '2026-09-01T00:00:00Z' },
+  { id: 'cf-7', nome: 'Marketing Digital & Anúncios Meta', valor_mensal: 800.00, dia_vencimento: 1, categoria: 'Marketing', status_mes: { '2026-09': 'pago' }, criado_em: '2026-09-01T00:00:00Z' },
+];
+
+const today = getTodayDateString();
+
+const INITIAL_PAGAMENTOS: Pagamento[] = [
+  // Pagamentos de Hoje
+  {
+    id: 'pag-today-1',
+    agendamento_id: 'ag-1',
+    cliente_id: 'cli-1',
+    cliente_nome: 'Rodrigo Mendonça',
+    colaborador_id: 'user-colab-1',
+    colaborador_nome: 'Danilinho Barber',
+    servico_id: 'srv-1',
+    servico_nome: 'Corte Masculino Degradê',
+    categoria_nome: 'Barbearia',
+    data: today,
+    hora: '09:45',
+    valor_bruto: 55.00,
+    forma_pagamento: 'pix',
+    parcelas: 1,
+    taxa_maquininha_pct: 0,
+    taxa_maquininha_valor: 0,
+    valor_liquido_transacao: 55.00,
+    comissao_pct: 50,
+    comissao_valor: 27.50,
+    valor_liquido_estudio: 27.50,
+    status_repasse: 'a_pagar',
+    observacoes: 'Pagamento via Chave PIX Estúdio recebido com sucesso.',
+    criado_em: `${today}T09:45:00Z`,
+  },
+  {
+    id: 'pag-today-2',
+    agendamento_id: 'ag-2',
+    cliente_id: 'cli-3',
+    cliente_nome: 'Bruno Carvalho',
+    colaborador_id: 'user-colab-1',
+    colaborador_nome: 'Danilinho Barber',
+    servico_id: 'srv-2',
+    servico_nome: 'Corte + Barba (Combo Hype)',
+    categoria_nome: 'Barbearia',
+    data: today,
+    hora: '11:15',
+    valor_bruto: 95.00,
+    forma_pagamento: 'debito',
+    parcelas: 1,
+    taxa_maquininha_pct: 1.9,
+    taxa_maquininha_valor: 1.81,
+    valor_liquido_transacao: 93.19,
+    comissao_pct: 50,
+    comissao_valor: 47.50,
+    valor_liquido_estudio: 45.69,
+    status_repasse: 'a_pagar',
+    observacoes: 'Cartão de Débito aprovado.',
+    criado_em: `${today}T11:15:00Z`,
+  },
+  {
+    id: 'pag-today-3',
+    agendamento_id: 'ag-3',
+    cliente_id: 'cli-2',
+    cliente_nome: 'Larissa Vasconcelos',
+    colaborador_id: '18c24c4b-0e19-4a79-9523-008d2c31365b',
+    colaborador_nome: 'Tatuador 1 (Lucas Rocha)',
+    servico_id: 'srv-6',
+    servico_nome: 'Tattoo Pequena (até 6cm)',
+    categoria_nome: 'Tatuagem',
+    data: today,
+    hora: '15:30',
+    valor_bruto: 220.00,
+    forma_pagamento: 'credito',
+    parcelas: 1,
+    taxa_maquininha_pct: 3.5,
+    taxa_maquininha_valor: 7.70,
+    valor_liquido_transacao: 212.30,
+    comissao_pct: 60,
+    comissao_valor: 132.00,
+    valor_liquido_estudio: 80.30,
+    status_repasse: 'a_pagar',
+    observacoes: 'Crédito à vista Stone.',
+    criado_em: `${today}T15:30:00Z`,
+  },
+  {
+    id: 'pag-today-4',
+    cliente_nome: 'Camila Alencar',
+    colaborador_id: 'rotativo-gabriel-1',
+    colaborador_nome: 'Gabriel Santos (Rotativo)',
+    servico_nome: 'Tattoo Média Fineline',
+    categoria_nome: 'Tatuagem',
+    data: today,
+    hora: '17:00',
+    valor_bruto: 450.00,
+    forma_pagamento: 'credito_parcelado',
+    parcelas: 3,
+    taxa_maquininha_pct: 5.5,
+    taxa_maquininha_valor: 24.75,
+    valor_liquido_transacao: 425.25,
+    comissao_pct: 60,
+    comissao_valor: 270.00,
+    valor_liquido_estudio: 155.25,
+    status_repasse: 'a_pagar',
+    observacoes: 'Tattoo botânica braço em 3x.',
+    criado_em: `${today}T17:00:00Z`,
+  },
+
+  // Pagamentos deste mês (Setembro 2026)
+  {
+    id: 'pag-m-1',
+    cliente_nome: 'Tiago Fonseca',
+    colaborador_id: '18c24c4b-0e19-4a79-9523-008d2c31365b',
+    colaborador_nome: 'Tatuador 1 (Lucas Rocha)',
+    servico_nome: 'Tattoo Grande (Sessão Fechamento)',
+    categoria_nome: 'Tatuagem',
+    data: '2026-09-05',
+    hora: '18:00',
+    valor_bruto: 900.00,
+    forma_pagamento: 'pix',
+    parcelas: 1,
+    taxa_maquininha_pct: 0,
+    taxa_maquininha_valor: 0,
+    valor_liquido_transacao: 900.00,
+    comissao_pct: 60,
+    comissao_valor: 540.00,
+    valor_liquido_estudio: 360.00,
+    status_repasse: 'pago',
+    repasse_id: 'rep-init-1',
+    observacoes: 'Fechamento de antebraço oriental.',
+    criado_em: '2026-09-05T18:00:00Z',
+  },
+  {
+    id: 'pag-m-2',
+    cliente_nome: 'Matheus Ribeiro',
+    colaborador_id: 'user-colab-1',
+    colaborador_nome: 'Danilinho Barber',
+    servico_nome: 'Barba Terapia Completa',
+    categoria_nome: 'Barbearia',
+    data: '2026-09-06',
+    hora: '14:20',
+    valor_bruto: 45.00,
+    forma_pagamento: 'dinheiro',
+    parcelas: 1,
+    taxa_maquininha_pct: 0,
+    taxa_maquininha_valor: 0,
+    valor_liquido_transacao: 45.00,
+    comissao_pct: 50,
+    comissao_valor: 22.50,
+    valor_liquido_estudio: 22.50,
+    status_repasse: 'pago',
+    repasse_id: 'rep-init-2',
+    observacoes: 'Recebido em espécie no caixa.',
+    criado_em: '2026-09-06T14:20:00Z',
+  },
+  {
+    id: 'pag-m-3',
+    cliente_nome: 'Juliana Pires',
+    colaborador_id: 'rotativo-bia-2',
+    colaborador_nome: 'Bia Ink (Rotativa)',
+    servico_nome: 'Tattoo Aquarela Borboleta',
+    categoria_nome: 'Tatuagem',
+    data: '2026-09-08',
+    hora: '16:40',
+    valor_bruto: 550.00,
+    forma_pagamento: 'credito_parcelado',
+    parcelas: 4,
+    taxa_maquininha_pct: 6.2,
+    taxa_maquininha_valor: 34.10,
+    valor_liquido_transacao: 515.90,
+    comissao_pct: 65,
+    comissao_valor: 357.50,
+    valor_liquido_estudio: 158.40,
+    status_repasse: 'a_pagar',
+    observacoes: 'Tattoo colorida autoral.',
+    criado_em: '2026-09-08T16:40:00Z',
+  },
+
+  // Pagamentos do Mês Anterior (Agosto 2026 - Para Comparativo de Gráficos)
+  {
+    id: 'pag-prev-1',
+    cliente_nome: 'Carlos Drummond',
+    colaborador_id: 'user-colab-1',
+    colaborador_nome: 'Danilinho Barber',
+    servico_nome: 'Corte + Barba',
+    categoria_nome: 'Barbearia',
+    data: '2026-08-10',
+    hora: '10:00',
+    valor_bruto: 95.00,
+    forma_pagamento: 'pix',
+    parcelas: 1,
+    taxa_maquininha_pct: 0,
+    taxa_maquininha_valor: 0,
+    valor_liquido_transacao: 95.00,
+    comissao_pct: 50,
+    comissao_valor: 47.50,
+    valor_liquido_estudio: 47.50,
+    status_repasse: 'pago',
+    criado_em: '2026-08-10T10:00:00Z',
+  },
+  {
+    id: 'pag-prev-2',
+    cliente_nome: 'Amanda Neves',
+    colaborador_id: '18c24c4b-0e19-4a79-9523-008d2c31365b',
+    colaborador_nome: 'Tatuador 1 (Lucas Rocha)',
+    servico_nome: 'Tattoo Grande Realismo',
+    categoria_nome: 'Tatuagem',
+    data: '2026-08-15',
+    hora: '14:00',
+    valor_bruto: 1100.00,
+    forma_pagamento: 'credito_parcelado',
+    parcelas: 5,
+    taxa_maquininha_pct: 7.0,
+    taxa_maquininha_valor: 77.00,
+    valor_liquido_transacao: 1023.00,
+    comissao_pct: 60,
+    comissao_valor: 660.00,
+    valor_liquido_estudio: 363.00,
+    status_repasse: 'pago',
+    criado_em: '2026-08-15T14:00:00Z',
+  },
+  {
+    id: 'pag-prev-3',
+    cliente_nome: 'Leandro Dias',
+    colaborador_id: 'user-colab-1',
+    colaborador_nome: 'Danilinho Barber',
+    servico_nome: 'Corte Degradê',
+    categoria_nome: 'Barbearia',
+    data: '2026-08-22',
+    hora: '15:30',
+    valor_bruto: 55.00,
+    forma_pagamento: 'debito',
+    parcelas: 1,
+    taxa_maquininha_pct: 1.9,
+    taxa_maquininha_valor: 1.05,
+    valor_liquido_transacao: 53.95,
+    comissao_pct: 50,
+    comissao_valor: 27.50,
+    valor_liquido_estudio: 26.45,
+    status_repasse: 'pago',
+    criado_em: '2026-08-22T15:30:00Z',
+  },
+  {
+    id: 'pag-prev-4',
+    cliente_nome: 'Fernanda Lima',
+    colaborador_id: 'rotativo-bia-2',
+    colaborador_nome: 'Bia Ink (Rotativa)',
+    servico_nome: 'Tattoo Média',
+    categoria_nome: 'Tatuagem',
+    data: '2026-08-28',
+    hora: '16:00',
+    valor_bruto: 420.00,
+    forma_pagamento: 'pix',
+    parcelas: 1,
+    taxa_maquininha_pct: 0,
+    taxa_maquininha_valor: 0,
+    valor_liquido_transacao: 420.00,
+    comissao_pct: 65,
+    comissao_valor: 273.00,
+    valor_liquido_estudio: 147.00,
+    status_repasse: 'pago',
+    criado_em: '2026-08-28T16:00:00Z',
+  },
+];
+
+const INITIAL_REPASSES: RepasseComissao[] = [
+  {
+    id: 'rep-init-1',
+    colaborador_id: '18c24c4b-0e19-4a79-9523-008d2c31365b',
+    colaborador_nome: 'Tatuador 1 (Lucas Rocha)',
+    periodo_inicio: '2026-09-01',
+    periodo_fim: '2026-09-07',
+    valor_total: 540.00,
+    pagamentos_ids: ['pag-m-1'],
+    pago_em: '2026-09-07T19:00:00Z',
+    pago_por: 'Admin Master',
+    observacoes: 'Fechamento semanal regular via PIX transferido.',
+  },
+  {
+    id: 'rep-init-2',
+    colaborador_id: 'user-colab-1',
+    colaborador_nome: 'Danilinho Barber',
+    periodo_inicio: '2026-09-01',
+    periodo_fim: '2026-09-07',
+    valor_total: 22.50,
+    pagamentos_ids: ['pag-m-2'],
+    pago_em: '2026-09-07T19:10:00Z',
+    pago_por: 'Admin Master',
+    observacoes: 'Fechamento semanal regular pago em espécie.',
+  },
+];
+
 // Funções utilitárias de carregamento e salvamento
 const loadFromStorage = <T>(key: string, initial: T): T => {
   try {
@@ -499,6 +833,9 @@ export class MockDatabase {
   private static conversas: Conversa[] = loadFromStorage(STORAGE_KEYS.CONVERSAS, INITIAL_CONVERSAS);
   private static mensagens: Mensagem[] = loadFromStorage(STORAGE_KEYS.MENSAGENS, INITIAL_MENSAGENS);
   private static solicitacoesRotativo: SolicitacaoRotativo[] = loadFromStorage(STORAGE_KEYS.SOLICITACOES_ROTATIVO, []);
+  private static pagamentos: Pagamento[] = loadFromStorage(STORAGE_KEYS.PAGAMENTOS, INITIAL_PAGAMENTOS);
+  private static custosFixos: CustoFixo[] = loadFromStorage(STORAGE_KEYS.CUSTOS_FIXOS, INITIAL_CUSTOS_FIXOS);
+  private static repasses: RepasseComissao[] = loadFromStorage(STORAGE_KEYS.REPASSES, INITIAL_REPASSES);
 
   // Usuários
   static getUsuarios(): Usuario[] {
@@ -961,5 +1298,114 @@ export class MockDatabase {
       window.dispatchEvent(new CustomEvent('hype_solicitacoes_rotativo_changed', { detail: job }));
     }
     return job;
+  }
+
+  // ==========================================================================
+  // MÓDULO FINANCEIRO: PAGAMENTOS, CUSTOS FIXOS E REPASSES
+  // ==========================================================================
+  static getPagamentos(colaboradorId?: string): Pagamento[] {
+    if (colaboradorId) {
+      return this.pagamentos.filter(p => p.colaborador_id === colaboradorId);
+    }
+    return [...this.pagamentos];
+  }
+
+  static savePagamento(pagamento: Pagamento): Pagamento {
+    const idx = this.pagamentos.findIndex(p => p.id === pagamento.id);
+    if (idx >= 0) {
+      this.pagamentos[idx] = pagamento;
+    } else {
+      this.pagamentos.unshift(pagamento);
+    }
+    saveToStorage(STORAGE_KEYS.PAGAMENTOS, this.pagamentos);
+
+    // Se vinculado a um agendamento, marca como pago
+    if (pagamento.agendamento_id) {
+      const ag = this.agendamentos.find(a => a.id === pagamento.agendamento_id);
+      if (ag) {
+        ag.pago = true;
+        ag.pagamento_id = pagamento.id;
+        saveToStorage(STORAGE_KEYS.AGENDAMENTOS, this.agendamentos);
+        window.dispatchEvent(new CustomEvent('hype_agendamentos_changed', { detail: ag }));
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent('hype_pagamentos_changed', { detail: pagamento }));
+    return pagamento;
+  }
+
+  static getCustosFixos(): CustoFixo[] {
+    return [...this.custosFixos];
+  }
+
+  static saveCustoFixo(custo: CustoFixo): CustoFixo {
+    const idx = this.custosFixos.findIndex(c => c.id === custo.id);
+    if (idx >= 0) {
+      this.custosFixos[idx] = custo;
+    } else {
+      this.custosFixos.push(custo);
+    }
+    saveToStorage(STORAGE_KEYS.CUSTOS_FIXOS, this.custosFixos);
+    window.dispatchEvent(new CustomEvent('hype_custos_fixos_changed', { detail: custo }));
+    return custo;
+  }
+
+  static deleteCustoFixo(id: string): void {
+    this.custosFixos = this.custosFixos.filter(c => c.id !== id);
+    saveToStorage(STORAGE_KEYS.CUSTOS_FIXOS, this.custosFixos);
+    window.dispatchEvent(new CustomEvent('hype_custos_fixos_changed'));
+  }
+
+  static toggleStatusCustoFixo(id: string, mesAno: string): CustoFixo {
+    const custo = this.custosFixos.find(c => c.id === id);
+    if (!custo) throw new Error('Custo fixo não encontrado.');
+    if (!custo.status_mes) custo.status_mes = {};
+    const atual = custo.status_mes[mesAno] || 'pendente';
+    custo.status_mes[mesAno] = atual === 'pago' ? 'pendente' : 'pago';
+    saveToStorage(STORAGE_KEYS.CUSTOS_FIXOS, this.custosFixos);
+    window.dispatchEvent(new CustomEvent('hype_custos_fixos_changed', { detail: custo }));
+    return custo;
+  }
+
+  static getRepassesComissao(): RepasseComissao[] {
+    return [...this.repasses];
+  }
+
+  static marcarComissaoPaga(
+    colaboradorId: string,
+    pagamentosIds: string[],
+    valorTotal: number,
+    pagoPor?: string
+  ): RepasseComissao {
+    const colab = this.usuarios.find(u => u.id === colaboradorId);
+    const now = new Date().toISOString();
+    const repasse: RepasseComissao = {
+      id: 'rep-' + Date.now(),
+      colaborador_id: colaboradorId,
+      colaborador_nome: colab?.nome || 'Colaborador',
+      periodo_inicio: undefined,
+      periodo_fim: now.split('T')[0],
+      valor_total: valorTotal,
+      pagamentos_ids: pagamentosIds,
+      pago_em: now,
+      pago_por: pagoPor || 'Admin Master',
+      observacoes: `Repasse quitado de ${pagamentosIds.length} serviço(s).`
+    };
+
+    // Atualiza o status dos pagamentos correspondentes para 'pago'
+    this.pagamentos.forEach(p => {
+      if (pagamentosIds.includes(p.id)) {
+        p.status_repasse = 'pago';
+        p.repasse_id = repasse.id;
+      }
+    });
+
+    this.repasses.unshift(repasse);
+    saveToStorage(STORAGE_KEYS.PAGAMENTOS, this.pagamentos);
+    saveToStorage(STORAGE_KEYS.REPASSES, this.repasses);
+
+    window.dispatchEvent(new CustomEvent('hype_pagamentos_changed'));
+    window.dispatchEvent(new CustomEvent('hype_repasses_changed', { detail: repasse }));
+    return repasse;
   }
 }

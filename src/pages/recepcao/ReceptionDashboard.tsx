@@ -4,6 +4,8 @@ import { MonthCalendar } from '../../components/calendar/MonthCalendar';
 import { SalonDayColumns } from '../../components/calendar/SalonDayColumns';
 import { AppointmentModal } from '../../components/appointments/AppointmentModal';
 import { SolicitarRotativoModal } from '../../components/appointments/SolicitarRotativoModal';
+import { RegistrarPagamentoModal } from '../../components/financeiro/RegistrarPagamentoModal';
+import { CaixaRecepcaoCard } from '../../components/financeiro/CaixaRecepcaoCard';
 import { ClientList } from '../../components/clients/ClientList';
 import { ProductList } from '../../components/stock/ProductList';
 import { api } from '../../services/api';
@@ -21,6 +23,7 @@ export const ReceptionDashboard: React.FC = () => {
   // Modais
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
   const [isRotativoModalOpen, setIsRotativoModalOpen] = useState(false);
+  const [pagamentoModalAgendamento, setPagamentoModalAgendamento] = useState<Agendamento | null>(null);
   const [appointmentToEdit, setAppointmentToEdit] = useState<Agendamento | null>(null);
   const [initialSlotData, setInitialSlotData] = useState<{ colabId?: string; time?: string }>({});
 
@@ -130,6 +133,13 @@ export const ReceptionDashboard: React.FC = () => {
       {/* Conteúdo Conforme a Rota */}
       {activeTab === 'agenda' && (
         <div className="space-y-6">
+          {/* Controle de Caixa do Dia (Recepção) */}
+          <CaixaRecepcaoCard
+            selectedDate={selectedDate}
+            agendamentos={agendamentos}
+            onOpenPagamentoModal={(ag) => setPagamentoModalAgendamento(ag)}
+          />
+
           <MonthCalendar
             selectedDate={selectedDate}
             onSelectDate={(dStr) => setSelectedDate(dStr)}
@@ -144,6 +154,7 @@ export const ReceptionDashboard: React.FC = () => {
             onSlotClick={handleSlotClick}
             onAppointmentClick={handleAppointmentClick}
             onChamarRotativo={() => setIsRotativoModalOpen(true)}
+            onRegistrarPagamento={(ag) => setPagamentoModalAgendamento(ag)}
           />
         </div>
       )}
@@ -160,6 +171,7 @@ export const ReceptionDashboard: React.FC = () => {
         initialTime={initialSlotData.time}
         initialColaboradorId={initialSlotData.colabId}
         onSaved={loadData}
+        onRegistrarPagamento={(ag) => setPagamentoModalAgendamento(ag)}
       />
 
       {/* Modal de Solicitação de Tatuador Rotativo */}
@@ -167,6 +179,14 @@ export const ReceptionDashboard: React.FC = () => {
         isOpen={isRotativoModalOpen}
         onClose={() => setIsRotativoModalOpen(false)}
         initialDate={selectedDate}
+        onSuccess={loadData}
+      />
+
+      {/* Modal Registrar Pagamento */}
+      <RegistrarPagamentoModal
+        isOpen={!!pagamentoModalAgendamento}
+        onClose={() => setPagamentoModalAgendamento(null)}
+        agendamento={pagamentoModalAgendamento}
         onSuccess={loadData}
       />
     </div>

@@ -9,6 +9,7 @@ import { ProductList } from '../../components/stock/ProductList';
 import { CollaboratorConsumption } from '../../components/stock/CollaboratorConsumption';
 import { ClientList } from '../../components/clients/ClientList';
 import { CollaboratorManagement } from '../../components/collaborators/CollaboratorManagement';
+import { AdminFinanceiroView } from '../../components/financeiro/AdminFinanceiroView';
 import { api } from '../../services/api';
 import { Agendamento, Usuario, CategoriaServico } from '../../types';
 import { Calendar, DollarSign, Users, AlertTriangle, Plus, Sparkles, Flame } from 'lucide-react';
@@ -30,6 +31,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Aba ativa conforme a URL
   const getTabFromPath = () => {
+    if (location.pathname.includes('/financeiro')) return 'financeiro';
     if (location.pathname.includes('/agenda')) return 'agenda';
     if (location.pathname.includes('/servicos')) return 'servicos';
     if (location.pathname.includes('/equipe')) return 'equipe';
@@ -227,6 +229,7 @@ export const AdminDashboard: React.FC = () => {
       {activeTab === 'estoque' && <ProductList />}
       {activeTab === 'clientes' && <ClientList />}
       {activeTab === 'relatorios' && <CollaboratorConsumption />}
+      {activeTab === 'financeiro' && <AdminFinanceiroView />}
 
       {/* Modal de Agendamento */}
       <AppointmentModal

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Edit2, Check, X, ExternalLink, KeyRound, Eye, EyeOff, Lock, Loader2, Flame, Phone, Bell, BellOff, Sparkles, Percent, MessageCircle, Power, Tag } from 'lucide-react';
-import { Usuario, TipoColaborador, StatusDisponibilidade } from '../../types';
+import { UserPlus, Edit2, Check, X, ExternalLink, KeyRound, Eye, EyeOff, Lock, Loader2, Flame, Phone, Bell, BellOff, Sparkles, Percent, MessageCircle, Power, Tag, DollarSign, Calendar } from 'lucide-react';
+import { Usuario, TipoColaborador, StatusDisponibilidade, TipoRepasse } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Link } from 'react-router-dom';
@@ -53,6 +53,10 @@ export const CollaboratorManagement: React.FC = () => {
   const [novoEstilo, setNovoEstilo] = useState('');
   const [telefone, setTelefone] = useState('');
   const [comissaoPorcentagem, setComissaoPorcentagem] = useState<number>(60);
+  const [comissaoBarbearia, setComissaoBarbearia] = useState<number>(50);
+  const [comissaoTatuagem, setComissaoTatuagem] = useState<number>(60);
+  const [comissaoPiercing, setComissaoPiercing] = useState<number>(55);
+  const [tipoRepasse, setTipoRepasse] = useState<TipoRepasse>('semanal');
   const [statusDisponibilidade, setStatusDisponibilidade] = useState<StatusDisponibilidade>('disponivel');
   const [notificacoesAtivas, setNotificacoesAtivas] = useState<boolean>(true);
 
@@ -95,6 +99,10 @@ export const CollaboratorManagement: React.FC = () => {
       setNovoEstilo('');
       setTelefone(u.telefone || '');
       setComissaoPorcentagem(u.comissao_porcentagem !== undefined ? u.comissao_porcentagem : 60);
+      setComissaoBarbearia(u.comissao_barbearia !== undefined ? u.comissao_barbearia : (u.comissao_porcentagem || 50));
+      setComissaoTatuagem(u.comissao_tatuagem !== undefined ? u.comissao_tatuagem : (u.comissao_porcentagem || 60));
+      setComissaoPiercing(u.comissao_piercing !== undefined ? u.comissao_piercing : (u.comissao_porcentagem || 55));
+      setTipoRepasse(u.tipo_repasse || (u.tipo_colaborador === 'rotativo' ? 'servico' : 'semanal'));
       setStatusDisponibilidade(u.status_disponibilidade || 'disponivel');
       setNotificacoesAtivas(u.notificacoes_ativas !== false);
     } else {
@@ -111,6 +119,10 @@ export const CollaboratorManagement: React.FC = () => {
       setNovoEstilo('');
       setTelefone('');
       setComissaoPorcentagem(60);
+      setComissaoBarbearia(50);
+      setComissaoTatuagem(60);
+      setComissaoPiercing(55);
+      setTipoRepasse('semanal');
       setStatusDisponibilidade('disponivel');
       setNotificacoesAtivas(true);
     }
@@ -150,7 +162,11 @@ export const CollaboratorManagement: React.FC = () => {
         tipo_colaborador: role === 'colaborador' ? tipoColaborador : 'fixo',
         estilos_tatuagem: role === 'colaborador' && tipoColaborador === 'rotativo' ? estilosTatuagem : undefined,
         telefone: telefone.trim() || undefined,
-        comissao_porcentagem: role === 'colaborador' && tipoColaborador === 'rotativo' ? Number(comissaoPorcentagem) : undefined,
+        comissao_porcentagem: role === 'colaborador' ? Number(tipoColaborador === 'rotativo' ? comissaoTatuagem : comissaoBarbearia) : undefined,
+        comissao_barbearia: role === 'colaborador' ? Number(comissaoBarbearia) : undefined,
+        comissao_tatuagem: role === 'colaborador' ? Number(comissaoTatuagem) : undefined,
+        comissao_piercing: role === 'colaborador' ? Number(comissaoPiercing) : undefined,
+        tipo_repasse: role === 'colaborador' ? tipoRepasse : undefined,
         status_disponibilidade: role === 'colaborador' && tipoColaborador === 'rotativo' ? statusDisponibilidade : undefined,
         notificacoes_ativas: role === 'colaborador' && tipoColaborador === 'rotativo' ? notificacoesAtivas : undefined,
         criado_em: editingUser?.criado_em || new Date().toISOString(),
@@ -395,9 +411,19 @@ export const CollaboratorManagement: React.FC = () => {
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-[var(--text-secondary)] font-oswald uppercase">Comissão:</span>
-                      <span className="font-bold text-[var(--accent)] font-oswald">{u.comissao_porcentagem || 50}%</span>
+                    <div className="pt-2 border-t border-[var(--border)] space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[var(--text-secondary)] font-oswald uppercase text-[10px]">Comissões:</span>
+                        <span className="text-[10px] font-mono text-[var(--accent)] font-semibold">
+                          Barb: {u.comissao_barbearia ?? 50}% | Tat: {u.comissao_tatuagem ?? 60}% | Pierc: {u.comissao_piercing ?? 55}%
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[var(--text-secondary)] font-oswald uppercase text-[10px]">Repasse:</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-oswald uppercase font-bold bg-[rgba(140,189,173,0.15)] text-[#517566] dark:text-[#8CBDAD]">
+                          {u.tipo_repasse === 'servico' ? 'Por Serviço' : u.tipo_repasse === 'quinzenal' ? 'Quinzenal' : u.tipo_repasse === 'mensal' ? 'Mensal' : 'Semanal'}
+                        </span>
+                      </div>
                     </div>
 
                     {u.telefone && (
@@ -605,42 +631,96 @@ export const CollaboratorManagement: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* CONFIGURAÇÃO DE COMISSÃO POR CATEGORIA & TIPO DE REPASSE (Para todos os colaboradores) */}
+                  <div className="p-3.5 rounded-xl bg-[var(--bg-surface-alt)] border border-[rgba(140,189,173,0.25)] space-y-3">
+                    <div className="flex items-center gap-1.5 text-xs font-oswald uppercase tracking-wider font-bold text-[#517566] dark:text-[#8CBDAD]">
+                      <Percent className="w-3.5 h-3.5" />
+                      Comissões por Categoria & Repasse
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2.5">
+                      <div>
+                        <label className="text-[11px] font-oswald uppercase tracking-wider text-[var(--text-secondary)] font-semibold block mb-1">
+                          % Barbearia
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={comissaoBarbearia}
+                            onChange={(e) => setComissaoBarbearia(Number(e.target.value))}
+                            className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-mono font-bold text-center"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-oswald uppercase tracking-wider text-[var(--text-secondary)] font-semibold block mb-1">
+                          % Tatuagem
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={comissaoTatuagem}
+                            onChange={(e) => setComissaoTatuagem(Number(e.target.value))}
+                            className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-mono font-bold text-center"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-oswald uppercase tracking-wider text-[var(--text-secondary)] font-semibold block mb-1">
+                          % Piercing
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={comissaoPiercing}
+                            onChange={(e) => setComissaoPiercing(Number(e.target.value))}
+                            className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-mono font-bold text-center"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-oswald uppercase tracking-wider text-[var(--text-secondary)] font-semibold block mb-1">
+                        Tipo de Repasse da Comissão
+                      </label>
+                      <select
+                        value={tipoRepasse}
+                        onChange={(e) => setTipoRepasse(e.target.value as TipoRepasse)}
+                        className="w-full text-xs p-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-oswald uppercase tracking-wider font-semibold"
+                      >
+                        <option value="servico">Por Serviço (Repasse Imediato)</option>
+                        <option value="semanal">Semanal (Toda Segunda-feira)</option>
+                        <option value="quinzenal">Quinzenal (Dias 15 e 30)</option>
+                        <option value="mensal">Mensal (5º dia útil)</option>
+                      </select>
+                    </div>
+                  </div>
+
                   {/* Campos Específicos para Tatuador Rotativo */}
                   {tipoColaborador === 'rotativo' && (
                     <div className="space-y-3 pt-2 border-t border-[var(--border)]">
-                      {/* WhatsApp e % Comissão */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">
-                            WhatsApp / Telefone *
-                          </label>
-                          <div className="relative">
-                            <Phone className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
-                            <input
-                              type="text"
-                              placeholder="(71) 99999-0000"
-                              value={telefone}
-                              onChange={(e) => setTelefone(e.target.value)}
-                              className="w-full text-xs pl-8 pr-2.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-inter"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">
-                            Comissão do Profissional (%) *
-                          </label>
-                          <div className="relative">
-                            <Percent className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={comissaoPorcentagem}
-                              onChange={(e) => setComissaoPorcentagem(Number(e.target.value))}
-                              className="w-full text-xs pl-8 pr-2.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-mono font-bold"
-                            />
-                          </div>
+                      <div>
+                        <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">
+                          WhatsApp / Telefone *
+                        </label>
+                        <div className="relative">
+                          <Phone className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            placeholder="(71) 99999-0000"
+                            value={telefone}
+                            onChange={(e) => setTelefone(e.target.value)}
+                            className="w-full text-xs pl-8 pr-2.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-inter"
+                          />
                         </div>
                       </div>
 

@@ -7,7 +7,7 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { MockDatabase } from './mockData';
 import { evolutionApi } from './evolutionApi';
-import { Usuario, Cliente, CategoriaServico, Servico, Agendamento, Produto, UsoProduto, MovimentacaoEstoque, Notificacao, StatusAgendamento, Conversa, Mensagem, SolicitacaoRotativo } from '../types';
+import { Usuario, Cliente, CategoriaServico, Servico, Agendamento, Produto, UsoProduto, MovimentacaoEstoque, Notificacao, StatusAgendamento, Conversa, Mensagem, SolicitacaoRotativo, Pagamento, CustoFixo, RepasseComissao, FormaPagamento } from '../types';
 
 export const api = {
   // ==========================================================================
@@ -861,5 +861,252 @@ export const api = {
       return;
     }
     MockDatabase.recusarJobRotativo(jobId, rotativoId);
+  },
+
+  // ==========================================================================
+  // MÓDULO FINANCEIRO: PAGAMENTOS, COMISSÕES, CAIXA E CUSTOS
+  // ==========================================================================
+
+  async getPagamentos(colaboradorId?: string): Promise<Pagamento[]> {
+    if (isSupabaseConfigured()) {
+      let query = supabase.from('pagamentos').select('*').order('criado_em', { ascending: false });
+      if (colaboradorId) {
+        query = query.eq('colaborador_id', colaboradorId);
+      }
+      const { data, error } = await query;
+      if (error) {
+        console.warn('[API Supabase] Erro ao buscar pagamentos, fallback para mock:', error);
+        return MockDatabase.getPagamentos(colaboradorId);
+      }
+      return data || [];
+    }
+    return MockDatabase.getPagamentos(colaboradorId);
+  },
+
+  async registrarPagamento(params: {
+    agendamento_id?: string;
+    cliente_id?: string;
+    cliente_nome: string;
+    colaborador_id: string;
+    colaborador_nome: string;
+    servico_id?: string;
+    servico_nome: string;
+    categoria_nome: string;
+    valor_bruto: number;
+    forma_pagamento: FormaPagamento;
+    parcelas?: number;
+    taxa_maquininha_pct: number;
+    observacoes?: string;
+  }): Promise<Pagamento> {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    // 1. Obter colaborador para descobrir a porcentagem de comissão específica da categoria
+    let colab: Usuario | undefined;
+    try {
+      const users = await this.getUsuarios();
+      colab = users.find(u => u.id === params.colaborador_id);
+    } catch {
+      colab = MockDatabase.getUsuarioById(params.colaborador_id);
+    }
+
+    // Identificar porcentagem conforme categoria (Barbearia / Tatuagem / Piercing)
+    let comissaoPct = 50;
+    const catLower = (params.categoria_nome || '').toLowerCase();
+    if (catLower.includes('tatu') || catLower.includes('tattoo')) {
+      comissaoPct = colab?.comissao_tatuagem !== undefined ? colab.comissao_tatuagem : (colab?.comissao_porcentagem || 60);
+    } else if (catLower.includes('barb') || catLower.includes('corte')) {
+      comissaoPct = colab?.comissao_barbearia !== undefined ? colab.comissao_barbearia : (colab?.comissao_porcentagem || 50);
+    } else if (catLower.includes('pierc')) {
+      comissaoPct = colab?.comissao_piercing !== undefined ? colab.comissao_piercing : (colab?.comissao_porcentagem || 55);
+    } else {
+      comissaoPct = colab?.comissao_porcentagem !== undefined ? colab.comissao_porcentagem : 50;
+    }
+
+    // 2. Cálculos Automáticos Exatos
+    const valorBruto = Number(params.valor_bruto);
+    const taxaPct = Number(params.taxa_maquininha_pct || 0);
+    const taxaValor = Number(((valorBruto * taxaPct) / 100).toFixed(2));
+    const valorLiquidoTransacao = Number((valorBruto - taxaValor).toFixed(2));
+    const comissaoValor = Number(((valorBruto * comissaoPct) / 100).toFixed(2));
+    const valorLiquidoEstudio = Number((valorLiquidoTransacao - comissaoValor).toFixed(2));
+
+    const novoPagamento: Pagamento = {
+      id: 'pag-' + Date.now(),
+      agendamento_id: params.agendamento_id,
+      cliente_id: params.cliente_id,
+      cliente_nome: params.cliente_nome,
+      colaborador_id: params.colaborador_id,
+      colaborador_nome: params.colaborador_nome,
+      servico_id: params.servico_id,
+      servico_nome: params.servico_nome,
+      categoria_nome: params.categoria_nome,
+      data: todayStr,
+      hora: timeStr,
+      valor_bruto: valorBruto,
+      forma_pagamento: params.forma_pagamento,
+      parcelas: params.parcelas || 1,
+      taxa_maquininha_pct: taxaPct,
+      taxa_maquininha_valor: taxaValor,
+      valor_liquido_transacao: valorLiquidoTransacao,
+      comissao_pct: comissaoPct,
+      comissao_valor: comissaoValor,
+      valor_liquido_estudio: valorLiquidoEstudio,
+      status_repasse: 'a_pagar',
+      observacoes: params.observacoes,
+      criado_em: now.toISOString(),
+    };
+
+    // Salvar no Banco
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('pagamentos').insert(novoPagamento);
+        if (params.agendamento_id) {
+          await supabase.from('agendamentos').update({ pago: true, pagamento_id: novoPagamento.id }).eq('id', params.agendamento_id);
+        }
+      } catch (e) {
+        console.warn('[API Supabase] Falha ao gravar pagamento no Supabase, gravando no Mock:', e);
+        MockDatabase.savePagamento(novoPagamento);
+      }
+    } else {
+      MockDatabase.savePagamento(novoPagamento);
+    }
+
+    // 3. Notificação IMEDIATA para o ADMIN MASTER
+    const labelForma = 
+      params.forma_pagamento === 'pix' ? 'PIX' :
+      params.forma_pagamento === 'dinheiro' ? 'Dinheiro' :
+      params.forma_pagamento === 'debito' ? 'Débito' :
+      `Crédito ${params.parcelas && params.parcelas > 1 ? `${params.parcelas}x` : 'à vista'}`;
+
+    try {
+      const allUsers = await this.getUsuarios();
+      const admins = allUsers.filter(u => u.role === 'master');
+      for (const admin of admins) {
+        await this.sendPushNotification(
+          admin.id,
+          '💰 Pagamento recebido',
+          `Cliente: ${params.cliente_nome}\nServiço: ${params.servico_nome} com ${params.colaborador_nome}\nValor bruto: R$ ${valorBruto.toFixed(2)}\nForma: ${labelForma}\nLíquido estúdio: R$ ${valorLiquidoEstudio.toFixed(2)}`,
+          '/admin/financeiro'
+        );
+      }
+    } catch (e) {
+      console.error('[API] Erro ao notificar admin:', e);
+    }
+
+    // 4. Notificação para o COLABORADOR no painel dele
+    try {
+      await this.sendPushNotification(
+        params.colaborador_id,
+        '💈 Serviço concluído',
+        `Cliente: ${params.cliente_nome} — ${params.servico_nome}\nValor do serviço: R$ ${valorBruto.toFixed(2)}\nSua comissão (${comissaoPct}%): R$ ${comissaoValor.toFixed(2)}`,
+        colab?.slug ? `/equipe/${colab.slug}/ganhos` : '/equipe'
+      );
+    } catch (e) {
+      console.error('[API] Erro ao notificar colaborador:', e);
+    }
+
+    window.dispatchEvent(new CustomEvent('hype_pagamentos_changed', { detail: novoPagamento }));
+    return novoPagamento;
+  },
+
+  async getCustosFixos(): Promise<CustoFixo[]> {
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.from('custos_fixos').select('*').order('dia_vencimento');
+      if (error) {
+        console.warn('[API Supabase] Erro ao buscar custos fixos, usando mock:', error);
+        return MockDatabase.getCustosFixos();
+      }
+      return data || [];
+    }
+    return MockDatabase.getCustosFixos();
+  },
+
+  async saveCustoFixo(custo: CustoFixo): Promise<CustoFixo> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.from('custos_fixos').upsert(custo).select().single();
+        if (error) throw error;
+        window.dispatchEvent(new CustomEvent('hype_custos_fixos_changed', { detail: data }));
+        return data;
+      } catch (e) {
+        console.warn('[API Supabase] Erro ao salvar custo fixo, fallback para mock:', e);
+        return MockDatabase.saveCustoFixo(custo);
+      }
+    }
+    return MockDatabase.saveCustoFixo(custo);
+  },
+
+  async deleteCustoFixo(id: string): Promise<void> {
+    if (isSupabaseConfigured()) {
+      await supabase.from('custos_fixos').delete().eq('id', id);
+    }
+    MockDatabase.deleteCustoFixo(id);
+  },
+
+  async toggleStatusCustoFixo(id: string, mesAno: string): Promise<CustoFixo> {
+    if (isSupabaseConfigured()) {
+      const { data: custo } = await supabase.from('custos_fixos').select('*').eq('id', id).single();
+      if (custo) {
+        const statusMes = custo.status_mes || {};
+        statusMes[mesAno] = statusMes[mesAno] === 'pago' ? 'pendente' : 'pago';
+        const { data: updated } = await supabase.from('custos_fixos').update({ status_mes: statusMes }).eq('id', id).select().single();
+        window.dispatchEvent(new CustomEvent('hype_custos_fixos_changed', { detail: updated }));
+        return updated || custo;
+      }
+    }
+    return MockDatabase.toggleStatusCustoFixo(id, mesAno);
+  },
+
+  async getRepassesComissao(): Promise<RepasseComissao[]> {
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.from('repasses_comissao').select('*').order('pago_em', { ascending: false });
+      if (error) {
+        console.warn('[API Supabase] Erro ao buscar repasses, usando mock:', error);
+        return MockDatabase.getRepassesComissao();
+      }
+      return data || [];
+    }
+    return MockDatabase.getRepassesComissao();
+  },
+
+  async marcarComissaoPaga(
+    colaboradorId: string,
+    pagamentosIds: string[],
+    valorTotal: number,
+    pagoPor?: string
+  ): Promise<RepasseComissao> {
+    if (isSupabaseConfigured()) {
+      try {
+        const now = new Date().toISOString();
+        const users = await this.getUsuarios();
+        const colab = users.find(u => u.id === colaboradorId);
+        const repasse: RepasseComissao = {
+          id: 'rep-' + Date.now(),
+          colaborador_id: colaboradorId,
+          colaborador_nome: colab?.nome || 'Colaborador',
+          valor_total: valorTotal,
+          pagamentos_ids: pagamentosIds,
+          pago_em: now,
+          pago_por: pagoPor || 'Admin Master',
+          observacoes: `Repasse de ${pagamentosIds.length} atendimento(s) quitado.`
+        };
+
+        await supabase.from('repasses_comissao').insert(repasse);
+        await supabase
+          .from('pagamentos')
+          .update({ status_repasse: 'pago', repasse_id: repasse.id })
+          .in('id', pagamentosIds);
+
+        window.dispatchEvent(new CustomEvent('hype_pagamentos_changed'));
+        window.dispatchEvent(new CustomEvent('hype_repasses_changed', { detail: repasse }));
+        return repasse;
+      } catch (e) {
+        console.warn('[API Supabase] Erro ao marcar repasse, fallback para mock:', e);
+        return MockDatabase.marcarComissaoPaga(colaboradorId, pagamentosIds, valorTotal, pagoPor);
+      }
+    }
+    return MockDatabase.marcarComissaoPaga(colaboradorId, pagamentosIds, valorTotal, pagoPor);
   },
 };

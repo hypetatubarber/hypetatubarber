@@ -51,6 +51,14 @@ export const App: React.FC = () => {
                     }
                   />
                   <Route
+                    path="/admin/financeiro"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <AdminDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
                     path="/admin/conversas"
                     element={
                       <RoleGuard allowedRoles={['master']}>
@@ -168,6 +176,14 @@ export const App: React.FC = () => {
                   />
                   <Route
                     path="/equipe/:slug/agenda"
+                    element={
+                      <RoleGuard allowedRoles={['colaborador']}>
+                        <CollaboratorDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/equipe/:slug/ganhos"
                     element={
                       <RoleGuard allowedRoles={['colaborador']}>
                         <CollaboratorDashboard />

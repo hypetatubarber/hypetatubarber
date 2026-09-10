@@ -14,6 +14,7 @@ import {
   Sparkles,
   MessageSquare,
   Smartphone,
+  DollarSign,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWhatsAppUnread } from '../../hooks/useWhatsAppUnread';
@@ -26,6 +27,7 @@ export const Sidebar: React.FC = () => {
     if (role === 'master') {
       return [
         { to: '/admin', label: 'Dashboard Geral', icon: LayoutDashboard, end: true },
+        { to: '/admin/financeiro', label: 'Financeiro', icon: DollarSign },
         { to: '/admin/conversas', label: 'Conversas', icon: MessageSquare, badge: whatsAppUnread },
         { to: '/admin/clientes', label: 'Clientes', icon: Contact },
         { to: '/admin/servicos', label: 'Serviços & Preços', icon: Tag },
@@ -50,6 +52,7 @@ export const Sidebar: React.FC = () => {
     return [
       { to: `/equipe/${slug}`, label: 'Hoje em Destaque', icon: CheckCircle2, end: true },
       { to: `/equipe/${slug}/agenda`, label: 'Minha Agenda', icon: Calendar },
+      { to: `/equipe/${slug}/ganhos`, label: 'Meus Ganhos', icon: DollarSign },
       { to: `/equipe/${slug}/materiais`, label: 'Registrar Material', icon: ClipboardList },
       { to: `/equipe/${slug}/notificacoes`, label: 'Notificações', icon: Bell },
     ];
