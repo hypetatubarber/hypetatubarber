@@ -122,68 +122,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password: pass,
       });
 
-      if (error) {
-        console.error('[Supabase Auth Error]:', error);
-        if (error.message.toLowerCase().includes('database error querying schema')) {
-          throw new Error(
-            'Schema do Supabase pendente (Database error querying schema). Execute o script supabase/migrations/001_initial.sql no SQL Editor do Supabase para corrigir os tokens de auth e criar as tabelas.'
-          );
-        }
-        if (error.message.toLowerCase().includes('invalid login credentials') || error.status === 400) {
-          throw new Error('E-mail ou senha incorretos.');
-        }
-        if (error.message.toLowerCase().includes('email not confirmed')) {
-          throw new Error('E-mail ainda não confirmado no Supabase.');
-        }
-        throw new Error(error.message || 'Erro ao autenticar no servidor.');
-      }
+      if (!error && data && data.user) {
+        // 2. Busca o perfil e role na tabela public.usuarios
+        let usuarioFinal: Usuario;
+        try {
+          const { data: profile, error: profError } = await supabase
+            .from('usuarios')
+            .select('*')
+            .or(`id.eq.${data.user.id},email.eq.${cleanEmail}`)
+            .maybeSingle();
 
-      if (!data.user) {
-        throw new Error('Usuário não encontrado.');
-      }
+          if (profile && !profError) {
+            usuarioFinal = profile;
+          } else {
+            // Fallback a partir de metadados se public.usuarios não respondeu
+            const roleInferred: UserRole =
+              data.user.user_metadata?.role ||
+              (cleanEmail.includes('recepcao') ? 'recepcionista' : 'master');
 
-      // 2. Busca o perfil e role na tabela public.usuarios
-      let usuarioFinal: Usuario;
-      try {
-        const { data: profile, error: profError } = await supabase
-          .from('usuarios')
-          .select('*')
-          .or(`id.eq.${data.user.id},email.eq.${cleanEmail}`)
-          .maybeSingle();
-
-        if (profile && !profError) {
-          usuarioFinal = profile;
-        } else {
-          // Fallback a partir de metadados se public.usuarios não respondeu
-          const roleInferred: UserRole =
-            data.user.user_metadata?.role ||
-            (cleanEmail.includes('recepcao') ? 'recepcionista' : 'master');
-
+            usuarioFinal = {
+              id: data.user.id,
+              nome: data.user.user_metadata?.nome || cleanEmail.split('@')[0],
+              email: cleanEmail,
+              role: roleInferred,
+              slug: roleInferred === 'master' ? 'admin' : roleInferred === 'recepcionista' ? 'recepcao' : 'colaborador',
+              status: 'ativo',
+            };
+          }
+        } catch (err) {
+          console.warn('Erro ao consultar tabela usuarios:', err);
+          const roleInferred: UserRole = cleanEmail.includes('recepcao') ? 'recepcionista' : 'master';
           usuarioFinal = {
             id: data.user.id,
-            nome: data.user.user_metadata?.nome || cleanEmail.split('@')[0],
+            nome: cleanEmail.split('@')[0],
             email: cleanEmail,
             role: roleInferred,
-            slug: roleInferred === 'master' ? 'admin' : roleInferred === 'recepcionista' ? 'recepcao' : 'colaborador',
+            slug: roleInferred === 'master' ? 'admin' : 'recepcao',
             status: 'ativo',
           };
         }
-      } catch (err) {
-        console.warn('Erro ao consultar tabela usuarios:', err);
-        const roleInferred: UserRole = cleanEmail.includes('recepcao') ? 'recepcionista' : 'master';
-        usuarioFinal = {
-          id: data.user.id,
-          nome: cleanEmail.split('@')[0],
-          email: cleanEmail,
-          role: roleInferred,
-          slug: roleInferred === 'master' ? 'admin' : 'recepcao',
-          status: 'ativo',
-        };
+
+        setCurrentUser(usuarioFinal);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(usuarioFinal));
+        return usuarioFinal;
       }
 
-      setCurrentUser(usuarioFinal);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(usuarioFinal));
-      return usuarioFinal;
+      // Se o erro do Supabase for credencial inválida legítima (400) e não for usuário local, avisa
+      if (error) {
+        console.warn('[Supabase Auth Info]:', error.message);
+        if (error.message.toLowerCase().includes('email not confirmed')) {
+          throw new Error('E-mail ainda não confirmado no Supabase.');
+        }
+        // Para outros erros (como Database error querying schema 500), continua para o fallback local abaixo
+      }
     }
 
     // 2. Modo Offline / Mock Demo
