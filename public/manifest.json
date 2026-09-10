@@ -1,0 +1,35 @@
+{
+  "name": "Hype Tatu — Gestão & Agenda",
+  "short_name": "Hype Tatu",
+  "description": "Sistema de Gestão, Agenda de Salão e Estoque - Hype Tatu",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#09090b",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Agenda Geral",
+      "short_name": "Agenda",
+      "description": "Acessar agenda do dia",
+      "url": "/recepcao",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Painel Master",
+      "short_name": "Admin",
+      "description": "Acessar painel administrativo",
+      "url": "/admin",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    }
+  ]
+}

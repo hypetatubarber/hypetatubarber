@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* ==========================================================================
+     LAYOUT FIXO HYPE TATU — DUAS ZONAS (Sidebar Escura + Conteúdo Claro)
+     ========================================================================== */
+  
+  /* Zona Direita (Conteúdo Claro, Leitura Fácil) */
+  --bg-primary:     #F0F2F4;   /* fundo geral da área de conteúdo */
+  --bg-surface:     #FFFFFF;   /* cards, modais, tabelas, header */
+  --bg-surface-alt: #F5F7F9;   /* cabeçalho de tabelas, linhas alternadas, hover */
+  
+  /* Zona Esquerda (Sidebar Escura Oficial) */
+  --bg-sidebar:     #1A1F25;   /* sidebar com fundo escuro */
+  --border-sidebar: rgba(140, 189, 173, 0.15); /* divisor vertical da sidebar */
+  --sidebar-text:   #AAB6BE;
+  --sidebar-text-muted: #72808A;
+
+  /* Bordas do Conteúdo */
+  --border:         #DDE1E7;   /* todas as bordas e divisores dos cards */
+
+  /* Tipografia da Zona de Conteúdo */
+  --text-primary:   #0B0E11;   /* títulos, valores principais */
+  --text-secondary: #4A5568;   /* subtítulos, labels */
+  --text-muted:     #8A96A3;   /* timestamps, labels de métricas, placeholders */
+
+  /* Acento Oficial Hype Tatu */
+  --accent:         #8CBDAD;   /* botões primários, badges ativos, ícones de destaque */
+  --accent-dark:    #517566;   /* hover, detalhes secundários */
+  --accent-bg:      rgba(140, 189, 173, 0.12); /* fundo de badges e itens ativos */
+
+  /* Cores de Status */
+  --status-agendado-bg: rgba(140, 189, 173, 0.15);
+  --status-agendado-text: #517566;
+  --status-em-atendimento-bg: rgba(255, 193, 7, 0.18);
+  --status-em-atendimento-text: #B45309;
+  --status-concluido-bg: rgba(81, 117, 102, 0.20);
+  --status-concluido-text: #2D6A4F;
+  --status-cancelado-bg: rgba(235, 87, 87, 0.15);
+  --status-cancelado-text: #C53030;
+
+  /* Sombras e Tabelas */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --table-row-alt: #F8F9FB;
+  --table-row-hover: #EEF1F5;
+  --calendar-other-month: #C5CDD4;
+  --btn-outline-text: #517566;
+
+  /* Scrollbar */
+  --scrollbar-track: #F0F2F4;
+  --scrollbar-thumb: #8CBDAD;
+}
+
+/* Transição suave entre temas em todos os elementos */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@layer base {
+  html {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* Fonte 1 — TÍTULOS DE IMPACTO: Anton */
+  h1, h2, .font-display, .font-anton {
+    font-family: 'Anton', sans-serif !important;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Fonte 2 — CABEÇALHOS, LABELS E ETIQUETAS: Oswald */
+  h3, h4, h5, .font-oswald, .font-heading {
+    font-family: 'Oswald', sans-serif !important;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Fonte 3 — TEXTO CORRIDO E DADOS: Inter */
+  p, span, label, input, textarea, select, td, .font-inter {
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Labels de formulários */
+  label {
+    font-family: 'Oswald', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  /* Botões globais */
+  button {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Inputs padrão */
+  input, select, textarea {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 0.5rem;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: var(--text-muted);
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(140, 189, 173, 0.15) !important;
+    outline: none !important;
+  }
+}
+
+/* Utilitários de Botão Reutilizáveis */
+.btn-brand-primary {
+  background-color: var(--accent);
+  color: #0B0E11;
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-brand-primary:hover {
+  background-color: var(--accent-dark);
+  color: #FFFFFF;
+}
+
+.btn-brand-outline {
+  background-color: transparent;
+  color: var(--btn-outline-text);
+  border: 1px solid var(--accent);
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-brand-outline:hover {
+  background-color: var(--accent-bg);
+}
+
+/* Suporte a entalhe de tela em celulares (iPhone Notch / Android) */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+}
+
+/* Scrollbar com suporte aos temas */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
