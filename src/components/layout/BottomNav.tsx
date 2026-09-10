@@ -53,7 +53,7 @@ export const BottomNav: React.FC = () => {
   const links = getMobileLinks();
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFFFF]/95 backdrop-blur-md border-t border-[#DDE1E7] px-2 py-1.5 shadow-lg safe-area-bottom">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#12171C]/95 backdrop-blur-xl border-t border-[rgba(140,189,173,0.18)] px-2 py-1.5 shadow-2xl safe-area-bottom">
       <div className="flex items-center justify-around">
         {links.map((link) => {
           const Icon = link.icon;
@@ -65,8 +65,8 @@ export const BottomNav: React.FC = () => {
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all relative font-oswald uppercase tracking-wider ${
                   isActive
-                    ? 'text-[#517566] font-bold'
-                    : 'text-[#8A96A3] hover:text-[#0B0E11]'
+                    ? 'text-[#8CBDAD] font-bold'
+                    : 'text-[#72808A] hover:text-[#F2F5F7]'
                 }`
               }
             >

@@ -2,11 +2,11 @@
   "name": "Hype Tatu — Gestão & Agenda",
   "short_name": "Hype Tatu",
   "description": "Sistema de Gestão, Agenda de Salão e Estoque - Hype Tatu",
-  "start_url": "/",
+  "start_url": "/login?source=pwa",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#09090b",
+  "background_color": "#0B0E11",
+  "theme_color": "#0B0E11",
   "scope": "/",
   "icons": [
     {

@@ -86,48 +86,46 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-[#FFFFFF] border-b border-[#DDE1E7] px-4 sm:px-6 h-16 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+    <header className="sticky top-0 z-30 bg-[#12171C] border-b border-[rgba(140,189,173,0.18)] px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between shadow-lg">
       {/* Lado Esquerdo: Marca & Papel */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            alt="Hype Tatu"
-            className="h-8 md:h-9 w-auto object-contain max-w-[150px] md:hidden"
-          />
-          <div>
-            <span className="text-xs text-[#8A96A3] font-inter uppercase tracking-wider block leading-tight">
-              PAINEL DE GESTÃO
-            </span>
-          </div>
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <img
+          src="/logo.png"
+          alt="Hype Tatu"
+          className="h-7 sm:h-9 w-auto object-contain shrink-0"
+        />
+        <div className="hidden sm:block">
+          <span className="text-[10px] sm:text-xs text-[#8CBDAD] font-oswald uppercase tracking-widest block leading-tight font-semibold">
+            PAINEL DE GESTÃO
+          </span>
         </div>
 
-        <div className="hidden sm:block ml-2">
+        <div className="hidden md:block ml-1">
           {getRoleBadge()}
         </div>
       </div>
 
       {/* Lado Direito: Ações, Notificações & Perfil */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 
-        {/* Botão "+ NOVO AGENDAMENTO" */}
+        {/* Botão "+ NOVO AGENDAMENTO" - Compacto no mobile */}
         <button
           onClick={handleNewAppointmentClick}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-oswald uppercase tracking-wider font-bold bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-[#FFFFFF] transition-all shadow-sm"
+          className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-oswald uppercase tracking-wider font-bold bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-[#FFFFFF] transition-all shadow-md active:scale-95"
           title="Criar novo agendamento no sistema"
         >
-          <Plus className="w-3.5 h-3.5" />
-          <span>+ Novo Agendamento</span>
+          <Plus className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">+ Novo Agendamento</span>
         </button>
 
-        {/* Botão "INSTALAR APP" */}
+        {/* Botão "INSTALAR APP" (Apenas desktop/tablet) */}
         <button
           onClick={handleInstallPWA}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-oswald uppercase tracking-wider font-semibold bg-[#1A1F25] hover:bg-[#252C34] text-[#F2F5F7] transition-all"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-oswald uppercase tracking-wider font-semibold bg-[#1A2229] hover:bg-[#252F38] text-[#F2F5F7] border border-[rgba(140,189,173,0.2)] transition-all"
           title="Instalar App no Celular ou Desktop"
         >
-          <Smartphone className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Instalar App</span>
+          <Smartphone className="w-3.5 h-3.5 text-[#8CBDAD]" />
+          <span>Instalar App</span>
         </button>
 
         {/* Notificações Push Popover */}

@@ -4,6 +4,17 @@ import landingHtml from './landing.html?raw';
 
 export const LandingPage: React.FC = () => {
   useEffect(() => {
+    // Se o usuário abriu como aplicativo instalado na tela inicial (PWA), redireciona direto para a gestão/login
+    const isStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      (window.navigator as any).standalone === true || 
+      window.location.search.includes('source=pwa');
+
+    if (isStandalone) {
+      window.location.replace('/login');
+      return;
+    }
+
     // 0. Força tema escuro total e absoluto na landing page do cliente
     document.documentElement.classList.add('hype-landing-page');
     document.body.classList.add('hype-landing-page');

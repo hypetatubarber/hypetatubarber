@@ -107,30 +107,30 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Topo do Painel Master */}
-      <div className="bg-[#FFFFFF] text-[#0B0E11] p-6 rounded-2xl border border-[#DDE1E7] shadow-[0_1px_3px_rgba(0,0,0,0.06)] relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#12171C] text-[#F2F5F7] p-4 sm:p-6 rounded-2xl border border-[rgba(140,189,173,0.20)] shadow-xl relative overflow-hidden backdrop-blur-md">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[rgba(140,189,173,0.12)] border border-[rgba(140,189,173,0.25)] text-[#517566] text-xs font-oswald uppercase tracking-wider font-semibold mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[rgba(140,189,173,0.12)] border border-[rgba(140,189,173,0.25)] text-[#8CBDAD] text-[10px] sm:text-xs font-oswald uppercase tracking-wider font-semibold mb-1.5 sm:mb-2">
+              <Sparkles className="w-3 h-3 text-[#8CBDAD]" />
               Painel Master de Controle
             </div>
-            <h1 className="font-display uppercase text-2xl sm:text-3xl tracking-wide text-[#0B0E11]">
+            <h1 className="font-display uppercase text-xl sm:text-2xl lg:text-3xl tracking-wide text-[#F2F5F7]">
               HYPE TATU — GESTÃO GERAL
             </h1>
-            <p className="text-xs text-[#4A5568] mt-1 max-w-lg font-inter">
+            <p className="text-[11px] sm:text-xs text-[#AAB6BE] mt-0.5 sm:mt-1 max-w-lg font-inter leading-relaxed">
               Acompanhe a agenda do salão, faturamento diário, estoque e consumo de materiais da equipe.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-wrap sm:flex-nowrap mt-2 sm:mt-0 w-full sm:w-auto">
             <button
               onClick={() => setIsRotativoModalOpen(true)}
-              className="bg-[rgba(81,117,102,0.18)] hover:bg-[rgba(81,117,102,0.30)] text-[#517566] dark:text-[#6FCF97] border border-[rgba(81,117,102,0.40)] font-oswald uppercase font-bold text-xs py-2.5 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm"
+              className="flex-1 sm:flex-none justify-center bg-[rgba(81,117,102,0.25)] hover:bg-[rgba(81,117,102,0.40)] text-[#6FCF97] border border-[rgba(81,117,102,0.50)] font-oswald uppercase font-bold text-xs py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
             >
-              <Flame className="w-4 h-4 text-[#27AE60]" />
-              Chamar Rotativo
+              <Flame className="w-3.5 h-3.5 text-[#27AE60]" />
+              <span>Chamar Rotativo</span>
             </button>
 
             <button
@@ -139,61 +139,61 @@ export const AdminDashboard: React.FC = () => {
                 setInitialSlotData({});
                 setIsAppModalOpen(true);
               }}
-              className="bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-[#FFFFFF] font-oswald uppercase font-bold text-xs py-2.5 px-5 rounded-lg flex items-center gap-2 transition-all shadow-sm"
+              className="flex-1 sm:flex-none justify-center bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-[#FFFFFF] font-oswald uppercase font-bold text-xs py-2 sm:py-2.5 px-3.5 sm:px-5 rounded-xl flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
             >
-              <Plus className="w-4 h-4" />
-              + Novo Agendamento
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Novo Agendamento</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Métricas Principais (visíveis em Overview e Agenda) */}
+      {/* Métricas Principais (visíveis em Overview e Agenda) - Grid 2x2 no Mobile */}
       {(activeTab === 'overview' || activeTab === 'agenda') && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-[#FFFFFF] p-5 rounded-xl border border-[#DDE1E7] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[rgba(140,189,173,0.10)] flex items-center justify-center text-[#8CBDAD] shrink-0">
-              <Calendar className="w-6 h-6 text-[#8CBDAD]" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          <div className="bg-[#12171C] p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-[rgba(140,189,173,0.18)] shadow-lg flex items-center gap-2.5 sm:gap-4">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-[rgba(140,189,173,0.12)] border border-[rgba(140,189,173,0.20)] flex items-center justify-center text-[#8CBDAD] shrink-0">
+              <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-[#8CBDAD]" />
             </div>
-            <div>
-              <div className="text-[11px] text-[#8A96A3] font-oswald uppercase tracking-wider font-semibold">Agendamentos Hoje</div>
-              <div className="font-display text-[28px] sm:text-[32px] text-[#0B0E11] mt-0.5 leading-tight">
+            <div className="min-w-0">
+              <div className="text-[9px] sm:text-[11px] text-[#AAB6BE] font-oswald uppercase tracking-wider font-semibold truncate">Agendamentos Hoje</div>
+              <div className="font-display text-lg sm:text-[28px] lg:text-[32px] text-[#F2F5F7] mt-0.5 leading-tight">
                 {todayAgendamentos.length}
               </div>
             </div>
           </div>
 
-          <div className="bg-[#FFFFFF] p-5 rounded-xl border border-[#DDE1E7] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[rgba(140,189,173,0.10)] flex items-center justify-center text-[#8CBDAD] shrink-0">
-              <DollarSign className="w-6 h-6 text-[#8CBDAD]" />
+          <div className="bg-[#12171C] p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-[rgba(140,189,173,0.18)] shadow-lg flex items-center gap-2.5 sm:gap-4">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-[rgba(140,189,173,0.12)] border border-[rgba(140,189,173,0.20)] flex items-center justify-center text-[#8CBDAD] shrink-0">
+              <DollarSign className="w-4 h-4 sm:w-6 sm:h-6 text-[#8CBDAD]" />
             </div>
-            <div>
-              <div className="text-[11px] text-[#8A96A3] font-oswald uppercase tracking-wider font-semibold">Previsão de Hoje</div>
-              <div className="font-display text-[28px] sm:text-[32px] text-[#0B0E11] mt-0.5 leading-tight">
+            <div className="min-w-0">
+              <div className="text-[9px] sm:text-[11px] text-[#AAB6BE] font-oswald uppercase tracking-wider font-semibold truncate">Previsão de Hoje</div>
+              <div className="font-display text-base sm:text-2xl lg:text-[28px] text-[#8CBDAD] mt-0.5 leading-tight truncate">
                 R$ {faturamentoPrevistoHoje.toFixed(2)}
               </div>
             </div>
           </div>
 
-          <div className="bg-[#FFFFFF] p-5 rounded-xl border border-[#DDE1E7] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[rgba(140,189,173,0.10)] flex items-center justify-center text-[#8CBDAD] shrink-0">
-              <Users className="w-6 h-6 text-[#8CBDAD]" />
+          <div className="bg-[#12171C] p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-[rgba(140,189,173,0.18)] shadow-lg flex items-center gap-2.5 sm:gap-4">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-[rgba(140,189,173,0.12)] border border-[rgba(140,189,173,0.20)] flex items-center justify-center text-[#8CBDAD] shrink-0">
+              <Users className="w-4 h-4 sm:w-6 sm:h-6 text-[#8CBDAD]" />
             </div>
-            <div>
-              <div className="text-[11px] text-[#8A96A3] font-oswald uppercase tracking-wider font-semibold">Profissionais Ativos</div>
-              <div className="font-display text-[28px] sm:text-[32px] text-[#0B0E11] mt-0.5 leading-tight">
+            <div className="min-w-0">
+              <div className="text-[9px] sm:text-[11px] text-[#AAB6BE] font-oswald uppercase tracking-wider font-semibold truncate">Profissionais Ativos</div>
+              <div className="font-display text-lg sm:text-[28px] lg:text-[32px] text-[#F2F5F7] mt-0.5 leading-tight">
                 {colaboradores.length}
               </div>
             </div>
           </div>
 
-          <div className="bg-[#FFFFFF] p-5 rounded-xl border border-[#DDE1E7] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[rgba(140,189,173,0.10)] flex items-center justify-center text-[#8CBDAD] shrink-0">
-              <AlertTriangle className="w-6 h-6 text-[#8CBDAD]" />
+          <div className="bg-[#12171C] p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-[rgba(140,189,173,0.18)] shadow-lg flex items-center gap-2.5 sm:gap-4">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-[rgba(140,189,173,0.12)] border border-[rgba(140,189,173,0.20)] flex items-center justify-center text-[#8CBDAD] shrink-0">
+              <AlertTriangle className="w-4 h-4 sm:w-6 sm:h-6 text-[#8CBDAD]" />
             </div>
-            <div>
-              <div className="text-[11px] text-[#8A96A3] font-oswald uppercase tracking-wider font-semibold">Total Geral Agendado</div>
-              <div className="font-display text-[28px] sm:text-[32px] text-[#0B0E11] mt-0.5 leading-tight">
+            <div className="min-w-0">
+              <div className="text-[9px] sm:text-[11px] text-[#AAB6BE] font-oswald uppercase tracking-wider font-semibold truncate">Total Agendado</div>
+              <div className="font-display text-lg sm:text-[28px] lg:text-[32px] text-[#F2F5F7] mt-0.5 leading-tight">
                 {agendamentos.length}
               </div>
             </div>
