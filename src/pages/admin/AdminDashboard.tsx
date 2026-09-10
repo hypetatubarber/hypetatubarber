@@ -56,6 +56,20 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     loadData();
+
+    const handleSync = () => {
+      loadData();
+    };
+
+    window.addEventListener('hype_agendamentos_changed', handleSync);
+    window.addEventListener('hype_usuarios_changed', handleSync);
+    window.addEventListener('hype_servicos_changed', handleSync);
+
+    return () => {
+      window.removeEventListener('hype_agendamentos_changed', handleSync);
+      window.removeEventListener('hype_usuarios_changed', handleSync);
+      window.removeEventListener('hype_servicos_changed', handleSync);
+    };
   }, []);
 
   // Cálculos para os cards de métricas

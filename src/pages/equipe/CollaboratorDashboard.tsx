@@ -64,6 +64,18 @@ export const CollaboratorDashboard: React.FC = () => {
 
   useEffect(() => {
     loadData();
+
+    const handleSync = () => {
+      loadData();
+    };
+
+    window.addEventListener('hype_agendamentos_changed', handleSync);
+    window.addEventListener('hype_uso_produtos_changed', handleSync);
+
+    return () => {
+      window.removeEventListener('hype_agendamentos_changed', handleSync);
+      window.removeEventListener('hype_uso_produtos_changed', handleSync);
+    };
   }, [slug]);
 
   const handleOpenMaterialModal = (agId?: string) => {

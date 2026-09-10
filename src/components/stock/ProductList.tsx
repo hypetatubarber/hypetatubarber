@@ -51,6 +51,20 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
 
   useEffect(() => {
     loadData();
+
+    const handleSync = () => {
+      loadData();
+    };
+
+    window.addEventListener('hype_produtos_changed', handleSync);
+    window.addEventListener('hype_movimentacoes_estoque_changed', handleSync);
+    window.addEventListener('hype_uso_produtos_changed', handleSync);
+
+    return () => {
+      window.removeEventListener('hype_produtos_changed', handleSync);
+      window.removeEventListener('hype_movimentacoes_estoque_changed', handleSync);
+      window.removeEventListener('hype_uso_produtos_changed', handleSync);
+    };
   }, []);
 
   const handleOpenProductModal = (prod?: Produto) => {

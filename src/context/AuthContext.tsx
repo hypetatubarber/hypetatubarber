@@ -124,6 +124,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('[Supabase Auth Error]:', error);
+        if (error.message.toLowerCase().includes('database error querying schema')) {
+          throw new Error(
+            'Schema do Supabase pendente (Database error querying schema). Execute o script supabase/migrations/001_initial.sql no SQL Editor do Supabase para corrigir os tokens de auth e criar as tabelas.'
+          );
+        }
         if (error.message.toLowerCase().includes('invalid login credentials') || error.status === 400) {
           throw new Error('E-mail ou senha incorretos.');
         }

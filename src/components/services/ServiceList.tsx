@@ -32,6 +32,18 @@ export const ServiceList: React.FC = () => {
 
   useEffect(() => {
     loadData();
+
+    const handleSync = () => {
+      loadData();
+    };
+
+    window.addEventListener('hype_servicos_changed', handleSync);
+    window.addEventListener('hype_categorias_servico_changed', handleSync);
+
+    return () => {
+      window.removeEventListener('hype_servicos_changed', handleSync);
+      window.removeEventListener('hype_categorias_servico_changed', handleSync);
+    };
   }, []);
 
   const handleOpenModal = (srv?: Servico) => {

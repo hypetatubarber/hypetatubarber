@@ -111,9 +111,19 @@ export const LoginPage: React.FC = () => {
 
           {/* Alerta de Erro */}
           {errorMessage && (
-            <div className="mb-6 p-3.5 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-200 text-xs flex items-center gap-2.5">
-              <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
-              <span>{errorMessage}</span>
+            <div className="mb-6 p-4 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-200 text-xs">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                <span className="font-semibold">{errorMessage}</span>
+              </div>
+              {errorMessage.includes('001_initial.sql') && (
+                <div className="mt-3 pt-2.5 border-t border-rose-800/50 text-[11px] text-rose-300 space-y-1">
+                  <p className="font-medium text-rose-200">Como resolver em 1 minuto:</p>
+                  <p>1. Acesse o <a href="https://supabase.com/dashboard/project/tdafyozvrhkbshmhhfik/sql/new" target="_blank" rel="noopener noreferrer" className="underline text-emerald-400 font-bold hover:text-emerald-300">SQL Editor no painel Supabase</a></p>
+                  <p>2. Copie e cole o conteúdo do arquivo <code className="bg-black/40 px-1 py-0.5 rounded text-white font-mono">supabase/migrations/001_initial.sql</code></p>
+                  <p>3. Clique no botão <strong>RUN</strong> e tente o login novamente.</p>
+                </div>
+              )}
             </div>
           )}
 

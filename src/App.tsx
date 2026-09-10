@@ -15,10 +15,14 @@ import { ConversasPage } from './pages/conversas/ConversasPage';
 import { WhatsAppConfigPage } from './pages/admin/WhatsAppConfigPage';
 import { NotFound } from './pages/NotFound';
 import { evolutionApi } from './services/evolutionApi';
+import { initRealtimeSync } from './lib/realtimeSync';
+import { initAutoMigrationCheck } from './lib/autoMigration';
 
 export const App: React.FC = () => {
-  // Inicialização do Webhook da Evolution API
+  // Inicialização do Webhook da Evolution API, Realtime Sync e Verificação de Schema
   React.useEffect(() => {
+    initRealtimeSync();
+    initAutoMigrationCheck();
     evolutionApi.autoRegisterWebhook().catch(() => {});
   }, []);
 

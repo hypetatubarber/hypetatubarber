@@ -41,9 +41,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   useEffect(() => {
     fetchNotificacoes();
-    // Atualiza periodicamente para simular novas mensagens push
-    const interval = setInterval(fetchNotificacoes, 12000);
-    return () => clearInterval(interval);
+
+    const handleSync = () => {
+      fetchNotificacoes();
+    };
+
+    window.addEventListener('hype_notificacoes_changed', handleSync);
+    const interval = setInterval(fetchNotificacoes, 15000);
+
+    return () => {
+      window.removeEventListener('hype_notificacoes_changed', handleSync);
+      clearInterval(interval);
+    };
   }, [fetchNotificacoes]);
 
   const markAsRead = async (id: string) => {

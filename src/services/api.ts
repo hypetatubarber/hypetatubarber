@@ -212,17 +212,21 @@ export const api = {
 
   async registrarEntradaEstoque(produtoId: string, quantidade: number, motivo: string, usuarioId: string): Promise<void> {
     if (isSupabaseConfigured()) {
-      // No Supabase, atualiza produto e insere movimentacao
-      const { data: prod } = await supabase.from('produtos').select('estoque_atual').eq('id', produtoId).single();
+      const { data: prod, error: prodErr } = await supabase.from('produtos').select('estoque_atual').eq('id', produtoId).single();
+      if (prodErr) throw prodErr;
       if (prod) {
-        await supabase.from('produtos').update({ estoque_atual: prod.estoque_atual + quantidade }).eq('id', produtoId);
-        await supabase.from('movimentacoes_estoque').insert({
+        const novoEstoque = Number(prod.estoque_atual) + Number(quantidade);
+        const { error: updErr } = await supabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', produtoId);
+        if (updErr) throw updErr;
+
+        const { error: movErr } = await supabase.from('movimentacoes_estoque').insert({
           produto_id: produtoId,
           tipo: 'entrada',
           quantidade,
           motivo,
           usuario_id: usuarioId,
         });
+        if (movErr) throw movErr;
       }
       return;
     }
@@ -231,8 +235,31 @@ export const api = {
 
   async registrarUsoProduto(uso: UsoProduto): Promise<UsoProduto> {
     if (isSupabaseConfigured()) {
+      // 1. Registra o uso
       const { data, error } = await supabase.from('uso_produtos').insert(uso).select().single();
-      if (error) throw error;
+      if (error) {
+        console.error('[API Supabase] Erro ao registrar uso do produto:', error);
+        throw error;
+      }
+
+      // 2. Deduz o estoque do produto e registra movimentação de saída
+      try {
+        const { data: prod } = await supabase.from('produtos').select('estoque_atual').eq('id', uso.produto_id).single();
+        if (prod) {
+          const novoEstoque = Math.max(0, Number(prod.estoque_atual) - Number(uso.quantidade));
+          await supabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', uso.produto_id);
+          await supabase.from('movimentacoes_estoque').insert({
+            produto_id: uso.produto_id,
+            tipo: 'saida',
+            quantidade: uso.quantidade,
+            motivo: `Uso em atendimento (${uso.data})`,
+            usuario_id: uso.colaborador_id,
+          });
+        }
+      } catch (stockErr) {
+        console.warn('[API Supabase] Erro ao debitar estoque após uso:', stockErr);
+      }
+
       return data;
     }
     return MockDatabase.registrarUsoProduto(uso);
@@ -244,7 +271,10 @@ export const api = {
         .from('uso_produtos')
         .select('*, produto:produtos(*), colaborador:usuarios(*)')
         .order('data', { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error('[API Supabase] Erro ao buscar uso de produtos:', error);
+        throw error;
+      }
       return data || [];
     }
     return MockDatabase.getUsoProdutos();
@@ -256,7 +286,10 @@ export const api = {
         .from('movimentacoes_estoque')
         .select('*, produto:produtos(*), usuario:usuarios(*)')
         .order('data', { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error('[API Supabase] Erro ao buscar movimentações de estoque:', error);
+        throw error;
+      }
       return data || [];
     }
     return MockDatabase.getMovimentacoes();
@@ -270,7 +303,10 @@ export const api = {
       let query = supabase.from('notificacoes').select('*').order('criado_em', { ascending: false });
       if (usuarioId) query = query.eq('usuario_id', usuarioId);
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('[API Supabase] Erro ao buscar notificações:', error);
+        throw error;
+      }
       return data || [];
     }
     return MockDatabase.getNotificacoes(usuarioId);
@@ -278,26 +314,44 @@ export const api = {
 
   async marcarNotificacaoLida(id: string): Promise<void> {
     if (isSupabaseConfigured()) {
-      await supabase.from('notificacoes').update({ lida: true }).eq('id', id);
+      const { error } = await supabase.from('notificacoes').update({ lida: true }).eq('id', id);
+      if (error) throw error;
       return;
     }
     MockDatabase.marcarNotificacaoLida(id);
   },
 
-  // Disparo de notificação Web Push (usa Service Worker nativo e/ou Edge Function)
+  // Disparo de notificação Web Push e persistência no banco
   async sendPushNotification(usuarioId: string, titulo: string, mensagem: string, url?: string): Promise<void> {
     console.log('[API Push] Disparando notificação:', { usuarioId, titulo, mensagem });
+    const notifId = 'notif-' + Date.now();
+    const linkUrl = url || '/equipe';
 
-    // Salva na tabela local/mock
-    MockDatabase.addNotificacao({
-      id: 'notif-' + Date.now(),
-      usuario_id: usuarioId,
-      titulo,
-      mensagem,
-      lida: false,
-      link: url || '/equipe',
-      criado_em: new Date().toISOString()
-    });
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('notificacoes').insert({
+          id: notifId,
+          usuario_id: usuarioId,
+          titulo,
+          mensagem,
+          link: linkUrl,
+          lida: false,
+          criado_em: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.error('[API Supabase] Erro ao salvar notificação:', e);
+      }
+    } else {
+      MockDatabase.addNotificacao({
+        id: notifId,
+        usuario_id: usuarioId,
+        titulo,
+        mensagem,
+        lida: false,
+        link: linkUrl,
+        criado_em: new Date().toISOString(),
+      });
+    }
 
     // Se suportar notificação no navegador e houver permissão concedida, mostra alerta nativo
     if ('Notification' in window && Notification.permission === 'granted') {
@@ -308,7 +362,7 @@ export const api = {
             body: mensagem,
             icon: '/favicon.svg',
             badge: '/favicon.svg',
-            data: { url: url || '/equipe' }
+            data: { url: linkUrl },
           });
         }
       } catch (e) {
@@ -327,8 +381,8 @@ export const api = {
         .select('*, cliente:clientes(*)')
         .order('ultima_mensagem_em', { ascending: false });
       if (error) {
-        console.warn('Erro ao buscar conversas no Supabase, usando local:', error);
-        return MockDatabase.getConversas();
+        console.error('[API Supabase] Erro ao buscar conversas:', error);
+        throw error;
       }
       return data || [];
     }
@@ -342,8 +396,11 @@ export const api = {
         .select('*, cliente:clientes(*)')
         .eq('id', id)
         .maybeSingle();
-      if (error || !data) return MockDatabase.getConversaById(id) || null;
-      return data;
+      if (error) {
+        console.error('[API Supabase] Erro ao buscar conversa por id:', error);
+        throw error;
+      }
+      return data || null;
     }
     return MockDatabase.getConversaById(id) || null;
   },
@@ -356,8 +413,8 @@ export const api = {
         .eq('conversa_id', conversaId)
         .order('criado_em', { ascending: true });
       if (error) {
-        console.warn('Erro ao buscar mensagens no Supabase, usando local:', error);
-        return MockDatabase.getMensagens(conversaId);
+        console.error('[API Supabase] Erro ao buscar mensagens:', error);
+        throw error;
       }
       return data || [];
     }
@@ -367,8 +424,7 @@ export const api = {
   async enviarMensagem(conversaId: string, numero: string, conteudo: string): Promise<Mensagem> {
     const msgId = 'msg-' + Date.now();
     const now = new Date().toISOString();
-    
-    // Objeto da nova mensagem enviada
+
     const novaMensagem: Mensagem = {
       id: msgId,
       conversa_id: conversaId,
@@ -379,22 +435,26 @@ export const api = {
       criado_em: now,
     };
 
-    // 1. Salva localmente ou no Supabase imediatamente (Otimista)
     if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('mensagens').insert(novaMensagem);
-        await supabase.from('conversas').update({
+      const { error: insErr } = await supabase.from('mensagens').insert(novaMensagem);
+      if (insErr) {
+        console.error('[API Supabase] Erro ao persistir mensagem enviada:', insErr);
+        throw insErr;
+      }
+
+      await supabase
+        .from('conversas')
+        .update({
           ultima_mensagem: conteudo,
           ultima_mensagem_em: now,
           atualizado_em: now,
-        }).eq('id', conversaId);
-      } catch (e) {
-        console.warn('Erro ao persistir mensagem no Supabase:', e);
-      }
+        })
+        .eq('id', conversaId);
+    } else {
+      MockDatabase.saveMensagem(novaMensagem);
     }
-    MockDatabase.saveMensagem(novaMensagem);
 
-    // 2. Dispara via Evolution API no WhatsApp
+    // Dispara via Evolution API no WhatsApp
     try {
       await evolutionApi.sendWhatsAppMessage(numero, conteudo);
     } catch (err) {
@@ -406,25 +466,23 @@ export const api = {
 
   async marcarConversaLida(conversaId: string): Promise<void> {
     if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('conversas').update({ nao_lidas: 0 }).eq('id', conversaId);
-      } catch (e) {
-        console.warn('Erro ao marcar conversa como lida no Supabase:', e);
+      const { error } = await supabase.from('conversas').update({ nao_lidas: 0 }).eq('id', conversaId);
+      if (error) {
+        console.error('[API Supabase] Erro ao marcar conversa como lida:', error);
       }
+      return;
     }
     MockDatabase.marcarConversaLida(conversaId);
   },
 
   async getTotalNaoLidas(): Promise<number> {
     if (isSupabaseConfigured()) {
-      try {
-        const { data, error } = await supabase.from('conversas').select('nao_lidas');
-        if (!error && data) {
-          return data.reduce((acc, c) => acc + (c.nao_lidas || 0), 0);
-        }
-      } catch {
-        // fallback
+      const { data, error } = await supabase.from('conversas').select('nao_lidas');
+      if (error) {
+        console.error('[API Supabase] Erro ao buscar contagem de não lidas:', error);
+        throw error;
       }
+      return (data || []).reduce((acc, c) => acc + (c.nao_lidas || 0), 0);
     }
     return MockDatabase.getTotalNaoLidas();
   },
@@ -437,11 +495,107 @@ export const api = {
     timestamp?: string
   ): Promise<{ conversa: Conversa; mensagem: Mensagem }> {
     const now = timestamp || new Date().toISOString();
+    const finalMsgId = messageId || 'msg-' + Date.now();
 
-    // Atualiza MockDatabase
+    if (isSupabaseConfigured()) {
+      const cleanNum = numero.replace(/\D/g, '');
+      const { data: convData, error: convErr } = await supabase
+        .from('conversas')
+        .select('*')
+        .or(`numero.eq.${numero},numero.eq.${cleanNum}`)
+        .maybeSingle();
+
+      if (convErr) {
+        console.error('[API Supabase] Erro ao buscar conversa existente:', convErr);
+        throw convErr;
+      }
+
+      let convId = convData?.id;
+      let finalConversa: Conversa;
+
+      if (!convData) {
+        const { data: cliente } = await supabase
+          .from('clientes')
+          .select('id, nome, avatar_url')
+          .ilike('telefone', `%${cleanNum.slice(-8)}%`)
+          .maybeSingle();
+
+        const novaConversa = {
+          id: 'conv-' + (cleanNum || Date.now()),
+          numero,
+          nome: nomeRemetente || cliente?.nome || `WhatsApp ${numero.slice(-4)}`,
+          cliente_id: cliente?.id,
+          avatar_url: cliente?.avatar_url,
+          ultima_mensagem: conteudo,
+          ultima_mensagem_em: now,
+          atualizado_em: now,
+          nao_lidas: 1,
+          status: 'ativa',
+        };
+
+        const { data: convCreated, error: createErr } = await supabase
+          .from('conversas')
+          .insert(novaConversa)
+          .select()
+          .single();
+
+        if (createErr) {
+          console.error('[API Supabase] Erro ao criar nova conversa:', createErr);
+          throw createErr;
+        }
+
+        convId = convCreated.id;
+        finalConversa = convCreated;
+      } else {
+        const { data: convUpdated, error: updateErr } = await supabase
+          .from('conversas')
+          .update({
+            ultima_mensagem: conteudo,
+            ultima_mensagem_em: now,
+            atualizado_em: now,
+            nao_lidas: (convData.nao_lidas || 0) + 1,
+          })
+          .eq('id', convData.id)
+          .select()
+          .single();
+
+        if (updateErr) {
+          console.error('[API Supabase] Erro ao atualizar conversa existente:', updateErr);
+          throw updateErr;
+        }
+
+        convId = convUpdated.id;
+        finalConversa = convUpdated;
+      }
+
+      const novaMensagem: Mensagem = {
+        id: finalMsgId,
+        conversa_id: convId,
+        numero,
+        conteudo,
+        direcao: 'recebida',
+        status: 'entregue',
+        criado_em: now,
+      };
+
+      const { data: msgCreated, error: msgErr } = await supabase
+        .from('mensagens')
+        .insert(novaMensagem)
+        .select()
+        .single();
+
+      if (msgErr) {
+        console.error('[API Supabase] Erro ao persistir mensagem recebida:', msgErr);
+        throw msgErr;
+      }
+
+      return { conversa: finalConversa, mensagem: msgCreated };
+    }
+
+    // Modo Mock Offline
     const conversaMock = MockDatabase.salvarOuAtualizarConversa(numero, nomeRemetente, conteudo);
     const msgMock = MockDatabase.saveMensagem({
-      id: messageId || 'msg-' + Date.now(),
+      id: finalMsgId,
       conversa_id: conversaMock.id,
       numero,
       conteudo,
@@ -449,70 +603,6 @@ export const api = {
       status: 'entregue',
       criado_em: now,
     });
-
-    if (isSupabaseConfigured()) {
-      try {
-        // Busca ou cria no Supabase
-        const cleanNum = numero.replace(/\D/g, '');
-        const { data: convData } = await supabase
-          .from('conversas')
-          .select('*')
-          .or(`numero.eq.${numero},numero.eq.${cleanNum}`)
-          .maybeSingle();
-
-        let convId = convData?.id;
-
-        if (!convData) {
-          const { data: cliente } = await supabase
-            .from('clientes')
-            .select('id, nome, avatar_url')
-            .ilike('telefone', `%${cleanNum.slice(-8)}%`)
-            .maybeSingle();
-
-          const { data: novaConv } = await supabase
-            .from('conversas')
-            .insert({
-              numero,
-              nome: nomeRemetente || cliente?.nome || `WhatsApp ${numero.slice(-4)}`,
-              cliente_id: cliente?.id,
-              avatar_url: cliente?.avatar_url,
-              ultima_mensagem: conteudo,
-              ultima_mensagem_em: now,
-              nao_lidas: 1,
-              status: 'ativa',
-            })
-            .select()
-            .single();
-
-          if (novaConv) convId = novaConv.id;
-        } else {
-          await supabase
-            .from('conversas')
-            .update({
-              ultima_mensagem: conteudo,
-              ultima_mensagem_em: now,
-              nao_lidas: (convData.nao_lidas || 0) + 1,
-              atualizado_em: now,
-            })
-            .eq('id', convData.id);
-        }
-
-        if (convId) {
-          await supabase.from('mensagens').insert({
-            id: messageId || 'msg-' + Date.now(),
-            conversa_id: convId,
-            numero,
-            conteudo,
-            direcao: 'recebida',
-            status: 'entregue',
-            criado_em: now,
-          });
-        }
-      } catch (err) {
-        console.warn('Erro ao salvar mensagem recebida no Supabase:', err);
-      }
-    }
-
     return { conversa: conversaMock, mensagem: msgMock };
   },
 };

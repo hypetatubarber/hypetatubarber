@@ -55,6 +55,18 @@ export const ClientList: React.FC = () => {
 
   useEffect(() => {
     loadData();
+
+    const handleSync = () => {
+      loadData();
+    };
+
+    window.addEventListener('hype_clientes_changed', handleSync);
+    window.addEventListener('hype_agendamentos_changed', handleSync);
+
+    return () => {
+      window.removeEventListener('hype_clientes_changed', handleSync);
+      window.removeEventListener('hype_agendamentos_changed', handleSync);
+    };
   }, []);
 
   const handleOpenModal = (cli?: Cliente) => {
