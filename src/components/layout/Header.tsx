@@ -1,19 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, LogOut, CheckCheck, Smartphone, Sparkles, User, ShieldCheck, Scissors, Plus } from 'lucide-react';
+import { Bell, LogOut, CheckCheck, Plus, Smartphone } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
 export const Header: React.FC = () => {
-  const { currentUser, role, logout, loginAsDemo } = useAuth();
+  const { currentUser, role, logout } = useAuth();
   const { notificacoes, unreadCount, markAsRead, markAllAsRead, requestPushPermission, pushPermission } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const navigate = useNavigate();
 
   const notifRef = useRef<HTMLDivElement>(null);
-  const roleRef = useRef<HTMLDivElement>(null);
 
   // Captura evento de instalação PWA
   useEffect(() => {
@@ -30,9 +28,6 @@ export const Header: React.FC = () => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setShowNotifications(false);
-      }
-      if (roleRef.current && !roleRef.current.contains(e.target as Node)) {
-        setShowRoleSwitcher(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -112,71 +107,8 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Lado Direito: Ações, Tema, Notificações & Perfil */}
+      {/* Lado Direito: Ações, Notificações & Perfil */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Botão de Troca Rápida de Perfil (Demo Tester) */}
-        <div className="relative" ref={roleRef}>
-          <button
-            onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-oswald uppercase tracking-wider font-semibold bg-[var(--bg-surface-alt)] hover:bg-[var(--border)] text-[var(--text-primary)] transition-colors border border-[var(--border)]"
-            title="Alternar entre perfis para teste"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" />
-            <span className="hidden md:inline">Trocar Perfil</span>
-          </button>
-
-          {showRoleSwitcher && (
-            <div className="absolute right-0 mt-2 w-64 bg-[var(--bg-surface)] rounded-xl shadow-2xl border border-[var(--border)] py-2 z-50 animate-in fade-in slide-in-from-top-2">
-              <div className="px-3 py-1.5 text-[10px] font-oswald font-semibold text-[var(--accent)] uppercase tracking-widest border-b border-[var(--border)]">
-                Acessar como:
-              </div>
-              <button
-                onClick={() => { loginAsDemo('master'); navigate('/admin'); setShowRoleSwitcher(false); }}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-surface-alt)] flex items-center gap-2 text-[var(--text-primary)]"
-              >
-                <ShieldCheck className="w-4 h-4 text-[var(--accent)]" />
-                <div>
-                  <div className="font-medium text-xs text-[var(--text-primary)]">Carlos Henrique (Master)</div>
-                  <div className="text-[10px] text-[var(--text-muted)]">Acesso total /admin</div>
-                </div>
-              </button>
-              <button
-                onClick={() => { loginAsDemo('recepcionista'); navigate('/recepcao'); setShowRoleSwitcher(false); }}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--bg-surface-alt)] flex items-center gap-2 text-[var(--text-primary)]"
-              >
-                <User className="w-4 h-4 text-[var(--accent)]" />
-                <div>
-                  <div className="font-medium text-xs text-[var(--text-primary)]">Juliana Souza (Recepção)</div>
-                  <div className="text-[10px] text-[var(--text-muted)]">Agenda geral /recepcao</div>
-                </div>
-              </button>
-              <div className="px-3 py-1 text-[10px] font-oswald font-semibold text-[var(--accent)] uppercase tracking-widest border-t border-[var(--border)] mt-1">
-                Colaboradores:
-              </div>
-              <button
-                onClick={() => { loginAsDemo('colaborador', 'danilinho-barber'); navigate('/equipe/danilinho-barber'); setShowRoleSwitcher(false); }}
-                className="w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--bg-surface-alt)] flex items-center gap-2 text-[var(--text-primary)]"
-              >
-                <Scissors className="w-3.5 h-3.5 text-[var(--accent)]" />
-                <span className="text-xs">Danilinho Barber</span>
-              </button>
-              <button
-                onClick={() => { loginAsDemo('colaborador', 'lucas-ink'); navigate('/equipe/lucas-ink'); setShowRoleSwitcher(false); }}
-                className="w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--bg-surface-alt)] flex items-center gap-2 text-[var(--text-primary)]"
-              >
-                <Scissors className="w-3.5 h-3.5 text-[var(--accent)]" />
-                <span className="text-xs">Lucas Ink (Tatuador)</span>
-              </button>
-              <button
-                onClick={() => { loginAsDemo('colaborador', 'maya-ferreira'); navigate('/equipe/maya-ferreira'); setShowRoleSwitcher(false); }}
-                className="w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--bg-surface-alt)] flex items-center gap-2 text-[var(--text-primary)]"
-              >
-                <Scissors className="w-3.5 h-3.5 text-[var(--accent)]" />
-                <span className="text-xs">Maya Ferreira (Tatuadora)</span>
-              </button>
-            </div>
-          )}
-        </div>
 
         {/* Botão "+ NOVO AGENDAMENTO" */}
         <button

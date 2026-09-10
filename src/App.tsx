@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { AppLayout } from './components/layout/AppLayout';
+import { RoleGuard } from './components/auth/RoleGuard';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ReceptionDashboard } from './pages/recepcao/ReceptionDashboard';
 import { CollaboratorDashboard } from './pages/equipe/CollaboratorDashboard';
@@ -20,16 +21,18 @@ const RootRedirect: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] text-[var(--accent-dark)] dark:text-[var(--accent)] font-bold text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-[#0B0E11] text-[#8CBDAD] font-bold text-sm">
         Carregando Hype Tatu...
       </div>
     );
   }
 
-  if (!currentUser) {
-    return <Navigate to="/admin" replace />;
+  // Não autenticado -> tela de login
+  if (!currentUser || !role) {
+    return <Navigate to="/login" replace />;
   }
 
+  // Redirecionamento estrito por role
   if (role === 'master') {
     return <Navigate to="/admin" replace />;
   }
@@ -39,10 +42,11 @@ const RootRedirect: React.FC = () => {
   }
 
   if (role === 'colaborador') {
-    return <Navigate to={`/equipe/${currentUser.slug || 'danilinho-barber'}`} replace />;
+    const slug = currentUser.slug || 'danilinho-barber';
+    return <Navigate to={`/equipe/${slug}`} replace />;
   }
 
-  return <Navigate to="/admin" replace />;
+  return <Navigate to="/login" replace />;
 };
 
 export const App: React.FC = () => {
@@ -57,47 +61,173 @@ export const App: React.FC = () => {
         <ToastProvider>
           <AuthProvider>
             <NotificationProvider>
-            <Routes>
-              {/* Raiz Inteligente */}
-              <Route path="/" element={<RootRedirect />} />
+              <Routes>
+                {/* 1. Raiz Inteligente */}
+                <Route path="/" element={<RootRedirect />} />
 
-              {/* Login */}
-              <Route path="/login" element={<LoginPage />} />
+                {/* 2. Tela de Login Única */}
+                <Route path="/login" element={<LoginPage />} />
 
-              {/* Layout Autenticado com Sidebar & Header */}
-              <Route element={<AppLayout />}>
-                {/* 1. Rotas Master (/admin) */}
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/conversas" element={<ConversasPage />} />
-                <Route path="/admin/configuracoes/whatsapp" element={<WhatsAppConfigPage />} />
-                <Route path="/admin/whatsapp" element={<WhatsAppConfigPage />} />
-                <Route path="/admin/agenda" element={<AdminDashboard />} />
-                <Route path="/admin/servicos" element={<AdminDashboard />} />
-                <Route path="/admin/equipe" element={<AdminDashboard />} />
-                <Route path="/admin/estoque" element={<AdminDashboard />} />
-                <Route path="/admin/clientes" element={<AdminDashboard />} />
-                <Route path="/admin/relatorios" element={<AdminDashboard />} />
+                {/* 3. Área Autenticada com Layout */}
+                <Route element={<AppLayout />}>
+                  {/* ROTAS MASTER (/admin) — Acesso exclusivo de role 'master' */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <AdminDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/conversas"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <ConversasPage />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/configuracoes/whatsapp"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <WhatsAppConfigPage />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/whatsapp"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <WhatsAppConfigPage />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/agenda"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <AdminDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/servicos"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <AdminDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/equipe"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <AdminDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/estoque"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <AdminDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/clientes"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <AdminDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/relatorios"
+                    element={
+                      <RoleGuard allowedRoles={['master']}>
+                        <AdminDashboard />
+                      </RoleGuard>
+                    }
+                  />
 
-                {/* 2. Rotas Recepção (/recepcao) */}
-                <Route path="/recepcao" element={<ReceptionDashboard />} />
-                <Route path="/recepcao/conversas" element={<ConversasPage />} />
-                <Route path="/recepcao/clientes" element={<ReceptionDashboard />} />
-                <Route path="/recepcao/estoque" element={<ReceptionDashboard />} />
+                  {/* ROTAS RECEPÇÃO (/recepcao) — Acesso exclusivo de role 'recepcionista' */}
+                  <Route
+                    path="/recepcao"
+                    element={
+                      <RoleGuard allowedRoles={['recepcionista']}>
+                        <ReceptionDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/recepcao/conversas"
+                    element={
+                      <RoleGuard allowedRoles={['recepcionista']}>
+                        <ConversasPage />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/recepcao/clientes"
+                    element={
+                      <RoleGuard allowedRoles={['recepcionista']}>
+                        <ReceptionDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/recepcao/estoque"
+                    element={
+                      <RoleGuard allowedRoles={['recepcionista']}>
+                        <ReceptionDashboard />
+                      </RoleGuard>
+                    }
+                  />
 
-                {/* 3. Rotas Colaborador (/equipe/:slug) */}
-                <Route path="/equipe/:slug" element={<CollaboratorDashboard />} />
-                <Route path="/equipe/:slug/agenda" element={<CollaboratorDashboard />} />
-                <Route path="/equipe/:slug/materiais" element={<CollaboratorDashboard />} />
-                <Route path="/equipe/:slug/notificacoes" element={<CollaboratorDashboard />} />
+                  {/* ROTAS COLABORADOR (/equipe/:slug) — Acesso exclusivo de role 'colaborador' */}
+                  <Route
+                    path="/equipe/:slug"
+                    element={
+                      <RoleGuard allowedRoles={['colaborador']}>
+                        <CollaboratorDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/equipe/:slug/agenda"
+                    element={
+                      <RoleGuard allowedRoles={['colaborador']}>
+                        <CollaboratorDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/equipe/:slug/materiais"
+                    element={
+                      <RoleGuard allowedRoles={['colaborador']}>
+                        <CollaboratorDashboard />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/equipe/:slug/notificacoes"
+                    element={
+                      <RoleGuard allowedRoles={['colaborador']}>
+                        <CollaboratorDashboard />
+                      </RoleGuard>
+                    }
+                  />
 
-                {/* 404 Interno */}
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </NotificationProvider>
-        </AuthProvider>
-      </ToastProvider>
-    </ThemeProvider>
+                  {/* 404 Interno */}
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </NotificationProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 };
