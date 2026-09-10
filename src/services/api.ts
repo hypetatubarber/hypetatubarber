@@ -45,6 +45,50 @@ export const api = {
     return MockDatabase.saveUsuario(usuario);
   },
 
+  async changeUserPassword(targetUserId: string, newPassword: string): Promise<void> {
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('A nova senha deve ter no mínimo 6 caracteres.');
+    }
+
+    if (isSupabaseConfigured()) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData?.session;
+      const currentUser = session?.user;
+
+      // Se for o próprio usuário logado alterando sua própria senha:
+      if (currentUser && currentUser.id === targetUserId) {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        return;
+      }
+
+      // Se for o Master alterando a senha de outro usuário:
+      const token = session?.access_token;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ targetUserId, newPassword }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Erro ao alterar senha do usuário (${res.status}).`);
+      }
+
+      return;
+    }
+
+    // Modo offline/demo
+    console.log(`[Demo Mode] Senha do usuário ${targetUserId} alterada.`);
+  },
+
   // ==========================================================================
   // CLIENTES (CRM)
   // ==========================================================================

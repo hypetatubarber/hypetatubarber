@@ -6,39 +6,50 @@
 /* --------------------------------------------------------------------------
    1. Variáveis Globais (Design Tokens)
    -------------------------------------------------------------------------- */
-:root {
+:root,
+html.hype-landing-page,
+body.hype-landing-page,
+.hype-landing-container {
   /* ==========================================================================
      TEMA OFICIAL HYPE TATU (Fixo e permanente: Dark Luxury #0B0E11)
      ========================================================================== */
-  --color-bg-primary:        #0B0E11;   /* fundo geral de todas as páginas */
-  --color-bg-card:           #12171C;   /* cards, modais, painéis */
-  --color-bg-card-alt:       #151B20;   /* cards alternados, hover de itens */
-  --color-bg-section:        #181F26;   /* seções alternativas, sidebars */
+  --color-bg-primary:        #0B0E11 !important;   /* fundo geral de todas as páginas */
+  --color-bg-card:           #12171C !important;   /* cards, modais, painéis */
+  --color-bg-card-alt:       #151B20 !important;   /* cards alternados, hover de itens */
+  --color-bg-section:        #181F26 !important;   /* seções alternativas, sidebars */
 
   /* Bordas */
-  --color-border:            rgba(140, 189, 173, 0.18); /* todas as bordas e divisores */
+  --color-border:            rgba(140, 189, 173, 0.18) !important;
+  --border:                  rgba(140, 189, 173, 0.18) !important;
+  --border-subtle:           rgba(140, 189, 173, 0.18) !important;
+  --border-gold:             rgba(140, 189, 173, 0.35) !important;
 
   /* Destaque (verde-sálvia) */
-  --color-accent:            #8CBDAD;   /* títulos em destaque, ícones, %, badges, CTAs */
-  --color-accent-dark:       #517566;   /* hover de botões, barras, detalhes secundários */
-  --color-accent-bg:         rgba(140, 189, 173, 0.15);
+  --color-accent:            #8CBDAD !important;
+  --color-accent-dark:       #517566 !important;
+  --color-accent-bg:         rgba(140, 189, 173, 0.15) !important;
+  --accent:                  #8CBDAD !important;
 
   /* Texto */
-  --color-text-primary:      #F2F5F7;   /* texto principal em todo o sistema */
-  --color-text-secondary:    #AAB6BE;   /* subtítulos, labels, texto corrido secundário */
-  --color-text-muted:        #72808A;   /* placeholders, datas antigas, ícones inativos */
-
-  /* Preto e Branco */
-  --color-black:             #000000;
-  --color-white:             #FFFFFF;
+  --color-text-primary:      #F2F5F7 !important;
+  --color-text-secondary:    #AAB6BE !important;
+  --color-text-muted:        #72808A !important;
+  --text-primary:            #F2F5F7 !important;
+  --text-secondary:          #AAB6BE !important;
+  --text-muted:              #AAB6BE !important;
+  --text-dim:                #72808A !important;
+  --text-white:              #F2F5F7 !important;
+  --text-gold:               #8CBDAD !important;
 
   /* Mapeamento para os elementos da Landing Page */
-  --bg-dark:                 #0B0E11;
-  --bg-surface:              #12171C;
-  --bg-card:                 #12171C;
-  --bg-card-hover:           #151B20;
-  --bg-glass:                rgba(18, 23, 28, 0.85);
-  --bg-glass-strong:         rgba(11, 14, 17, 0.96);
+  --bg-primary:              #0B0E11 !important;
+  --bg-dark:                 #0B0E11 !important;
+  --bg-surface:              #12171C !important;
+  --bg-surface-alt:          #151B20 !important;
+  --bg-card:                 #12171C !important;
+  --bg-card-hover:           #151B20 !important;
+  --bg-glass:                rgba(18, 23, 28, 0.85) !important;
+  --bg-glass-strong:         rgba(11, 14, 17, 0.96) !important;
 
   /* Acento Verde-Sálvia Hype */
   --gold-primary:            #8CBDAD;
@@ -97,20 +108,22 @@
   box-sizing: border-box;
 }
 
+html.hype-landing-page,
 html {
   scroll-behavior: smooth;
   scroll-padding-top: var(--header-height);
   font-size: 16px;
-  background-color: var(--bg-dark);
-  color: var(--text-white);
+  background-color: #0B0E11 !important;
+  color: #F2F5F7 !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+body.hype-landing-page,
 body {
   font-family: var(--font-body);
-  background-color: var(--bg-dark);
-  color: var(--text-white);
+  background-color: #0B0E11 !important;
+  color: #F2F5F7 !important;
   line-height: 1.6;
   overflow-x: hidden;
   position: relative;
@@ -118,6 +131,15 @@ body {
     radial-gradient(circle at 15% 20%, rgba(140, 189, 173, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 85% 65%, rgba(81, 117, 102, 0.04) 0%, transparent 40%);
   background-attachment: fixed;
+}
+
+.hype-landing-container {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+  background-color: #0B0E11 !important;
+  color: #F2F5F7 !important;
 }
 
 a {
@@ -546,7 +568,7 @@ button {
   height: 100%;
   z-index: -1;
   background: 
-    linear-gradient(to bottom, rgba(9, 9, 11, 0.7) 0%, rgba(9, 9, 11, 0.85) 60%, var(--bg-dark) 100%),
+    linear-gradient(to bottom, rgba(9, 9, 11, 0.7) 0%, rgba(9, 9, 11, 0.85) 60%, #0B0E11 100%),
     radial-gradient(circle at center, transparent 0%, rgba(9, 9, 11, 0.8) 100%);
 }
 
@@ -752,7 +774,7 @@ button {
 }
 
 .trust-card {
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1.75rem 1.5rem;
@@ -779,7 +801,7 @@ button {
 .trust-card:hover {
   transform: translateY(-5px);
   border-color: var(--border-gold);
-  background: var(--bg-card);
+  background: #12171C;
 }
 
 .trust-card:hover::before {
@@ -886,7 +908,7 @@ button {
 
 /* Card de Tatuagem */
 .tattoo-card {
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -924,7 +946,7 @@ button {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, var(--bg-surface) 0%, transparent 60%);
+  background: linear-gradient(to top, #12171C 0%, transparent 60%);
 }
 
 .style-badge {
@@ -992,7 +1014,7 @@ button {
 
 /* Card de Barbearia */
 .barber-card {
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -1011,7 +1033,7 @@ button {
 
 .barber-card.featured {
   border-color: var(--gold-primary);
-  background: linear-gradient(180deg, rgba(140, 189, 173, 0.08) 0%, var(--bg-surface) 40%);
+  background: linear-gradient(180deg, rgba(140, 189, 173, 0.08) 0%, #12171C 40%);
 }
 
 .featured-ribbon {
@@ -1052,7 +1074,7 @@ button {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, var(--bg-surface) 0%, transparent 65%);
+  background: linear-gradient(to top, #12171C 0%, transparent 65%);
 }
 
 .barber-card-body {
@@ -1117,7 +1139,7 @@ button {
    -------------------------------------------------------------------------- */
 .about-section {
   padding: 6rem 0;
-  background: var(--bg-surface);
+  background: #12171C;
   position: relative;
   overflow: hidden;
   border-top: 1px solid var(--border-subtle);
@@ -1171,7 +1193,7 @@ button {
 }
 
 .highlight-box {
-  background: var(--bg-card);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 1.25rem;
@@ -1282,7 +1304,7 @@ button {
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-muted);
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   transition: all var(--transition-fast);
 }
@@ -1311,7 +1333,7 @@ button {
   overflow: hidden;
   height: 320px;
   cursor: pointer;
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
 }
 
@@ -1482,7 +1504,7 @@ button {
    -------------------------------------------------------------------------- */
 .team-section {
   padding: 6rem 0;
-  background: var(--bg-surface);
+  background-color: #0B0E11 !important;
   position: relative;
   overflow: hidden;
   border-top: 1px solid var(--border-subtle);
@@ -1497,7 +1519,7 @@ button {
   height: 100%;
   background: radial-gradient(
     ellipse 50% 40% at 50% 60%,
-    rgba(44, 122, 140, 0.12) 0%,
+    rgba(44, 122, 140, 0.18) 0%,
     transparent 60%
   );
   pointer-events: none;
@@ -1516,7 +1538,7 @@ button {
 }
 
 .team-card {
-  background: var(--bg-card);
+  background: #12171C !important;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -1555,7 +1577,7 @@ button {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, var(--bg-card) 0%, transparent 60%);
+  background: linear-gradient(to top, #12171C 0%, transparent 60%);
 }
 
 .team-role-tag {
@@ -1664,7 +1686,7 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
   padding: 0.5rem 1.25rem;
@@ -1707,7 +1729,7 @@ button {
 .testimonial-card {
   min-width: calc(50% - 0.75rem);
   scroll-snap-align: start;
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 2.25rem;
@@ -1809,7 +1831,7 @@ button {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -1834,7 +1856,7 @@ button {
    -------------------------------------------------------------------------- */
 .contact-section {
   padding: 6rem 0;
-  background: var(--bg-surface);
+  background: #12171C;
   position: relative;
   border-top: 1px solid var(--border-subtle);
 }
@@ -1862,7 +1884,7 @@ button {
   display: flex;
   align-items: flex-start;
   gap: 1.25rem;
-  background: var(--bg-card);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1.5rem;
@@ -1930,7 +1952,7 @@ button {
 
 /* Formulário de Contato */
 .contact-form-container {
-  background: var(--bg-card);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 3rem;
@@ -2202,7 +2224,7 @@ button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--bg-surface);
+  background: #12171C;
   border: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -2473,3 +2495,92 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   GARANTIA DE TEMA ESCURO PERMANENTE NA LANDING PAGE
+   Evita qualquer vazamento de temas externos (Tailwind/index.css)
+   ========================================================================== */
+.hype-landing-container,
+.hype-landing-container section,
+.hype-landing-container div,
+.hype-landing-container footer,
+.hype-landing-container header {
+  color-scheme: dark;
+}
+
+.hype-landing-container .hero-section {
+  background-color: #0B0E11 !important;
+}
+
+.hype-landing-container .trust-section {
+  background-color: transparent !important;
+}
+
+.hype-landing-container .services-section {
+  background-color: #0B0E11 !important;
+}
+
+.hype-landing-container .about-section {
+  background-color: #12171C !important;
+}
+
+.hype-landing-container .gallery-section {
+  background-color: #0B0E11 !important;
+}
+
+.hype-landing-container .team-section {
+  background-color: #0B0E11 !important;
+}
+
+.hype-landing-container .testimonials-section {
+  background-color: #12171C !important;
+}
+
+.hype-landing-container .faq-section {
+  background-color: #12171C !important;
+}
+
+.hype-landing-container .contact-section {
+  background-color: #0B0E11 !important;
+}
+
+.hype-landing-container .site-footer {
+  background-color: #07090B !important;
+}
+
+.hype-landing-container .site-header {
+  background: rgba(11, 14, 17, 0.92) !important;
+}
+
+.hype-landing-container .site-header.scrolled {
+  background: rgba(11, 14, 17, 0.98) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+.hype-landing-container .team-card,
+.hype-landing-container .tattoo-card,
+.hype-landing-container .barber-card,
+.hype-landing-container .trust-card,
+.hype-landing-container .testimonial-card,
+.hype-landing-container .faq-item {
+  background-color: #12171C !important;
+  border-color: rgba(140, 189, 173, 0.18) !important;
+  color: #F2F5F7 !important;
+}
+
+.hype-landing-container .section-title {
+  color: #F2F5F7 !important;
+}
+
+.hype-landing-container .section-desc {
+  color: #AAB6BE !important;
+}
+
+.hype-landing-container .team-name {
+  color: #F2F5F7 !important;
+}
+
+.hype-landing-container .team-specialty {
+  color: #8CBDAD !important;
+}
+

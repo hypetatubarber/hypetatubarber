@@ -64,9 +64,93 @@ function whatsappWebhookPlugin(): Plugin {
   };
 }
 
+function adminApiPlugin(): Plugin {
+  return {
+    name: 'admin-api-plugin',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method === 'POST' && req.url === '/api/admin/change-password') {
+          let bodyStr = '';
+          req.on('data', chunk => { bodyStr += chunk; });
+          req.on('end', async () => {
+            try {
+              const { targetUserId, newPassword } = JSON.parse(bodyStr || '{}');
+
+              if (!targetUserId || !newPassword || newPassword.length < 6) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ error: 'Dados inválidos. A senha deve ter no mínimo 6 caracteres.' }));
+              }
+
+              const authHeader = (req.headers['authorization'] as string) || '';
+              const token = authHeader.replace(/^Bearer\s+/i, '');
+
+              const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://tdafyozvrhkbshmhhfik.supabase.co';
+              const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+              if (!serviceRoleKey) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ error: 'Chave de serviço SUPABASE_SERVICE_ROLE_KEY não configurada no servidor.' }));
+              }
+
+              const { createClient } = await import('@supabase/supabase-js');
+              const adminSb = createClient(supabaseUrl, serviceRoleKey, {
+                auth: { autoRefreshToken: false, persistSession: false },
+              });
+
+              if (token) {
+                const { data: userData, error: userErr } = await adminSb.auth.getUser(token);
+                if (userErr || !userData?.user) {
+                  res.statusCode = 401;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: 'Sessão inválida ou expirada. Faça login novamente.' }));
+                }
+
+                const { data: usuarioPerfil } = await adminSb
+                  .from('usuarios')
+                  .select('role, status')
+                  .eq('id', userData.user.id)
+                  .single();
+
+                if (usuarioPerfil?.role !== 'master' || usuarioPerfil?.status !== 'ativo') {
+                  res.statusCode = 403;
+                  res.setHeader('Content-Type', 'application/json');
+                  return res.end(JSON.stringify({ error: 'Apenas usuários Master ativos têm permissão para trocar senhas.' }));
+                }
+              }
+
+              const updateRes = await adminSb.auth.admin.updateUserById(targetUserId, {
+                password: newPassword,
+              });
+
+              if (updateRes.error) {
+                res.statusCode = 400;
+                res.setHeader('Content-Type', 'application/json');
+                return res.end(JSON.stringify({ error: updateRes.error.message }));
+              }
+
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              return res.end(JSON.stringify({ success: true, message: 'Senha atualizada com sucesso!' }));
+            } catch (err: any) {
+              console.error('[Admin API Error]:', err);
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              return res.end(JSON.stringify({ error: err.message || 'Erro interno.' }));
+            }
+          });
+        } else {
+          next();
+        }
+      });
+    }
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), whatsappWebhookPlugin()],
+  plugins: [react(), whatsappWebhookPlugin(), adminApiPlugin()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

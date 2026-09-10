@@ -4,6 +4,14 @@ import landingHtml from './landing.html?raw';
 
 export const LandingPage: React.FC = () => {
   useEffect(() => {
+    // 0. Força tema escuro total e absoluto na landing page do cliente
+    document.documentElement.classList.add('hype-landing-page');
+    document.body.classList.add('hype-landing-page');
+    const prevHtmlBg = document.documentElement.style.backgroundColor;
+    const prevBodyBg = document.body.style.backgroundColor;
+    document.documentElement.style.backgroundColor = '#0B0E11';
+    document.body.style.backgroundColor = '#0B0E11';
+
     // 1. Header scroll effect
     const header = document.getElementById('header');
     const handleScroll = () => {
@@ -94,6 +102,10 @@ export const LandingPage: React.FC = () => {
     filterBtns.forEach((b) => b.addEventListener('click', handleFilterClick));
 
     return () => {
+      document.documentElement.classList.remove('hype-landing-page');
+      document.body.classList.remove('hype-landing-page');
+      document.documentElement.style.backgroundColor = prevHtmlBg;
+      document.body.style.backgroundColor = prevBodyBg;
       window.removeEventListener('scroll', handleScroll);
       menuToggle?.removeEventListener('click', toggleMenu);
       waTrigger?.removeEventListener('click', togglePopup);
