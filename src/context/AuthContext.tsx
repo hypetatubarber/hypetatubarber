@@ -188,17 +188,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // 2. Modo Offline / Mock Demo
     const usuarios = MockDatabase.getUsuarios();
-    const found = usuarios.find((u) => u.email.toLowerCase() === cleanEmail);
+    let found = usuarios.find((u) => u.email.toLowerCase() === cleanEmail);
+
+    // Aliases para Master e Recepção
+    if (!found) {
+      if (cleanEmail === 'master@hypetatu.com.br' || cleanEmail === 'hypetatubarber@gmail.com') {
+        found = usuarios.find((u) => u.role === 'master');
+      } else if (cleanEmail === 'recepcao@hypetatu.com.br' || cleanEmail === 'recepcao.hype@hypetatu.com.br') {
+        found = usuarios.find((u) => u.role === 'recepcionista');
+      }
+    }
 
     if (!found) {
       throw new Error('E-mail não cadastrado no sistema.');
     }
 
-    // Validação de senha em modo local
-    if (cleanEmail === 'master@hypetatu.com.br' && pass !== 'HypeMaster@2024' && pass !== 'Senhamaster@2024') {
+    // Validação de senha em modo local / fallback
+    const validMasterPass = ['hypemaster@2024', 'senhamaster@2024', '123456', 'master123'];
+    const validRecepcaoPass = ['hyperecepcao@2024', 'senharecepcao@2024', '123456', 'recepcao123'];
+    const lowerPass = pass.toLowerCase();
+
+    if ((cleanEmail === 'master@hypetatu.com.br' || cleanEmail === 'hypetatubarber@gmail.com') && !validMasterPass.includes(lowerPass)) {
       throw new Error('Senha incorreta para usuário Master.');
     }
-    if (cleanEmail === 'recepcao@hypetatu.com.br' && pass !== 'HypeRecepcao@2024' && pass !== 'SenhaRecepcao@2024') {
+    if ((cleanEmail === 'recepcao@hypetatu.com.br' || cleanEmail === 'recepcao.hype@hypetatu.com.br') && !validRecepcaoPass.includes(lowerPass)) {
       throw new Error('Senha incorreta para usuário Recepção.');
     }
 
