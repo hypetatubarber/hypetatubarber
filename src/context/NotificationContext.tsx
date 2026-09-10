@@ -91,8 +91,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           if (reg && reg.showNotification) {
             reg.showNotification('Hype Tatu — Notificações Ativas', {
               body: 'Você receberá avisos imediatos quando novos agendamentos forem feitos para você!',
-              icon: '/favicon.svg',
-              badge: '/favicon.svg',
+              icon: '/icon-192.png',
+              badge: '/icon-192.png',
             });
           }
         }

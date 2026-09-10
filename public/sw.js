@@ -3,12 +3,16 @@
  * Gerencia cache offline e notificações push nativas (Web Push API)
  */
 
-const CACHE_NAME = 'hype-tatu-cache-v1';
+const CACHE_NAME = 'hype-tatu-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.svg'
+  '/icon-192.png',
+  '/icon-512.png',
+  '/logo.png',
+  '/apple-touch-icon.png',
+  '/favicon.png'
 ];
 
 // Instalação do Service Worker & Cache de arquivos essenciais
@@ -79,8 +83,8 @@ self.addEventListener('push', (event) => {
   let data = {
     title: 'Hype Tatu',
     body: 'Você tem uma nova atualização na sua agenda!',
-    icon: '/favicon.svg',
-    badge: '/favicon.svg',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
     url: '/'
   };
 

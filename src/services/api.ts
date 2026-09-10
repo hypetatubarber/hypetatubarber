@@ -404,8 +404,8 @@ export const api = {
         if (reg && reg.showNotification) {
           reg.showNotification(titulo, {
             body: mensagem,
-            icon: '/favicon.svg',
-            badge: '/favicon.svg',
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
             data: { url: linkUrl },
           });
         }
