@@ -3,16 +3,16 @@
  * Gerencia cache offline e notificações push nativas (Web Push API)
  */
 
-const CACHE_NAME = 'hype-tatu-cache-v2';
+const CACHE_NAME = 'hype-tatu-cache-v8';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/icon-192.png?v=8',
+  '/icon-512.png?v=8',
   '/logo.png',
-  '/apple-touch-icon.png',
-  '/favicon.png'
+  '/apple-touch-icon.png?v=8',
+  '/favicon.png?v=8'
 ];
 
 // Instalação do Service Worker & Cache de arquivos essenciais
