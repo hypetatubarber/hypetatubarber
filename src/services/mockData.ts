@@ -339,6 +339,13 @@ const INITIAL_PRODUTOS: Produto[] = [
   { id: 'prod-19', nome: 'Refrigerante Coca-Cola Zero Lata (350ml)', categoria: 'Bebidas', subcategoria: 'Refrigerantes', setor_destinado: 'nenhum', unidade: 'lata', custo_unitario: 3.5, estoque_atual: 30, estoque_minimo: 15 },
   { id: 'prod-20', nome: 'Água Mineral Crystal Sem Gás (500ml)', categoria: 'Bebidas', subcategoria: 'Águas', setor_destinado: 'nenhum', unidade: 'garrafa', custo_unitario: 2.0, estoque_atual: 5, estoque_minimo: 20 },
   { id: 'prod-23', nome: 'Água Tônica Antarctica Zero Lata (350ml)', categoria: 'Bebidas', subcategoria: 'Refrigerantes', setor_destinado: 'nenhum', unidade: 'lata', custo_unitario: 4.5, estoque_atual: 42, estoque_minimo: 12 },
+
+  // Novos Produtos para visualização destacada e quantidades variáveis no salão
+  { id: 'prod-26', nome: 'Cera Modeladora Efeito Teia Barber Hype (120g)', categoria: 'Barbearia', subcategoria: 'Pomadas & Finalizadores', setor_destinado: 'barbearia', unidade: 'un', custo_unitario: 35, estoque_atual: 19, estoque_minimo: 8 },
+  { id: 'prod-27', nome: 'Shaving Gel Refrescante Mentolado Hype (500ml)', categoria: 'Barbearia', subcategoria: 'Óleos & Barboterapia', setor_destinado: 'barbearia', unidade: 'un', custo_unitario: 29, estoque_atual: 12, estoque_minimo: 5 },
+  { id: 'prod-28', nome: 'Set Tintas Intenze Color Set (10 cores x 30ml)', categoria: 'Tatuagem', subcategoria: 'Tintas', setor_destinado: 'tatuagem', unidade: 'cx', custo_unitario: 380, estoque_atual: 3, estoque_minimo: 5 },
+  { id: 'prod-29', nome: 'Batoques Descartáveis Esterilizados (Pct 500un)', categoria: 'Tatuagem', subcategoria: 'Decalque & Cuidados', setor_destinado: 'tatuagem', unidade: 'pct', custo_unitario: 32, estoque_atual: 4, estoque_minimo: 8 },
+  { id: 'prod-30', nome: 'Gola Higiênica Descartável Pro (Rolo 100un)', categoria: 'Descartáveis', subcategoria: 'Papéis & Plásticos', setor_destinado: 'todos', unidade: 'rolo', custo_unitario: 16.5, estoque_atual: 16, estoque_minimo: 6 },
 ];
 
 const INITIAL_AGENDAMENTOS: Agendamento[] = [
@@ -1010,7 +1017,10 @@ export const getColaboradorSetor = (user?: Partial<Usuario> | null): 'barbearia'
 };
 
 const loadProdutosWithDefaults = (): Produto[] => {
-  const loaded = loadFromStorage<Produto[]>(STORAGE_KEYS.PRODUTOS, INITIAL_PRODUTOS);
+  let loaded = loadFromStorage<Produto[]>(STORAGE_KEYS.PRODUTOS, INITIAL_PRODUTOS);
+  if (!loaded || !Array.isArray(loaded) || loaded.length === 0) {
+    loaded = [...INITIAL_PRODUTOS];
+  }
   const existingIds = new Set(loaded.map((p) => p.id));
   const missing = INITIAL_PRODUTOS.filter((p) => !existingIds.has(p.id));
   const allProds = missing.length > 0 ? [...loaded, ...missing] : loaded;
@@ -1233,6 +1243,17 @@ export class MockDatabase {
 
   // Produtos & Estoque
   static getProdutos(): Produto[] {
+    if (!this.produtos || this.produtos.length === 0) {
+      this.produtos = loadProdutosWithDefaults();
+    }
+    return [...this.produtos];
+  }
+  static seedDefaultProdutos(): Produto[] {
+    this.produtos = [...INITIAL_PRODUTOS];
+    saveToStorage(STORAGE_KEYS.PRODUTOS, this.produtos);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hype_produtos_changed', { detail: this.produtos }));
+    }
     return [...this.produtos];
   }
   static saveProduto(produto: Produto): Produto {

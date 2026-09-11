@@ -13,7 +13,7 @@ import { AdminFinanceiroView } from '../../components/financeiro/AdminFinanceiro
 import { RegistrarPagamentoModal } from '../../components/financeiro/RegistrarPagamentoModal';
 import { api } from '../../services/api';
 import { Agendamento, Usuario, CategoriaServico, Produto } from '../../types';
-import { Calendar, DollarSign, Users, AlertTriangle, Plus, Sparkles, Flame, Package, ArrowRight, CheckCircle2, TrendingDown } from 'lucide-react';
+import { Calendar, DollarSign, Users, AlertTriangle, Plus, Sparkles, Flame, Package, ArrowRight, CheckCircle2, TrendingDown, RefreshCw } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const location = useLocation();
@@ -59,7 +59,12 @@ export const AdminDashboard: React.FC = () => {
       setAgendamentos(agList);
       setColaboradores(colabList);
       setCategorias(catList);
-      setProdutos(prodList);
+      if (!prodList || prodList.length === 0) {
+        const seeded = api.seedDefaultProdutos();
+        setProdutos(seeded);
+      } else {
+        setProdutos(prodList);
+      }
     } catch (err) {
       console.error('Erro ao carregar dados do admin:', err);
     }
@@ -252,27 +257,9 @@ export const AdminDashboard: React.FC = () => {
       )}
 
       {/* RENDERIZAÇÃO DO CONTEÚDO CONFORME A ABA/ROTA */}
+      {/* RENDERIZAÇÃO DO CONTEÚDO CONFORME A ABA/ROTA */}
       {(activeTab === 'overview' || activeTab === 'agenda') && (
         <div className="space-y-6">
-          {/* Calendário Mensal */}
-          <MonthCalendar
-            selectedDate={selectedDate}
-            onSelectDate={(dStr) => setSelectedDate(dStr)}
-            agendamentos={agendamentos}
-          />
-
-          {/* Agenda do Dia por Colunas (Salão / Barbearia / Tattoo) */}
-          <SalonDayColumns
-            selectedDate={selectedDate}
-            colaboradores={colaboradores}
-            agendamentos={agendamentos}
-            categorias={categorias}
-            onSlotClick={handleSlotClick}
-            onAppointmentClick={handleAppointmentClick}
-            onChamarRotativo={() => setIsRotativoModalOpen(true)}
-            onRegistrarPagamento={(ag) => setPagamentoModalAgendamento(ag)}
-          />
-
           {/* Seção Exclusiva: Estoque & Almoxarifado em Tempo Real na Dashboard */}
           <div className="bg-[var(--bg-surface)] text-[var(--text-primary)] rounded-xl sm:rounded-2xl border border-[var(--border)] shadow-sm p-4 sm:p-6 transition-colors space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
@@ -290,7 +277,19 @@ export const AdminDashboard: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+                <button
+                  onClick={() => {
+                    const seeded = api.seedDefaultProdutos();
+                    setProdutos(seeded);
+                  }}
+                  title="Recarregar produtos de demonstração do salão"
+                  className="px-3 py-2 rounded-xl text-xs font-oswald uppercase tracking-wider font-semibold bg-[var(--bg-surface-alt)] hover:bg-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] transition-all flex items-center gap-1.5"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Restaurar Padrões</span>
+                </button>
+
                 <button
                   onClick={() => navigate('/admin/estoque')}
                   className="px-3.5 py-2 rounded-xl text-xs font-oswald uppercase tracking-wider font-bold bg-[var(--accent-bg)] hover:bg-[var(--accent)] text-[var(--accent-dark)] dark:text-[var(--accent)] hover:text-[#0B0E11] border border-[var(--accent)]/30 transition-all flex items-center gap-1.5 shadow-sm"
@@ -356,8 +355,20 @@ export const AdminDashboard: React.FC = () => {
                 <tbody className="divide-y divide-[var(--border)]">
                   {dashboardProdutosFiltrados.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-6 text-center text-xs text-[var(--text-muted)]">
-                        Nenhum produto cadastrado nesta categoria.
+                      <td colSpan={7} className="py-8 text-center text-xs text-[var(--text-muted)]">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <Package className="w-8 h-8 text-[var(--text-muted)] opacity-50" />
+                          <p>Nenhum produto cadastrado nesta visualização.</p>
+                          <button
+                            onClick={() => {
+                              const seeded = api.seedDefaultProdutos();
+                              setProdutos(seeded);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-[var(--accent)] text-[#0B0E11] font-oswald uppercase tracking-wider font-bold text-xs shadow-sm hover:scale-105 transition-all"
+                          >
+                            Carregar Produtos Padrão do Salão
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ) : (
@@ -424,6 +435,25 @@ export const AdminDashboard: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Calendário Mensal */}
+          <MonthCalendar
+            selectedDate={selectedDate}
+            onSelectDate={(dStr) => setSelectedDate(dStr)}
+            agendamentos={agendamentos}
+          />
+
+          {/* Agenda do Dia por Colunas (Salão / Barbearia / Tattoo) */}
+          <SalonDayColumns
+            selectedDate={selectedDate}
+            colaboradores={colaboradores}
+            agendamentos={agendamentos}
+            categorias={categorias}
+            onSlotClick={handleSlotClick}
+            onAppointmentClick={handleAppointmentClick}
+            onChamarRotativo={() => setIsRotativoModalOpen(true)}
+            onRegistrarPagamento={(ag) => setPagamentoModalAgendamento(ag)}
+          />
         </div>
       )}
 

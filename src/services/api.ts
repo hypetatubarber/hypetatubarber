@@ -449,7 +449,15 @@ export const api = {
         console.warn('[API] Falha ao buscar produtos do Supabase:', err);
       }
     }
-    return MockDatabase.getProdutos();
+    const list = MockDatabase.getProdutos();
+    if (!list || list.length === 0) {
+      return MockDatabase.seedDefaultProdutos();
+    }
+    return list;
+  },
+
+  seedDefaultProdutos(): Produto[] {
+    return MockDatabase.seedDefaultProdutos();
   },
 
   async saveProduto(produto: Produto): Promise<Produto> {
