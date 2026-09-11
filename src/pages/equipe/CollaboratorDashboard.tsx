@@ -397,6 +397,7 @@ export const CollaboratorDashboard: React.FC = () => {
         isOpen={isMaterialModalOpen}
         onClose={() => setIsMaterialModalOpen(false)}
         linkedAgendamentoId={linkedAgendamentoId}
+        colaborador={colaborador || currentUser}
         onSaved={loadData}
       />
     </div>

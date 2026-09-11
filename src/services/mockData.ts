@@ -91,6 +91,7 @@ const INITIAL_USUARIOS: Usuario[] = [
     foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     status: 'ativo',
     criado_em: '2026-09-10T17:28:11.570246+00:00',
+    setor_atuacao: 'todos',
   },
   {
     id: '350079c7-c94f-47f8-9bae-10d1b50f08b8',
@@ -102,6 +103,7 @@ const INITIAL_USUARIOS: Usuario[] = [
     foto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
     status: 'ativo',
     criado_em: '2026-09-10T17:29:43.142543+00:00',
+    setor_atuacao: 'todos',
   },
   {
     id: 'user-recepcao-hype-br',
@@ -113,6 +115,7 @@ const INITIAL_USUARIOS: Usuario[] = [
     foto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
     status: 'ativo',
     criado_em: '2026-09-10T17:29:43.142543+00:00',
+    setor_atuacao: 'todos',
   },
   {
     id: 'a0c1e8d4-52bb-4c22-95f8-b80c6198f26a',
@@ -122,6 +125,7 @@ const INITIAL_USUARIOS: Usuario[] = [
     tipo_colaborador: 'fixo',
     slug: 'danilinho-barber',
     especialidade: 'Master Barber • Degradê & Barboterapia',
+    setor_atuacao: 'barbearia',
     telefone: '(71) 99411-1967',
     comissao_porcentagem: 50,
     comissao_barbearia: 50,
@@ -144,6 +148,7 @@ const INITIAL_USUARIOS: Usuario[] = [
     tipo_colaborador: 'fixo',
     slug: 'tatuador1',
     especialidade: 'Tatuador • Realismo & Blackwork',
+    setor_atuacao: 'tatuagem',
     estilos_tatuagem: ['Realismo', 'Blackwork'],
     telefone: '(71) 99111-2233',
     comissao_porcentagem: 60,
@@ -167,6 +172,7 @@ const INITIAL_USUARIOS: Usuario[] = [
     tipo_colaborador: 'rotativo',
     slug: 'gabriel-rotativo',
     especialidade: 'Tatuador Rotativo • Fineline & Minimalismo',
+    setor_atuacao: 'tatuagem',
     estilos_tatuagem: ['Fineline', 'Minimalista', 'Lettering', 'Blackwork'],
     telefone: '(71) 99333-4455',
     comissao_porcentagem: 60,
@@ -300,41 +306,39 @@ const INITIAL_CLIENTES: Cliente[] = [
 
 const INITIAL_PRODUTOS: Produto[] = [
   // Tatuagem
-  { id: 'prod-1', nome: 'Tinta Dynamic Black (240ml)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 180, estoque_atual: 8, estoque_minimo: 3 },
-  { id: 'prod-2', nome: 'Agulha Cartucho 03RL (Caixa 20un)', categoria: 'Tatuagem', unidade: 'cx', custo_unitario: 120, estoque_atual: 14, estoque_minimo: 5 },
-  { id: 'prod-8', nome: 'Plástico Filme Protetor (Rolo 300m)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 25, estoque_atual: 6, estoque_minimo: 3 },
-  { id: 'prod-10', nome: 'Vaselina Slip Tattoo Hidratante (500g)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 42, estoque_atual: 5, estoque_minimo: 2 },
-  { id: 'prod-11', nome: 'Transfer Stencil Gel It (120ml)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 65, estoque_atual: 3, estoque_minimo: 2 },
+  { id: 'prod-1', nome: 'Tinta Dynamic Black (240ml)', categoria: 'Tatuagem', subcategoria: 'Tintas', setor_destinado: 'tatuagem', unidade: 'un', custo_unitario: 180, estoque_atual: 8, estoque_minimo: 3 },
+  { id: 'prod-2', nome: 'Agulha Cartucho 03RL (Caixa 20un)', categoria: 'Tatuagem', subcategoria: 'Agulhas & Cartuchos', setor_destinado: 'tatuagem', unidade: 'cx', custo_unitario: 120, estoque_atual: 14, estoque_minimo: 5 },
+  { id: 'prod-8', nome: 'Plástico Filme Protetor (Rolo 300m)', categoria: 'Tatuagem', subcategoria: 'Decalque & Cuidados', setor_destinado: 'tatuagem', unidade: 'un', custo_unitario: 25, estoque_atual: 6, estoque_minimo: 3 },
+  { id: 'prod-10', nome: 'Vaselina Slip Tattoo Hidratante (500g)', categoria: 'Tatuagem', subcategoria: 'Decalque & Cuidados', setor_destinado: 'tatuagem', unidade: 'un', custo_unitario: 42, estoque_atual: 5, estoque_minimo: 2 },
+  { id: 'prod-11', nome: 'Transfer Stencil Gel It (120ml)', categoria: 'Tatuagem', subcategoria: 'Decalque & Cuidados', setor_destinado: 'tatuagem', unidade: 'un', custo_unitario: 65, estoque_atual: 3, estoque_minimo: 2 },
 
   // Barbearia
-  { id: 'prod-3', nome: 'Pomada Hype Matte Efeito Seco (150g)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 32, estoque_atual: 22, estoque_minimo: 10 },
-  { id: 'prod-4', nome: 'Óleo para Barba Wood & Spice (30ml)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 28, estoque_atual: 18, estoque_minimo: 6 },
-  { id: 'prod-5', nome: 'Lâminas Descartáveis Derby (Cx 100un)', categoria: 'Barbearia', unidade: 'cx', custo_unitario: 45, estoque_atual: 7, estoque_minimo: 4 },
-  { id: 'prod-9', nome: 'Gillette Espuma Refrescante (200ml)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 22, estoque_atual: 11, estoque_minimo: 5 },
-  { id: 'prod-12', nome: 'Shampoo Anticaspa Tea Tree (300ml)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 38, estoque_atual: 9, estoque_minimo: 4 },
+  { id: 'prod-3', nome: 'Pomada Hype Matte Efeito Seco (150g)', categoria: 'Barbearia', subcategoria: 'Pomadas & Finalizadores', setor_destinado: 'barbearia', unidade: 'un', custo_unitario: 32, estoque_atual: 22, estoque_minimo: 10 },
+  { id: 'prod-4', nome: 'Óleo para Barba Wood & Spice (30ml)', categoria: 'Barbearia', subcategoria: 'Óleos & Barboterapia', setor_destinado: 'barbearia', unidade: 'un', custo_unitario: 28, estoque_atual: 18, estoque_minimo: 6 },
+  { id: 'prod-5', nome: 'Lâminas Descartáveis Derby (Cx 100un)', categoria: 'Barbearia', subcategoria: 'Lâminas & Navalhas', setor_destinado: 'barbearia', unidade: 'cx', custo_unitario: 45, estoque_atual: 7, estoque_minimo: 4 },
+  { id: 'prod-9', nome: 'Gillette Espuma Refrescante (200ml)', categoria: 'Barbearia', subcategoria: 'Óleos & Barboterapia', setor_destinado: 'barbearia', unidade: 'un', custo_unitario: 22, estoque_atual: 11, estoque_minimo: 5 },
+  { id: 'prod-12', nome: 'Shampoo Anticaspa Tea Tree (300ml)', categoria: 'Barbearia', subcategoria: 'Shampoos & Lavatório', setor_destinado: 'barbearia', unidade: 'un', custo_unitario: 38, estoque_atual: 9, estoque_minimo: 4 },
+  { id: 'prod-24', nome: 'Balm Modelador de Barba Efeito Seco (100g)', categoria: 'Barbearia', subcategoria: 'Óleos & Barboterapia', setor_destinado: 'barbearia', unidade: 'un', custo_unitario: 34, estoque_atual: 15, estoque_minimo: 8 },
 
   // Piercing
-  { id: 'prod-6', nome: 'Labret Titânio Grau Implante G23', categoria: 'Piercing', unidade: 'un', custo_unitario: 35, estoque_atual: 32, estoque_minimo: 15 },
-  { id: 'prod-13', nome: 'Argola Articulada Segmentada Titânio', categoria: 'Piercing', unidade: 'un', custo_unitario: 40, estoque_atual: 18, estoque_minimo: 8 },
-  { id: 'prod-14', nome: 'Cateter Descartável 16G (Cx 50un)', categoria: 'Piercing', unidade: 'cx', custo_unitario: 85, estoque_atual: 4, estoque_minimo: 5 },
+  { id: 'prod-6', nome: 'Labret Titânio Grau Implante G23', categoria: 'Piercing', subcategoria: 'Jóias & Titânio', setor_destinado: 'piercing', unidade: 'un', custo_unitario: 35, estoque_atual: 32, estoque_minimo: 15 },
+  { id: 'prod-13', nome: 'Argola Articulada Segmentada Titânio', categoria: 'Piercing', subcategoria: 'Jóias & Titânio', setor_destinado: 'piercing', unidade: 'un', custo_unitario: 40, estoque_atual: 18, estoque_minimo: 8 },
+  { id: 'prod-14', nome: 'Cateter Descartável 16G (Cx 50un)', categoria: 'Piercing', subcategoria: 'Agulhas & Cateteres', setor_destinado: 'piercing', unidade: 'cx', custo_unitario: 85, estoque_atual: 4, estoque_minimo: 5 },
+  { id: 'prod-25', nome: 'Piercing Microdermal Base Titânio ASTM F-136', categoria: 'Piercing', subcategoria: 'Jóias & Titânio', setor_destinado: 'piercing', unidade: 'un', custo_unitario: 68, estoque_atual: 2, estoque_minimo: 6 },
 
-  // Bebidas
-  { id: 'prod-15', nome: 'Cerveja Heineken Long Neck (330ml)', categoria: 'Bebidas', unidade: 'un', custo_unitario: 7.5, estoque_atual: 48, estoque_minimo: 24 },
-  { id: 'prod-16', nome: 'Cerveja Corona Extra (330ml)', categoria: 'Bebidas', unidade: 'un', custo_unitario: 8.0, estoque_atual: 36, estoque_minimo: 18 },
-  { id: 'prod-17', nome: 'Energético Red Bull Energy Drink (250ml)', categoria: 'Bebidas', unidade: 'lata', custo_unitario: 9.0, estoque_atual: 24, estoque_minimo: 12 },
-  { id: 'prod-18', nome: 'Whisky Johnnie Walker Black Label (1L)', categoria: 'Bebidas', unidade: 'garrafa', custo_unitario: 140, estoque_atual: 2, estoque_minimo: 1 },
-  { id: 'prod-19', nome: 'Refrigerante Coca-Cola Zero Lata (350ml)', categoria: 'Bebidas', unidade: 'lata', custo_unitario: 3.5, estoque_atual: 30, estoque_minimo: 15 },
-  { id: 'prod-20', nome: 'Água Mineral Crystal Sem Gás (500ml)', categoria: 'Bebidas', unidade: 'garrafa', custo_unitario: 2.0, estoque_atual: 5, estoque_minimo: 20 },
+  // Descartáveis & Higiene (Compartilhado entre Barbeiros e Tatuadores)
+  { id: 'prod-7', nome: 'Luvas Nitrílicas Pretas Tam M (Cx 100un)', categoria: 'Descartáveis', subcategoria: 'Luvas & Proteção', setor_destinado: 'todos', unidade: 'cx', custo_unitario: 55, estoque_atual: 4, estoque_minimo: 8 },
+  { id: 'prod-21', nome: 'Álcool 70% Spray Hospitalar (1L)', categoria: 'Descartáveis', subcategoria: 'Antissépticos & Higiene', setor_destinado: 'todos', unidade: 'un', custo_unitario: 18, estoque_atual: 6, estoque_minimo: 3 },
+  { id: 'prod-22', nome: 'Papel Toalha Interfolha Bobina (Pct 500fls)', categoria: 'Descartáveis', subcategoria: 'Papéis & Plásticos', setor_destinado: 'todos', unidade: 'un', custo_unitario: 24, estoque_atual: 12, estoque_minimo: 5 },
 
-  // Descartáveis & Higiene
-  { id: 'prod-7', nome: 'Luvas Nitrílicas Pretas Tam M (Cx 100un)', categoria: 'Descartáveis', unidade: 'cx', custo_unitario: 55, estoque_atual: 4, estoque_minimo: 8 },
-  { id: 'prod-21', nome: 'Álcool 70% Spray Hospitalar (1L)', categoria: 'Descartáveis', unidade: 'un', custo_unitario: 18, estoque_atual: 6, estoque_minimo: 3 },
-  { id: 'prod-22', nome: 'Papel Toalha Interfolha Bobina (Pct 500fls)', categoria: 'Descartáveis', unidade: 'un', custo_unitario: 24, estoque_atual: 12, estoque_minimo: 5 },
-
-  // Novos itens com quantidades variáveis (alto, médio, crítico)
-  { id: 'prod-23', nome: 'Água Tônica Antarctica Zero Lata (350ml)', categoria: 'Bebidas', unidade: 'lata', custo_unitario: 4.5, estoque_atual: 42, estoque_minimo: 12 },
-  { id: 'prod-24', nome: 'Balm Modelador de Barba Efeito Seco (100g)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 34, estoque_atual: 15, estoque_minimo: 8 },
-  { id: 'prod-25', nome: 'Piercing Microdermal Base Titânio ASTM F-136', categoria: 'Piercing', unidade: 'un', custo_unitario: 68, estoque_atual: 2, estoque_minimo: 6 },
+  // Bebidas (Revenda / Frigobar - Não utilizável como insumo de procedimento)
+  { id: 'prod-15', nome: 'Cerveja Heineken Long Neck (330ml)', categoria: 'Bebidas', subcategoria: 'Cervejas', setor_destinado: 'nenhum', unidade: 'un', custo_unitario: 7.5, estoque_atual: 48, estoque_minimo: 24 },
+  { id: 'prod-16', nome: 'Cerveja Corona Extra (330ml)', categoria: 'Bebidas', subcategoria: 'Cervejas', setor_destinado: 'nenhum', unidade: 'un', custo_unitario: 8.0, estoque_atual: 36, estoque_minimo: 18 },
+  { id: 'prod-17', nome: 'Energético Red Bull Energy Drink (250ml)', categoria: 'Bebidas', subcategoria: 'Energéticos', setor_destinado: 'nenhum', unidade: 'lata', custo_unitario: 9.0, estoque_atual: 24, estoque_minimo: 12 },
+  { id: 'prod-18', nome: 'Whisky Johnnie Walker Black Label (1L)', categoria: 'Bebidas', subcategoria: 'Destilados', setor_destinado: 'nenhum', unidade: 'garrafa', custo_unitario: 140, estoque_atual: 2, estoque_minimo: 1 },
+  { id: 'prod-19', nome: 'Refrigerante Coca-Cola Zero Lata (350ml)', categoria: 'Bebidas', subcategoria: 'Refrigerantes', setor_destinado: 'nenhum', unidade: 'lata', custo_unitario: 3.5, estoque_atual: 30, estoque_minimo: 15 },
+  { id: 'prod-20', nome: 'Água Mineral Crystal Sem Gás (500ml)', categoria: 'Bebidas', subcategoria: 'Águas', setor_destinado: 'nenhum', unidade: 'garrafa', custo_unitario: 2.0, estoque_atual: 5, estoque_minimo: 20 },
+  { id: 'prod-23', nome: 'Água Tônica Antarctica Zero Lata (350ml)', categoria: 'Bebidas', subcategoria: 'Refrigerantes', setor_destinado: 'nenhum', unidade: 'lata', custo_unitario: 4.5, estoque_atual: 42, estoque_minimo: 12 },
 ];
 
 const INITIAL_AGENDAMENTOS: Agendamento[] = [
@@ -936,16 +940,92 @@ const saveToStorage = <T>(key: string, data: T): void => {
   }
 };
 
+export const getProductSetor = (prod: Partial<Produto>): 'barbearia' | 'tatuagem' | 'piercing' | 'todos' | 'nenhum' => {
+  if (prod.setor_destinado) return prod.setor_destinado;
+  const cat = (prod.categoria || '').toLowerCase();
+  if (cat.includes('barb')) return 'barbearia';
+  if (cat.includes('tatu')) return 'tatuagem';
+  if (cat.includes('pierc')) return 'piercing';
+  if (cat.includes('bebid')) return 'nenhum';
+  if (cat.includes('descart') || cat.includes('higiene') || cat.includes('geral')) return 'todos';
+  return 'todos';
+};
+
+export const getProductSubcategoria = (prod: Partial<Produto>): string => {
+  if (prod.subcategoria && prod.subcategoria.trim()) return prod.subcategoria.trim();
+  const nome = (prod.nome || '').toLowerCase();
+  const cat = (prod.categoria || '').toLowerCase();
+
+  if (cat.includes('tatu')) {
+    if (nome.includes('tinta') || nome.includes('black') || nome.includes('color') || nome.includes('pigmento')) return 'Tintas';
+    if (nome.includes('agulha') || nome.includes('cartucho') || nome.includes('rl') || nome.includes('mg') || nome.includes('rs')) return 'Agulhas & Cartuchos';
+    if (nome.includes('stencil') || nome.includes('transfer') || nome.includes('decalque') || nome.includes('filme') || nome.includes('vaselina')) return 'Decalque & Cuidados';
+    return 'Geral Tatuagem';
+  }
+  if (cat.includes('barb')) {
+    if (nome.includes('pomada') || nome.includes('cera') || nome.includes('matte') || nome.includes('fixador') || nome.includes('gel')) return 'Pomadas & Finalizadores';
+    if (nome.includes('óleo') || nome.includes('oleo') || nome.includes('balm') || nome.includes('espuma') || nome.includes('barba')) return 'Óleos & Barboterapia';
+    if (nome.includes('lâmina') || nome.includes('lamina') || nome.includes('navalha') || nome.includes('gillette')) return 'Lâminas & Navalhas';
+    if (nome.includes('shampoo') || nome.includes('condicionador') || nome.includes('lavat')) return 'Shampoos & Lavatório';
+    return 'Geral Barbearia';
+  }
+  if (cat.includes('pierc')) {
+    if (nome.includes('labret') || nome.includes('argola') || nome.includes('microdermal') || nome.includes('jóia') || nome.includes('joia') || nome.includes('titânio') || nome.includes('titanio')) return 'Jóias & Titânio';
+    if (nome.includes('cateter') || nome.includes('agulha') || nome.includes('pinça') || nome.includes('pinca')) return 'Agulhas & Cateteres';
+    return 'Geral Piercing';
+  }
+  if (cat.includes('descart') || cat.includes('higiene') || cat.includes('geral')) {
+    if (nome.includes('luva')) return 'Luvas & Proteção';
+    if (nome.includes('álcool') || nome.includes('alcool')) return 'Antissépticos & Higiene';
+    if (nome.includes('papel') || nome.includes('toalha') || nome.includes('plástico') || nome.includes('plastico')) return 'Papéis & Plásticos';
+    return 'Descartáveis & Proteção';
+  }
+  if (cat.includes('bebid')) {
+    if (nome.includes('cerveja')) return 'Cervejas';
+    if (nome.includes('energético') || nome.includes('energetico') || nome.includes('red bull')) return 'Energéticos';
+    if (nome.includes('whisky') || nome.includes('vodka') || nome.includes('destil')) return 'Destilados';
+    if (nome.includes('refrigerante') || nome.includes('coca') || nome.includes('tônica') || nome.includes('tonica')) return 'Refrigerantes';
+    if (nome.includes('água') || nome.includes('agua')) return 'Águas';
+    return 'Bebidas';
+  }
+  return prod.categoria || 'Diversos';
+};
+
+export const getColaboradorSetor = (user?: Partial<Usuario> | null): 'barbearia' | 'tatuagem' | 'piercing' | 'todos' => {
+  if (!user) return 'todos';
+  if (user.setor_atuacao) return user.setor_atuacao;
+  if (user.role === 'master' || user.role === 'recepcionista') return 'todos';
+  
+  const text = `${user.especialidade || ''} ${user.nome || ''} ${(user.estilos_tatuagem || []).join(' ')}`.toLowerCase();
+  if (text.includes('barber') || text.includes('barbeiro') || text.includes('corte') || text.includes('barba')) {
+    return 'barbearia';
+  }
+  if (text.includes('tatu') || text.includes('tattoo') || text.includes('ink') || text.includes('blackwork') || text.includes('fineline') || text.includes('realismo')) {
+    return 'tatuagem';
+  }
+  if (text.includes('pierc') || text.includes('body')) {
+    return 'piercing';
+  }
+  return 'todos';
+};
+
 const loadProdutosWithDefaults = (): Produto[] => {
   const loaded = loadFromStorage<Produto[]>(STORAGE_KEYS.PRODUTOS, INITIAL_PRODUTOS);
   const existingIds = new Set(loaded.map((p) => p.id));
   const missing = INITIAL_PRODUTOS.filter((p) => !existingIds.has(p.id));
-  if (missing.length > 0) {
-    const merged = [...loaded, ...missing];
-    saveToStorage(STORAGE_KEYS.PRODUTOS, merged);
-    return merged;
-  }
-  return loaded;
+  const allProds = missing.length > 0 ? [...loaded, ...missing] : loaded;
+
+  const enriched = allProds.map((p) => {
+    const initialMatch = INITIAL_PRODUTOS.find((ip) => ip.id === p.id);
+    return {
+      ...p,
+      subcategoria: p.subcategoria || initialMatch?.subcategoria || getProductSubcategoria(p),
+      setor_destinado: p.setor_destinado || initialMatch?.setor_destinado || getProductSetor(p),
+    };
+  });
+
+  saveToStorage(STORAGE_KEYS.PRODUTOS, enriched);
+  return enriched;
 };
 
 const loadClientesWithDefaults = (): Cliente[] => {
@@ -964,12 +1044,18 @@ const loadUsuariosWithDefaults = (): Usuario[] => {
   const loaded = loadFromStorage<Usuario[]>(STORAGE_KEYS.USUARIOS, INITIAL_USUARIOS);
   const existingIds = new Set(loaded.map((u) => u.id));
   const missing = INITIAL_USUARIOS.filter((u) => !existingIds.has(u.id));
-  if (missing.length > 0) {
-    const merged = [...loaded, ...missing];
-    saveToStorage(STORAGE_KEYS.USUARIOS, merged);
-    return merged;
-  }
-  return loaded;
+  const allUsers = missing.length > 0 ? [...loaded, ...missing] : loaded;
+
+  const enriched = allUsers.map((u) => {
+    const initialMatch = INITIAL_USUARIOS.find((iu) => iu.id === u.id);
+    return {
+      ...u,
+      setor_atuacao: u.setor_atuacao || initialMatch?.setor_atuacao || getColaboradorSetor(u),
+    };
+  });
+
+  saveToStorage(STORAGE_KEYS.USUARIOS, enriched);
+  return enriched;
 };
 
 const loadAgendamentosWithDefaults = (): Agendamento[] => {

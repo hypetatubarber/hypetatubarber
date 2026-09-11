@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { Usuario, TipoColaborador, StatusDisponibilidade, TipoRepasse } from '../../types';
 import { api } from '../../services/api';
+import { getColaboradorSetor } from '../../services/mockData';
 import { useToast } from '../../context/ToastContext';
 import { Link } from 'react-router-dom';
 import { generateUUID } from '../../lib/uuid';
@@ -116,8 +117,8 @@ export const CollaboratorManagement: React.FC = () => {
   const [foto, setFoto] = useState('');
   const [status, setStatus] = useState<'ativo' | 'inativo'>('ativo');
 
-  // Campos específicos de Rotativo
   const [tipoColaborador, setTipoColaborador] = useState<TipoColaborador>('fixo');
+  const [setorAtuacao, setSetorAtuacao] = useState<'barbearia' | 'tatuagem' | 'piercing' | 'todos'>('barbearia');
   const [estilosTatuagem, setEstilosTatuagem] = useState<string[]>([]);
   const [novoEstilo, setNovoEstilo] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -167,6 +168,7 @@ export const CollaboratorManagement: React.FC = () => {
       setFoto(u.foto || '');
       setStatus(u.status);
       setTipoColaborador(u.tipo_colaborador || 'fixo');
+      setSetorAtuacao(u.setor_atuacao || getColaboradorSetor(u));
       setEstilosTatuagem(u.estilos_tatuagem || []);
       setNovoEstilo('');
       setTelefone(u.telefone || '');
@@ -187,6 +189,7 @@ export const CollaboratorManagement: React.FC = () => {
       setFoto('');
       setStatus('ativo');
       setTipoColaborador('fixo');
+      setSetorAtuacao('barbearia');
       setEstilosTatuagem([]);
       setNovoEstilo('');
       setTelefone('');
@@ -243,7 +246,8 @@ export const CollaboratorManagement: React.FC = () => {
         foto: foto.trim() || undefined,
         status,
         tipo_colaborador: role === 'colaborador' ? tipoColaborador : 'fixo',
-        estilos_tatuagem: role === 'colaborador' && tipoColaborador === 'rotativo' ? estilosTatuagem : undefined,
+        setor_atuacao: role === 'colaborador' ? setorAtuacao : 'todos',
+        estilos_tatuagem: role === 'colaborador' && (tipoColaborador === 'rotativo' || setorAtuacao === 'tatuagem') ? estilosTatuagem : undefined,
         telefone: telefone.trim() || undefined,
         comissao_porcentagem: role === 'colaborador' ? Number(tipoColaborador === 'rotativo' ? comissaoTatuagem : comissaoBarbearia) : undefined,
         comissao_barbearia: role === 'colaborador' ? Number(comissaoBarbearia) : undefined,
@@ -782,6 +786,36 @@ export const CollaboratorManagement: React.FC = () => {
                   💡 Se deixar em branco, basta copiar o link de ativação após salvar e enviar para o colaborador escolher seu próprio e-mail e senha.
                 </p>
               </div>
+
+              {/* Setor de Atuação do Profissional */}
+              {role === 'colaborador' && (
+                <div>
+                  <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1.5">
+                    Setor de Atuação / Especialidade Principal *
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {[
+                      { key: 'barbearia', label: '💈 Barbearia' },
+                      { key: 'tatuagem', label: '🎨 Tatuagem' },
+                      { key: 'piercing', label: '💎 Piercing' },
+                      { key: 'todos', label: '🌐 Geral / Todos' },
+                    ].map((s) => (
+                      <button
+                        key={s.key}
+                        type="button"
+                        onClick={() => setSetorAtuacao(s.key as any)}
+                        className={`py-2 px-3 rounded-xl text-xs font-oswald uppercase tracking-wider font-semibold border transition-all ${
+                          setorAtuacao === s.key
+                            ? 'bg-[var(--accent)] text-[#0B0E11] border-[var(--accent)] shadow-xs'
+                            : 'bg-[var(--bg-surface-alt)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--accent)]'
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">Especialidade / Cargo</label>

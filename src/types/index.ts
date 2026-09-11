@@ -29,6 +29,7 @@ export interface Usuario {
   notificacoes_ativas?: boolean; // Se recebe alertas de jobs (padrão: true)
   senha_acesso?: string; // Senha criada pelo profissional no primeiro acesso (visível para o Admin)
   primeiro_acesso_pendente?: boolean; // True se ainda não ativou a conta
+  setor_atuacao?: 'barbearia' | 'tatuagem' | 'piercing' | 'todos'; // Setor de atendimento
 }
 
 export type TipoRepasse = 'servico' | 'semanal' | 'quinzenal' | 'mensal';
@@ -175,6 +176,8 @@ export interface Produto {
   id: string;
   nome: string;
   categoria: string;
+  subcategoria?: string; // Subcategoria / Pasta do insumo (ex: 'Tintas', 'Agulhas', 'Pomadas')
+  setor_destinado?: 'barbearia' | 'tatuagem' | 'piercing' | 'todos' | 'nenhum'; // Quem pode lançar consumo no portal
   unidade: UnidadeProduto;
   custo_unitario: number;
   estoque_atual: number;

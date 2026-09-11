@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Produto, MovimentacaoEstoque, UnidadeProduto } from '../../types';
 import { api } from '../../services/api';
+import { getProductSetor, getProductSubcategoria } from '../../services/mockData';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { generateUUID } from '../../lib/uuid';
@@ -141,6 +142,8 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
   const [nome, setNome] = useState('');
   const [categoria, setCategoria] = useState('Barbearia');
   const [customCategoria, setCustomCategoria] = useState('');
+  const [subcategoria, setSubcategoria] = useState('');
+  const [setorDestinado, setSetorDestinado] = useState<'barbearia' | 'tatuagem' | 'piercing' | 'todos' | 'nenhum'>('barbearia');
   const [unidade, setUnidade] = useState<UnidadeProduto>('un');
   const [custoUnitario, setCustoUnitario] = useState(0);
   const [estoqueAtual, setEstoqueAtual] = useState(10);
@@ -294,6 +297,8 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
       setNome(prod.nome);
       setCategoria(prod.categoria === 'Geral' ? 'Descartáveis' : prod.categoria);
       setCustomCategoria('');
+      setSubcategoria(prod.subcategoria || getProductSubcategoria(prod));
+      setSetorDestinado(prod.setor_destinado || getProductSetor(prod));
       setUnidade(prod.unidade);
       setCustoUnitario(prod.custo_unitario);
       setEstoqueAtual(prod.estoque_atual);
@@ -301,8 +306,16 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
     } else {
       setEditingProduct(null);
       setNome('');
-      setCategoria(selectedFolder !== 'TODAS' ? selectedFolder : 'Barbearia');
+      const defaultCat = selectedFolder !== 'TODAS' ? selectedFolder : 'Barbearia';
+      setCategoria(defaultCat);
       setCustomCategoria('');
+      setSubcategoria('');
+      setSetorDestinado(
+        defaultCat === 'Barbearia' ? 'barbearia' :
+        defaultCat === 'Tatuagem' ? 'tatuagem' :
+        defaultCat === 'Piercing' ? 'piercing' :
+        defaultCat === 'Bebidas' ? 'nenhum' : 'todos'
+      );
       setUnidade('un');
       setCustoUnitario(25);
       setEstoqueAtual(10);
@@ -333,6 +346,8 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
         id: editingProduct ? editingProduct.id : generateUUID(),
         nome: nome.trim(),
         categoria: finalCategoria,
+        subcategoria: subcategoria.trim() || undefined,
+        setor_destinado: setorDestinado,
         unidade,
         custo_unitario: Number(custoUnitario),
         estoque_atual: Number(estoqueAtual),
@@ -891,11 +906,16 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                         <div>
                           {/* Cabeçalho da Ficha */}
                           <div className="flex items-start justify-between gap-2 mb-3">
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-1.5">
                               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-oswald uppercase tracking-wider font-semibold border ${catConfig.badgeColor}`}>
                                 <CategoryIcon className="w-3 h-3" />
                                 {prod.categoria}
                               </span>
+                              {prod.subcategoria && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-oswald uppercase tracking-wider font-semibold bg-[var(--bg-surface-alt)] border border-[var(--border)] text-[var(--text-secondary)]">
+                                  📁 {prod.subcategoria}
+                                </span>
+                              )}
                               <span className="text-[11px] font-mono text-[var(--text-muted)] font-medium">
                                 #{prod.unidade}
                               </span>
@@ -1044,7 +1064,14 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                         >
                           <td className="p-4 font-medium text-[var(--text-primary)] font-inter">
                             <div className="font-semibold">{prod.nome}</div>
-                            <div className="text-[10px] text-[var(--text-muted)] font-mono">Unidade: {prod.unidade}</div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] text-[var(--text-muted)] font-mono">Unidade: {prod.unidade}</span>
+                              {prod.subcategoria && (
+                                <span className="text-[10px] text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold font-oswald uppercase">
+                                  • {prod.subcategoria}
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="p-4 text-[var(--text-secondary)]">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-oswald uppercase tracking-wider font-semibold border ${catConfig.badgeColor}`}>
@@ -1266,6 +1293,82 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                   onChange={(e) => setNome(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-inter"
                 />
+              </div>
+
+              {/* Subcategoria / Pasta Interna do Insumo */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold">
+                    Subcategoria / Pasta Interna (Ex: Tintas, Agulhas, Pomadas)
+                  </label>
+                </div>
+                {/* Sugestões rápidas baseadas na categoria */}
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {(categoria === 'Tatuagem'
+                    ? ['Tintas', 'Agulhas & Cartuchos', 'Decalque & Cuidados', 'Higiene & Aftercare']
+                    : categoria === 'Barbearia'
+                    ? ['Pomadas & Finalizadores', 'Óleos & Barboterapia', 'Lâminas & Navalhas', 'Shampoos & Lavatório']
+                    : categoria === 'Piercing'
+                    ? ['Jóias & Titânio', 'Agulhas & Cateteres', 'Assepsia & Pinças']
+                    : categoria === 'Descartáveis'
+                    ? ['Luvas & Proteção', 'Papéis & Plásticos', 'Antissépticos & Higiene']
+                    : ['Cervejas', 'Refrigerantes', 'Energéticos', 'Destilados', 'Águas']
+                  ).map((sug) => (
+                    <button
+                      key={sug}
+                      type="button"
+                      onClick={() => setSubcategoria(sug)}
+                      className={`px-2 py-0.5 text-[10px] font-oswald uppercase tracking-wider rounded-md border transition-all ${
+                        subcategoria === sug
+                          ? 'bg-[var(--accent)] text-[#0B0E11] font-bold border-[var(--accent)]'
+                          : 'bg-[var(--bg-surface-alt)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--accent)]'
+                      }`}
+                    >
+                      {sug}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Digite ou escolha uma subcategoria acima..."
+                  value={subcategoria}
+                  onChange={(e) => setSubcategoria(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-inter"
+                />
+              </div>
+
+              {/* Setor Destinado / Quem pode lançar no portal do colaborador */}
+              <div>
+                <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1.5">
+                  Quem pode registrar consumo deste produto no portal? *
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {[
+                    { key: 'barbearia', label: '💈 Apenas Barbearia', desc: 'Disponível apenas para barbeiros' },
+                    { key: 'tatuagem', label: '🎨 Apenas Tatuadores', desc: 'Disponível apenas para tatuadores' },
+                    { key: 'piercing', label: '💎 Apenas Body Piercing', desc: 'Disponível apenas para piercers' },
+                    { key: 'todos', label: '🌐 Todos (Geral / Compartilhado)', desc: 'Luvas, papel e insumos gerais' },
+                    { key: 'nenhum', label: '🚫 Nenhum (Apenas Venda / Frigobar)', desc: 'Bebidas e produtos de venda' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setSetorDestinado(opt.key as any)}
+                      className={`p-2 rounded-xl text-left border transition-all ${
+                        setorDestinado === opt.key
+                          ? 'bg-[var(--accent)]/15 border-[var(--accent)] shadow-xs'
+                          : 'bg-[var(--bg-surface-alt)] border-[var(--border)] hover:border-[var(--accent)]/50'
+                      }`}
+                    >
+                      <div className="text-xs font-oswald uppercase tracking-wider font-bold text-[var(--text-primary)]">
+                        {opt.label}
+                      </div>
+                      <div className="text-[10px] text-[var(--text-secondary)] font-inter mt-0.5">
+                        {opt.desc}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Unidade de Medida */}
