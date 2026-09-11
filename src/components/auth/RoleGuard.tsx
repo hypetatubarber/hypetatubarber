@@ -35,8 +35,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children }) 
       return <Navigate to="/recepcao" replace />;
     }
     if (role === 'colaborador') {
-      const slug = currentUser.slug || 'danilinho-barber';
-      return <Navigate to={`/equipe/${slug}`} replace />;
+      return <Navigate to="/equipe" replace />;
     }
     return <Navigate to="/login" replace />;
   }

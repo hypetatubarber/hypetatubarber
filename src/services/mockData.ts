@@ -115,7 +115,7 @@ const INITIAL_USUARIOS: Usuario[] = [
     criado_em: '2026-09-10T17:29:43.142543+00:00',
   },
   {
-    id: 'user-colab-1',
+    id: 'a0c1e8d4-52bb-4c22-95f8-b80c6198f26a',
     nome: 'Danilinho Barber',
     email: 'danilinho@hypetatu.com.br',
     role: 'colaborador',
@@ -130,6 +130,8 @@ const INITIAL_USUARIOS: Usuario[] = [
     tipo_repasse: 'semanal',
     status_disponibilidade: 'disponivel',
     notificacoes_ativas: true,
+    senha_acesso: 'danili123',
+    primeiro_acesso_pendente: false,
     foto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80',
     status: 'ativo',
     criado_em: '2026-09-10T17:28:11.600000+00:00',
@@ -151,6 +153,8 @@ const INITIAL_USUARIOS: Usuario[] = [
     tipo_repasse: 'semanal',
     status_disponibilidade: 'disponivel',
     notificacoes_ativas: true,
+    senha_acesso: 'tattoo123',
+    primeiro_acesso_pendente: false,
     foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
     status: 'ativo',
     criado_em: '2026-09-10T17:28:11.664289+00:00',
@@ -172,6 +176,8 @@ const INITIAL_USUARIOS: Usuario[] = [
     tipo_repasse: 'servico',
     status_disponibilidade: 'disponivel',
     notificacoes_ativas: true,
+    senha_acesso: 'gabriel123',
+    primeiro_acesso_pendente: false,
     foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
     status: 'ativo',
     criado_em: '2026-09-10T17:35:00.000000+00:00',
@@ -245,78 +251,168 @@ const INITIAL_CLIENTES: Cliente[] = [
     tags: ['Barbearia'],
     criado_em: '2024-02-15T09:00:00Z',
   },
+  {
+    id: 'cli-lucas-1',
+    nome: 'Rafael Albuquerque',
+    telefone: '(71) 99122-3344',
+    email: 'rafael.albuquerque@gmail.com',
+    observacoes: 'Fechamento de braço oriental. Prefere sessões longas de 4 horas.',
+    tags: ['Tatuagem', 'Cliente VIP'],
+    criado_em: '2026-09-01T10:00:00Z',
+  },
+  {
+    id: 'cli-lucas-2',
+    nome: 'Marina Siqueira',
+    telefone: '(71) 98844-5566',
+    email: 'marina.siqueira@hotmail.com',
+    observacoes: 'Tatuagem fineline floral na costela. Pele clara e sensível.',
+    tags: ['Tatuagem', 'Fineline'],
+    criado_em: '2026-09-02T14:30:00Z',
+  },
+  {
+    id: 'cli-lucas-3',
+    nome: 'Thiago Meireles',
+    telefone: '(71) 99777-8899',
+    email: 'thiago.meireles@yahoo.com.br',
+    observacoes: 'Retoque de caligrafia e mini flash no antebraço.',
+    tags: ['Tatuagem'],
+    criado_em: '2026-09-03T11:00:00Z',
+  },
+  {
+    id: 'cli-danilo-1',
+    nome: 'Bruno Carvalho',
+    telefone: '(71) 99333-1122',
+    email: 'bruno.carvalho@gmail.com',
+    observacoes: 'Cliente semanal. Gosta do combo corte degradê com toalha quente dupla.',
+    tags: ['Barbearia', 'Cliente Frequente'],
+    criado_em: '2026-09-04T09:00:00Z',
+  },
+  {
+    id: 'cli-danilo-2',
+    nome: 'Lucas Silveira',
+    telefone: '(71) 99455-6677',
+    email: 'lucas.silveira@uol.com.br',
+    observacoes: 'Degradê navalhado alto e barba alinhada.',
+    tags: ['Barbearia'],
+    criado_em: '2026-09-05T15:00:00Z',
+  },
 ];
 
 const INITIAL_PRODUTOS: Produto[] = [
+  // Tatuagem
   { id: 'prod-1', nome: 'Tinta Dynamic Black (240ml)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 180, estoque_atual: 8, estoque_minimo: 3 },
   { id: 'prod-2', nome: 'Agulha Cartucho 03RL (Caixa 20un)', categoria: 'Tatuagem', unidade: 'cx', custo_unitario: 120, estoque_atual: 14, estoque_minimo: 5 },
+  { id: 'prod-8', nome: 'Plástico Filme Protetor (Rolo 300m)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 25, estoque_atual: 6, estoque_minimo: 3 },
+  { id: 'prod-10', nome: 'Vaselina Slip Tattoo Hidratante (500g)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 42, estoque_atual: 5, estoque_minimo: 2 },
+  { id: 'prod-11', nome: 'Transfer Stencil Gel It (120ml)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 65, estoque_atual: 3, estoque_minimo: 2 },
+
+  // Barbearia
   { id: 'prod-3', nome: 'Pomada Hype Matte Efeito Seco (150g)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 32, estoque_atual: 22, estoque_minimo: 10 },
   { id: 'prod-4', nome: 'Óleo para Barba Wood & Spice (30ml)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 28, estoque_atual: 18, estoque_minimo: 6 },
   { id: 'prod-5', nome: 'Lâminas Descartáveis Derby (Cx 100un)', categoria: 'Barbearia', unidade: 'cx', custo_unitario: 45, estoque_atual: 7, estoque_minimo: 4 },
-  { id: 'prod-6', nome: 'Labret Titânio Grau Implante G23', categoria: 'Piercing', unidade: 'un', custo_unitario: 35, estoque_atual: 32, estoque_minimo: 15 },
-  { id: 'prod-7', nome: 'Luvas Nitrílicas Pretas Tam M (Cx 100un)', categoria: 'Geral', unidade: 'cx', custo_unitario: 55, estoque_atual: 4, estoque_minimo: 8 }, // ALERTA: abaixo do mínimo
-  { id: 'prod-8', nome: 'Plástico Filme Protetor (Rolo 300m)', categoria: 'Tatuagem', unidade: 'un', custo_unitario: 25, estoque_atual: 6, estoque_minimo: 3 },
   { id: 'prod-9', nome: 'Gillette Espuma Refrescante (200ml)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 22, estoque_atual: 11, estoque_minimo: 5 },
+  { id: 'prod-12', nome: 'Shampoo Anticaspa Tea Tree (300ml)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 38, estoque_atual: 9, estoque_minimo: 4 },
+
+  // Piercing
+  { id: 'prod-6', nome: 'Labret Titânio Grau Implante G23', categoria: 'Piercing', unidade: 'un', custo_unitario: 35, estoque_atual: 32, estoque_minimo: 15 },
+  { id: 'prod-13', nome: 'Argola Articulada Segmentada Titânio', categoria: 'Piercing', unidade: 'un', custo_unitario: 40, estoque_atual: 18, estoque_minimo: 8 },
+  { id: 'prod-14', nome: 'Cateter Descartável 16G (Cx 50un)', categoria: 'Piercing', unidade: 'cx', custo_unitario: 85, estoque_atual: 4, estoque_minimo: 5 },
+
+  // Bebidas
+  { id: 'prod-15', nome: 'Cerveja Heineken Long Neck (330ml)', categoria: 'Bebidas', unidade: 'un', custo_unitario: 7.5, estoque_atual: 48, estoque_minimo: 24 },
+  { id: 'prod-16', nome: 'Cerveja Corona Extra (330ml)', categoria: 'Bebidas', unidade: 'un', custo_unitario: 8.0, estoque_atual: 36, estoque_minimo: 18 },
+  { id: 'prod-17', nome: 'Energético Red Bull Energy Drink (250ml)', categoria: 'Bebidas', unidade: 'lata', custo_unitario: 9.0, estoque_atual: 24, estoque_minimo: 12 },
+  { id: 'prod-18', nome: 'Whisky Johnnie Walker Black Label (1L)', categoria: 'Bebidas', unidade: 'garrafa', custo_unitario: 140, estoque_atual: 2, estoque_minimo: 1 },
+  { id: 'prod-19', nome: 'Refrigerante Coca-Cola Zero Lata (350ml)', categoria: 'Bebidas', unidade: 'lata', custo_unitario: 3.5, estoque_atual: 30, estoque_minimo: 15 },
+  { id: 'prod-20', nome: 'Água Mineral Crystal Sem Gás (500ml)', categoria: 'Bebidas', unidade: 'garrafa', custo_unitario: 2.0, estoque_atual: 5, estoque_minimo: 20 },
+
+  // Descartáveis & Higiene
+  { id: 'prod-7', nome: 'Luvas Nitrílicas Pretas Tam M (Cx 100un)', categoria: 'Descartáveis', unidade: 'cx', custo_unitario: 55, estoque_atual: 4, estoque_minimo: 8 },
+  { id: 'prod-21', nome: 'Álcool 70% Spray Hospitalar (1L)', categoria: 'Descartáveis', unidade: 'un', custo_unitario: 18, estoque_atual: 6, estoque_minimo: 3 },
+  { id: 'prod-22', nome: 'Papel Toalha Interfolha Bobina (Pct 500fls)', categoria: 'Descartáveis', unidade: 'un', custo_unitario: 24, estoque_atual: 12, estoque_minimo: 5 },
+
+  // Novos itens com quantidades variáveis (alto, médio, crítico)
+  { id: 'prod-23', nome: 'Água Tônica Antarctica Zero Lata (350ml)', categoria: 'Bebidas', unidade: 'lata', custo_unitario: 4.5, estoque_atual: 42, estoque_minimo: 12 },
+  { id: 'prod-24', nome: 'Balm Modelador de Barba Efeito Seco (100g)', categoria: 'Barbearia', unidade: 'un', custo_unitario: 34, estoque_atual: 15, estoque_minimo: 8 },
+  { id: 'prod-25', nome: 'Piercing Microdermal Base Titânio ASTM F-136', categoria: 'Piercing', unidade: 'un', custo_unitario: 68, estoque_atual: 2, estoque_minimo: 6 },
 ];
 
 const INITIAL_AGENDAMENTOS: Agendamento[] = [
+  // 3 Clientes para HOJE no Tatuador 1 (Lucas Rocha - id: 18c24c4b-0e19-4a79-9523-008d2c31365b)
   {
-    id: 'ag-1',
-    cliente_id: 'cli-1',
-    colaborador_id: 'user-colab-1', // Danilinho
-    servico_id: 'srv-2', // Combo Corte + Barba
-    data: getTodayDateString(),
-    hora_inicio: '09:00',
-    hora_fim: '10:15',
-    status: 'confirmado',
-    observacoes: 'Cliente pediu toalha quente dupla.',
-    criado_por: 'user-recepcao-1',
-    criado_em: '2024-03-01T08:00:00Z',
-  },
-  {
-    id: 'ag-2',
-    cliente_id: 'cli-5',
-    colaborador_id: 'user-colab-1', // Danilinho
-    servico_id: 'srv-1', // Corte Masculino
-    data: getTodayDateString(),
-    hora_inicio: '11:00',
-    hora_fim: '11:45',
-    status: 'agendado',
-    observacoes: 'Degradê na 0.5 baixa.',
-    criado_por: 'user-recepcao-1',
-    criado_em: '2024-03-01T08:30:00Z',
-  },
-  {
-    id: 'ag-3',
-    cliente_id: 'cli-2',
-    colaborador_id: 'user-colab-3', // Maya
-    servico_id: 'srv-6', // Tattoo Pequena
+    id: 'ag-lucas-today-1',
+    cliente_id: 'cli-lucas-1',
+    colaborador_id: '18c24c4b-0e19-4a79-9523-008d2c31365b',
+    servico_id: 'srv-8',
     data: getTodayDateString(),
     hora_inicio: '10:00',
-    hora_fim: '11:00',
-    status: 'em_atendimento',
-    observacoes: 'Fineline botânico no punho.',
-    criado_por: 'user-recepcao-1',
-    criado_em: '2024-03-01T09:00:00Z',
+    hora_fim: '14:00',
+    status: 'confirmado',
+    observacoes: 'Fechamento oriental antebraço (carpa + ondas).',
+    criado_por: '350079c7-c94f-47f8-9bae-10d1b50f08b8',
+    criado_em: '2026-09-11T08:00:00Z',
   },
   {
-    id: 'ag-4',
-    cliente_id: 'cli-3',
-    colaborador_id: 'user-colab-2', // Lucas Ink
-    servico_id: 'srv-7', // Tattoo Média
+    id: 'ag-lucas-today-2',
+    cliente_id: 'cli-lucas-2',
+    colaborador_id: '18c24c4b-0e19-4a79-9523-008d2c31365b',
+    servico_id: 'srv-7',
     data: getTodayDateString(),
-    hora_inicio: '14:00',
-    hora_fim: '16:00',
-    status: 'confirmado',
-    observacoes: 'Adaga e serpente no antebraço.',
-    criado_por: 'user-recepcao-1',
-    criado_em: '2024-03-01T10:00:00Z',
+    hora_inicio: '14:30',
+    hora_fim: '16:30',
+    status: 'em_atendimento',
+    observacoes: 'Peônia floral fineline delicada na costela.',
+    criado_por: '350079c7-c94f-47f8-9bae-10d1b50f08b8',
+    criado_em: '2026-09-11T08:30:00Z',
   },
+  {
+    id: 'ag-lucas-today-3',
+    cliente_id: 'cli-lucas-3',
+    colaborador_id: '18c24c4b-0e19-4a79-9523-008d2c31365b',
+    servico_id: 'srv-6',
+    data: getTodayDateString(),
+    hora_inicio: '17:00',
+    hora_fim: '18:00',
+    status: 'agendado',
+    observacoes: 'Frase caligrafia no antebraço esquerdo.',
+    criado_por: '350079c7-c94f-47f8-9bae-10d1b50f08b8',
+    criado_em: '2026-09-11T09:00:00Z',
+  },
+
+  // 2 Clientes para HOJE no Danilinho Barber (id: a0c1e8d4-52bb-4c22-95f8-b80c6198f26a)
+  {
+    id: 'ag-danilo-today-1',
+    cliente_id: 'cli-danilo-1',
+    colaborador_id: 'a0c1e8d4-52bb-4c22-95f8-b80c6198f26a',
+    servico_id: 'srv-2',
+    data: getTodayDateString(),
+    hora_inicio: '09:30',
+    hora_fim: '10:45',
+    status: 'concluido',
+    observacoes: 'Degradê na zero navalhado + barboterapia.',
+    criado_por: '350079c7-c94f-47f8-9bae-10d1b50f08b8',
+    criado_em: '2026-09-11T07:30:00Z',
+  },
+  {
+    id: 'ag-danilo-today-2',
+    cliente_id: 'cli-danilo-2',
+    colaborador_id: 'a0c1e8d4-52bb-4c22-95f8-b80c6198f26a',
+    servico_id: 'srv-1',
+    data: getTodayDateString(),
+    hora_inicio: '11:15',
+    hora_fim: '12:00',
+    status: 'confirmado',
+    observacoes: 'Fade médio com acabamento em navalha.',
+    criado_por: '350079c7-c94f-47f8-9bae-10d1b50f08b8',
+    criado_em: '2026-09-11T08:00:00Z',
+  },
+
+  // Outros agendamentos para manter histórico
   {
     id: 'ag-5',
     cliente_id: 'cli-4',
-    colaborador_id: 'user-colab-4', // Camila Piercer
-    servico_id: 'srv-11', // Piercing Nariz
+    colaborador_id: 'user-colab-4',
+    servico_id: 'srv-11',
     data: getTodayDateString(),
     hora_inicio: '16:30',
     hora_fim: '17:00',
@@ -325,11 +421,10 @@ const INITIAL_AGENDAMENTOS: Agendamento[] = [
     criado_por: 'user-recepcao-1',
     criado_em: '2024-03-01T11:00:00Z',
   },
-  // Amanhã
   {
     id: 'ag-6',
     cliente_id: 'cli-1',
-    colaborador_id: 'user-colab-1',
+    colaborador_id: 'a0c1e8d4-52bb-4c22-95f8-b80c6198f26a',
     servico_id: 'srv-4',
     data: getTomorrowDateString(),
     hora_inicio: '10:00',
@@ -841,14 +936,72 @@ const saveToStorage = <T>(key: string, data: T): void => {
   }
 };
 
+const loadProdutosWithDefaults = (): Produto[] => {
+  const loaded = loadFromStorage<Produto[]>(STORAGE_KEYS.PRODUTOS, INITIAL_PRODUTOS);
+  const existingIds = new Set(loaded.map((p) => p.id));
+  const missing = INITIAL_PRODUTOS.filter((p) => !existingIds.has(p.id));
+  if (missing.length > 0) {
+    const merged = [...loaded, ...missing];
+    saveToStorage(STORAGE_KEYS.PRODUTOS, merged);
+    return merged;
+  }
+  return loaded;
+};
+
+const loadClientesWithDefaults = (): Cliente[] => {
+  const loaded = loadFromStorage<Cliente[]>(STORAGE_KEYS.CLIENTES, INITIAL_CLIENTES);
+  const existingIds = new Set(loaded.map((c) => c.id));
+  const missing = INITIAL_CLIENTES.filter((c) => !existingIds.has(c.id));
+  if (missing.length > 0) {
+    const merged = [...loaded, ...missing];
+    saveToStorage(STORAGE_KEYS.CLIENTES, merged);
+    return merged;
+  }
+  return loaded;
+};
+
+const loadUsuariosWithDefaults = (): Usuario[] => {
+  const loaded = loadFromStorage<Usuario[]>(STORAGE_KEYS.USUARIOS, INITIAL_USUARIOS);
+  const existingIds = new Set(loaded.map((u) => u.id));
+  const missing = INITIAL_USUARIOS.filter((u) => !existingIds.has(u.id));
+  if (missing.length > 0) {
+    const merged = [...loaded, ...missing];
+    saveToStorage(STORAGE_KEYS.USUARIOS, merged);
+    return merged;
+  }
+  return loaded;
+};
+
+const loadAgendamentosWithDefaults = (): Agendamento[] => {
+  const loaded = loadFromStorage<Agendamento[]>(STORAGE_KEYS.AGENDAMENTOS, INITIAL_AGENDAMENTOS);
+  const today = getTodayDateString();
+  const existingIds = new Set(loaded.map((a) => a.id));
+  const missing = INITIAL_AGENDAMENTOS.filter((a) => !existingIds.has(a.id));
+
+  const updatedLoaded = loaded.map((a) => {
+    if (a.id.startsWith('ag-lucas-today') || a.id.startsWith('ag-danilo-today') || a.id === 'ag-1' || a.id === 'ag-2' || a.id === 'ag-3') {
+      return { ...a, data: today };
+    }
+    return a;
+  });
+
+  if (missing.length > 0) {
+    const merged = [...updatedLoaded, ...missing];
+    saveToStorage(STORAGE_KEYS.AGENDAMENTOS, merged);
+    return merged;
+  }
+  saveToStorage(STORAGE_KEYS.AGENDAMENTOS, updatedLoaded);
+  return updatedLoaded;
+};
+
 // Armazenamento em memória reativo
 export class MockDatabase {
-  private static usuarios: Usuario[] = loadFromStorage(STORAGE_KEYS.USUARIOS, INITIAL_USUARIOS);
-  private static clientes: Cliente[] = loadFromStorage(STORAGE_KEYS.CLIENTES, INITIAL_CLIENTES);
+  private static usuarios: Usuario[] = loadUsuariosWithDefaults();
+  private static clientes: Cliente[] = loadClientesWithDefaults();
   private static categorias: CategoriaServico[] = loadFromStorage(STORAGE_KEYS.CATEGORIAS, INITIAL_CATEGORIAS);
   private static servicos: Servico[] = loadFromStorage(STORAGE_KEYS.SERVICOS, INITIAL_SERVICOS);
-  private static agendamentos: Agendamento[] = loadFromStorage(STORAGE_KEYS.AGENDAMENTOS, INITIAL_AGENDAMENTOS);
-  private static produtos: Produto[] = loadFromStorage(STORAGE_KEYS.PRODUTOS, INITIAL_PRODUTOS);
+  private static agendamentos: Agendamento[] = loadAgendamentosWithDefaults();
+  private static produtos: Produto[] = loadProdutosWithDefaults();
   private static usoProdutos: UsoProduto[] = loadFromStorage(STORAGE_KEYS.USO_PRODUTOS, INITIAL_USO_PRODUTOS);
   private static movimentacoes: MovimentacaoEstoque[] = loadFromStorage(STORAGE_KEYS.MOVIMENTACOES, INITIAL_MOVIMENTACOES);
   private static notificacoes: Notificacao[] = loadFromStorage(STORAGE_KEYS.NOTIFICACOES, INITIAL_NOTIFICACOES);
@@ -931,12 +1084,17 @@ export class MockDatabase {
 
   // Agendamentos (com joins automáticos)
   static getAgendamentos(): Agendamento[] {
-    return this.agendamentos.map(ag => ({
-      ...ag,
-      cliente: this.clientes.find(c => c.id === ag.cliente_id),
-      colaborador: this.usuarios.find(u => u.id === ag.colaborador_id),
-      servico: this.servicos.find(s => s.id === ag.servico_id)
-    }));
+    return this.agendamentos.map(ag => {
+      const colab =
+        this.usuarios.find(u => u.id === ag.colaborador_id) ||
+        (ag.colaborador_id === 'user-colab-1' ? this.usuarios.find(u => u.id === 'a0c1e8d4-52bb-4c22-95f8-b80c6198f26a') : undefined);
+      return {
+        ...ag,
+        cliente: this.clientes.find(c => c.id === ag.cliente_id),
+        colaborador: colab,
+        servico: this.servicos.find(s => s.id === ag.servico_id)
+      };
+    });
   }
   static saveAgendamento(ag: Agendamento): Agendamento {
     const idx = this.agendamentos.findIndex(a => a.id === ag.id);

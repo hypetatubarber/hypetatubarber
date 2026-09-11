@@ -3,6 +3,7 @@ import { Plus, Edit2, Check, Clock, X } from 'lucide-react';
 import { Servico, CategoriaServico } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { generateUUID } from '../../lib/uuid';
 
 export const ServiceList: React.FC = () => {
   const { showToast } = useToast();
@@ -76,7 +77,7 @@ export const ServiceList: React.FC = () => {
 
     try {
       const srvData: Servico = {
-        id: editingService ? editingService.id : 'srv-' + Date.now(),
+        id: editingService ? editingService.id : generateUUID(),
         categoria_id: categoriaId,
         nome: nome.trim(),
         descricao: descricao.trim() || undefined,

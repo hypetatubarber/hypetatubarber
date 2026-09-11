@@ -19,6 +19,7 @@ import { Cliente, Agendamento } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { AppointmentStatusBadge } from '../appointments/AppointmentStatusBadge';
+import { generateUUID } from '../../lib/uuid';
 
 export const ClientList: React.FC = () => {
   const { showToast } = useToast();
@@ -113,7 +114,7 @@ export const ClientList: React.FC = () => {
 
     try {
       const clientData: Cliente = {
-        id: editingClient ? editingClient.id : 'cli-' + Date.now(),
+        id: editingClient ? editingClient.id : generateUUID(),
         nome: nome.trim(),
         telefone: telefone.trim(),
         email: email.trim() || undefined,

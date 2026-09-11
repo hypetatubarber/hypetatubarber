@@ -48,13 +48,12 @@ export const Sidebar: React.FC = () => {
     }
 
     // Colaborador
-    const slug = currentUser?.slug || 'danilinho-barber';
     return [
-      { to: `/equipe/${slug}`, label: 'Hoje em Destaque', icon: CheckCircle2, end: true },
-      { to: `/equipe/${slug}/agenda`, label: 'Minha Agenda', icon: Calendar },
-      { to: `/equipe/${slug}/ganhos`, label: 'Meus Ganhos', icon: DollarSign },
-      { to: `/equipe/${slug}/materiais`, label: 'Registrar Material', icon: ClipboardList },
-      { to: `/equipe/${slug}/notificacoes`, label: 'Notificações', icon: Bell },
+      { to: '/equipe', label: 'Hoje em Destaque', icon: CheckCircle2, end: true },
+      { to: '/equipe/agenda', label: 'Minha Agenda', icon: Calendar },
+      { to: '/equipe/ganhos', label: 'Meus Ganhos', icon: DollarSign },
+      { to: '/equipe/materiais', label: 'Registrar Material', icon: ClipboardList },
+      { to: '/equipe/notificacoes', label: 'Notificações', icon: Bell },
     ];
   };
 

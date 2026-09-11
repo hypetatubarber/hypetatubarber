@@ -4,6 +4,7 @@ import { Produto, Agendamento, UsoProduto } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { generateUUID } from '../../lib/uuid';
 
 interface Props {
   isOpen: boolean;
@@ -76,7 +77,7 @@ export const MaterialUsageModal: React.FC<Props> = ({
     setLoading(true);
     try {
       const novoUso: UsoProduto = {
-        id: 'uso-' + Date.now(),
+        id: generateUUID(),
         colaborador_id: currentUser.id,
         produto_id: produtoId,
         quantidade: Number(quantidade),

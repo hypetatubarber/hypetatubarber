@@ -11,7 +11,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import { JobsRotativoList } from '../../components/collaborator/JobsRotativoList';
 import { CollaboratorEarnings } from '../../components/collaborator/CollaboratorEarnings';
 import { Usuario, Agendamento, UsoProduto } from '../../types';
-import { CheckCircle2, Clock, PackagePlus, Scissors, ShieldAlert, Bell, Flame, DollarSign } from 'lucide-react';
+import { CheckCircle2, Clock, PackagePlus, Scissors, ShieldAlert, Bell, Flame, DollarSign, Calendar, X } from 'lucide-react';
 
 export const CollaboratorDashboard: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -24,6 +24,31 @@ export const CollaboratorDashboard: React.FC = () => {
   const [usos, setUsos] = useState<UsoProduto[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false);
+
+  // Controle para exibir o banner de push apenas na 1ª visita
+  const [pushDismissed, setPushDismissed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('hype_push_dismissed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleDismissPush = () => {
+    setPushDismissed(true);
+    try {
+      localStorage.setItem('hype_push_dismissed', 'true');
+    } catch {}
+  };
+
+  const handleActivatePush = () => {
+    requestPushPermission();
+    setPushDismissed(true);
+    try {
+      localStorage.setItem('hype_push_dismissed', 'true');
+    } catch {}
+  };
 
   // Modal de Lançamento de Material
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState<boolean>(false);
@@ -40,23 +65,36 @@ export const CollaboratorDashboard: React.FC = () => {
   const activeTab = getActiveTab();
 
   const loadData = async () => {
-    if (!slug) return;
     try {
       setLoading(true);
-      const user = await api.getUsuarioBySlug(slug);
-      if (user) {
-        setColaborador(user);
-        if (currentUser?.id !== user.id) {
-          switchCollaborator(slug);
+      let targetUser: Usuario | null = null;
+
+      if (currentUser && currentUser.role === 'colaborador') {
+        targetUser = currentUser;
+      } else if (slug) {
+        targetUser = (await api.getUsuarioBySlug(slug)) || null;
+      }
+
+      if (!targetUser) {
+        const colabs = await api.getColaboradores();
+        if (colabs.length > 0) {
+          targetUser = colabs[0];
+        }
+      }
+
+      if (targetUser) {
+        setColaborador(targetUser);
+        if (targetUser.slug && currentUser?.id !== targetUser.id) {
+          switchCollaborator(targetUser.slug);
         }
 
         const [agList, usoList] = await Promise.all([
-          api.getAgendamentosByColaborador(user.id),
+          api.getAgendamentosByColaborador(targetUser.id),
           api.getUsoProdutos(),
         ]);
 
         setAgendamentos(agList);
-        setUsos(usoList.filter((u) => u.colaborador_id === user.id));
+        setUsos(usoList.filter((u) => u.colaborador_id === targetUser.id));
       }
     } catch (err) {
       console.error('Erro ao carregar dados do colaborador:', err);
@@ -79,7 +117,7 @@ export const CollaboratorDashboard: React.FC = () => {
       window.removeEventListener('hype_agendamentos_changed', handleSync);
       window.removeEventListener('hype_uso_produtos_changed', handleSync);
     };
-  }, [slug]);
+  }, [slug, currentUser]);
 
   const handleOpenMaterialModal = (agId?: string) => {
     setLinkedAgendamentoId(agId);
@@ -99,7 +137,7 @@ export const CollaboratorDashboard: React.FC = () => {
       <div className="bg-[var(--bg-surface)] p-8 rounded-xl border border-[var(--border)] text-center shadow-soft text-[var(--text-primary)]">
         <ShieldAlert className="w-10 h-10 text-[#EB5757] mx-auto mb-2" />
         <h3 className="font-display uppercase tracking-wide text-lg text-[var(--text-primary)]">Colaborador não encontrado</h3>
-        <p className="text-xs text-[var(--text-secondary)] mt-1 font-inter">O link /equipe/{slug} não corresponde a nenhum profissional ativo.</p>
+        <p className="text-xs text-[var(--text-secondary)] mt-1 font-inter">Nenhum profissional ativo foi encontrado ou autenticado.</p>
       </div>
     );
   }
@@ -162,11 +200,11 @@ export const CollaboratorDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Banner de Ativação Push (se ainda não concedido) */}
-      {pushPermission !== 'granted' && (
-        <div className="p-4 bg-[var(--accent-bg)] border border-[var(--border)] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[var(--text-primary)]">
-          <div className="flex items-center gap-2.5">
-            <Bell className="w-5 h-5 text-[#517566] shrink-0" />
+      {/* Banner de Ativação Push (apenas na 1ª visita e se ainda não concedido) */}
+      {!pushDismissed && pushPermission !== 'granted' && (
+        <div className="p-4 bg-[var(--accent-bg)] border border-[var(--border)] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[var(--text-primary)] relative">
+          <div className="flex items-center gap-2.5 pr-6 sm:pr-0">
+            <Bell className="w-5 h-5 text-[#517566] dark:text-[#8CBDAD] shrink-0" />
             <div>
               <div className="font-oswald uppercase tracking-wider font-semibold text-xs sm:text-sm text-[var(--text-primary)]">Receba avisos instantâneos na sua tela</div>
               <div className="text-[11px] text-[var(--text-secondary)] font-inter">
@@ -174,12 +212,21 @@ export const CollaboratorDashboard: React.FC = () => {
               </div>
             </div>
           </div>
-          <button
-            onClick={requestPushPermission}
-            className="px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[#FFFFFF] rounded-lg text-xs font-oswald uppercase tracking-wider font-bold whitespace-nowrap self-start sm:self-auto transition-colors"
-          >
-            Ativar Notificações Push
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button
+              onClick={handleActivatePush}
+              className="px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[#FFFFFF] rounded-lg text-xs font-oswald uppercase tracking-wider font-bold whitespace-nowrap transition-colors"
+            >
+              Ativar Notificações
+            </button>
+            <button
+              onClick={handleDismissPush}
+              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] transition-colors"
+              title="Dispensar aviso"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 
@@ -204,63 +251,74 @@ export const CollaboratorDashboard: React.FC = () => {
               </span>
             </div>
 
+            <TodaySchedule
+              agendamentos={todayAgendamentos}
+              onRefresh={loadData}
+              onOpenMaterialModal={handleOpenMaterialModal}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ABA 2: MINHA AGENDA (Atendimentos com Calendário Recolhível) */}
+      {activeTab === 'agenda' && (
+        <div className="space-y-4">
+          {/* Barra Superior Compacta de Escolha de Data */}
+          <div className="bg-[var(--bg-surface)] p-4 sm:p-5 rounded-xl border border-[var(--border)] shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[var(--text-primary)]">
+            <div>
+              <div className="text-[10px] font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold">
+                {selectedDate === todayStr ? 'Agenda de Hoje' : 'Data Selecionada'}
+              </div>
+              <h2 className="font-display uppercase tracking-wide text-lg sm:text-xl text-[var(--text-primary)]">
+                {new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {selectedDate !== todayStr && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDate(todayStr);
+                    setIsCalendarOpen(false);
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-oswald uppercase tracking-wider font-semibold bg-[var(--bg-surface-alt)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] transition-colors"
+                >
+                  Voltar para Hoje
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-oswald uppercase tracking-wider font-semibold bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-white flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>{isCalendarOpen ? 'Recolher Calendário' : 'Escolher Data'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Calendário que expande apenas sob demanda */}
+          {isCalendarOpen && (
+            <div className="animate-in fade-in slide-in-from-top-2">
+              <MonthCalendar
+                selectedDate={selectedDate}
+                onSelectDate={(dStr) => {
+                  setSelectedDate(dStr);
+                  setIsCalendarOpen(false); // Fecha o calendário para focar na lista
+                }}
+                agendamentos={agendamentos}
+              />
+            </div>
+          )}
+
+          {/* Atendimentos do Dia Selecionado com todas as ações disponíveis */}
           <TodaySchedule
-            agendamentos={todayAgendamentos}
+            agendamentos={agendamentos.filter((a) => a.data === selectedDate)}
             onRefresh={loadData}
             onOpenMaterialModal={handleOpenMaterialModal}
           />
-        </div>
-      </div>
-      )}
-
-      {/* ABA 2: MINHA AGENDA (Calendário Pessoal) */}
-      {activeTab === 'agenda' && (
-        <div className="space-y-6">
-          <MonthCalendar
-            selectedDate={selectedDate}
-            onSelectDate={(dStr) => setSelectedDate(dStr)}
-            agendamentos={agendamentos}
-          />
-
-          {/* Lista de Atendimentos do Dia Selecionado */}
-          <div className="bg-[var(--bg-surface)] rounded-xl p-5 border border-[var(--border)] shadow-soft">
-            <div className="flex items-center gap-2 pb-3 mb-4 border-b border-[var(--border)]">
-              <Clock className="w-4 h-4 text-[var(--accent-dark)] dark:text-[var(--accent)]" />
-              <h3 className="font-oswald uppercase tracking-wider font-semibold text-sm sm:text-base text-[var(--text-primary)]">
-                Atendimentos em {selectedDate}
-              </h3>
-            </div>
-
-            {agendamentos.filter((a) => a.data === selectedDate).length === 0 ? (
-              <p className="text-xs text-[var(--text-muted)] py-4 text-center font-inter">
-                Nenhum atendimento agendado para esta data.
-              </p>
-            ) : (
-              <div className="space-y-2.5">
-                {agendamentos
-                  .filter((a) => a.data === selectedDate)
-                  .map((ag) => (
-                    <div
-                      key={ag.id}
-                      className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface-alt)] flex items-center justify-between gap-3"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-semibold text-[var(--text-primary)] font-inter">{ag.cliente?.nome}</span>
-                          <AppointmentStatusBadge status={ag.status} size="sm" />
-                        </div>
-                        <div className="text-xs text-[var(--text-secondary)] font-inter">
-                          {ag.servico?.nome} ({ag.hora_inicio} às {ag.hora_fim})
-                        </div>
-                      </div>
-                      <span className="text-xs font-display text-[var(--accent-dark)] dark:text-[var(--accent)] bg-[var(--bg-surface)] border border-[var(--border)] px-2.5 py-1 rounded">
-                        R$ {ag.servico?.preco?.toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </div>
         </div>
       )}
 

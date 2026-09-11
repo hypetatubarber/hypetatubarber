@@ -1,9 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Edit2, Check, X, ExternalLink, KeyRound, Eye, EyeOff, Lock, Loader2, Flame, Phone, Bell, BellOff, Sparkles, Percent, MessageCircle, Power, Tag, DollarSign, Calendar } from 'lucide-react';
+import {
+  UserPlus,
+  Edit2,
+  Check,
+  X,
+  ExternalLink,
+  KeyRound,
+  Eye,
+  EyeOff,
+  Lock,
+  Loader2,
+  Flame,
+  Phone,
+  Bell,
+  BellOff,
+  Sparkles,
+  Percent,
+  MessageCircle,
+  Power,
+  Tag,
+  DollarSign,
+  Calendar,
+  Copy,
+  CheckCheck,
+  Link as LinkIcon,
+  Clock,
+  ShieldCheck,
+} from 'lucide-react';
 import { Usuario, TipoColaborador, StatusDisponibilidade, TipoRepasse } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Link } from 'react-router-dom';
+import { generateUUID } from '../../lib/uuid';
 
 export const CollaboratorManagement: React.FC = () => {
   const { showToast } = useToast();
@@ -34,6 +62,47 @@ export const CollaboratorManagement: React.FC = () => {
       ? `${domainName[0]}${'•'.repeat(Math.min(domainName.length - 2, 4))}${domainName[domainName.length - 1]}`
       : '••••';
     return `${maskedName}@${maskedDomain}.${tld}`;
+  };
+
+  // Visualização e cópia de senhas de colaboradores (Criadas no 1º acesso)
+  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, boolean>>({});
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const [copiedPasswordId, setCopiedPasswordId] = useState<string | null>(null);
+
+  const togglePasswordReveal = (userId: string) => {
+    setRevealedPasswords((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
+
+  const handleCopyActivationLink = (u: Usuario) => {
+    const link = `${window.location.origin}/ativar-conta?id=${u.id}`;
+    navigator.clipboard.writeText(link);
+    setCopiedLinkId(u.id);
+    showToast(`Link de 1º acesso copiado para ${u.nome}!`, 'success');
+    setTimeout(() => setCopiedLinkId(null), 2500);
+  };
+
+  const handleCopyPassword = (u: Usuario) => {
+    if (!u.senha_acesso) return;
+    navigator.clipboard.writeText(u.senha_acesso);
+    setCopiedPasswordId(u.id);
+    showToast(`Senha de ${u.nome} copiada!`, 'success');
+    setTimeout(() => setCopiedPasswordId(null), 2000);
+  };
+
+  const getWhatsAppInviteLink = (u: Usuario) => {
+    const link = `${window.location.origin}/ativar-conta?id=${u.id}`;
+    const cleanPhone = (u.telefone || '').replace(/\D/g, '');
+    const msg = encodeURIComponent(
+      `Olá ${u.nome}! Segue seu link exclusivo para criar seu acesso ao portal da Hype Tatu & Barber:\n\n${link}\n\nNele você poderá cadastrar seu e-mail de preferência e criar sua senha de acesso.`
+    );
+    if (cleanPhone) {
+      const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+      return `https://wa.me/${formattedPhone}?text=${msg}`;
+    }
+    return `https://wa.me/?text=${msg}`;
   };
 
   // Modal de Criação / Edição de Colaborador
@@ -82,13 +151,16 @@ export const CollaboratorManagement: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    const handleChanged = () => loadData();
+    window.addEventListener('hype_usuarios_changed', handleChanged);
+    return () => window.removeEventListener('hype_usuarios_changed', handleChanged);
   }, []);
 
   const handleOpenModal = (u?: Usuario) => {
     if (u) {
       setEditingUser(u);
       setNome(u.nome);
-      setEmail(u.email);
+      setEmail(u.email.includes('pendente') ? '' : u.email);
       setRole(u.role);
       setSlug(u.slug || '');
       setEspecialidade(u.especialidade || '');
@@ -144,18 +216,29 @@ export const CollaboratorManagement: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nome.trim() || !email.trim()) {
-      showToast('Nome e e-mail são obrigatórios.', 'warning');
+    if (!nome.trim()) {
+      showToast('Nome é obrigatório.', 'warning');
       return;
     }
 
+    const safeSlug = slug.trim() || nome.trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || `colab-${generateUUID().slice(0, 6)}`;
+
+    // Se o admin não digitou e-mail, gera pendência para o colaborador definir no 1º acesso
+    const safeEmail = email.trim() || `${safeSlug}-${generateUUID().slice(0, 4)}@pendente.hypetatu.com.br`;
+
     try {
+      const isNew = !editingUser;
       const userData: Usuario = {
-        id: editingUser ? editingUser.id : 'user-' + Date.now(),
+        id: editingUser ? editingUser.id : generateUUID(),
         nome: nome.trim(),
-        email: email.trim(),
+        email: safeEmail,
         role,
-        slug: slug.trim() || undefined,
+        slug: safeSlug,
         especialidade: especialidade.trim() || (tipoColaborador === 'rotativo' ? 'Tatuador Rotativo' : undefined),
         foto: foto.trim() || undefined,
         status,
@@ -169,11 +252,13 @@ export const CollaboratorManagement: React.FC = () => {
         tipo_repasse: role === 'colaborador' ? tipoRepasse : undefined,
         status_disponibilidade: role === 'colaborador' && tipoColaborador === 'rotativo' ? statusDisponibilidade : undefined,
         notificacoes_ativas: role === 'colaborador' && tipoColaborador === 'rotativo' ? notificacoesAtivas : undefined,
+        senha_acesso: editingUser?.senha_acesso,
+        primeiro_acesso_pendente: isNew ? true : (editingUser.primeiro_acesso_pendente ?? false),
         criado_em: editingUser?.criado_em || new Date().toISOString(),
       };
 
       await api.saveUsuario(userData);
-      showToast('Colaborador salvo com sucesso!', 'success');
+      showToast(isNew ? 'Colaborador criado! Envie o link de 1º acesso para ele criar seu e-mail e senha.' : 'Colaborador salvo com sucesso!', 'success');
       setIsModalOpen(false);
       loadData();
     } catch (err: any) {
@@ -332,8 +417,10 @@ export const CollaboratorManagement: React.FC = () => {
       {/* Grid de Colaboradores */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredUsuarios.map((u) => {
-          const portalLink = u.role === 'colaborador' && u.slug ? `/equipe/${u.slug}` : null;
           const isRotativo = u.tipo_colaborador === 'rotativo';
+          const hasPassword = Boolean(u.senha_acesso);
+          const isPendingEmail = !u.email || u.email.includes('pendente');
+          const isPendingFirstAccess = u.primeiro_acesso_pendente || !hasPassword || isPendingEmail;
 
           return (
             <div
@@ -377,16 +464,24 @@ export const CollaboratorManagement: React.FC = () => {
                     </span>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="text-[10px] text-[var(--text-muted)] truncate font-mono">
-                        {revealedEmails[u.id] ? u.email : maskEmail(u.email)}
+                        {isPendingEmail ? (
+                          <span className="text-amber-500 font-sans italic">Definirá e-mail no 1º acesso</span>
+                        ) : revealedEmails[u.id] ? (
+                          u.email
+                        ) : (
+                          maskEmail(u.email)
+                        )}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => toggleEmailReveal(u.id)}
-                        className="p-0.5 text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors rounded"
-                        title={revealedEmails[u.id] ? 'Ocultar e-mail' : 'Visualizar e-mail completo'}
-                      >
-                        {revealedEmails[u.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                      </button>
+                      {!isPendingEmail && (
+                        <button
+                          type="button"
+                          onClick={() => toggleEmailReveal(u.id)}
+                          className="p-0.5 text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors rounded"
+                          title={revealedEmails[u.id] ? 'Ocultar e-mail' : 'Visualizar e-mail completo'}
+                        >
+                          {revealedEmails[u.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -474,18 +569,110 @@ export const CollaboratorManagement: React.FC = () => {
                   </span>
                 </div>
 
-                {portalLink && (
-                  <div className="mt-2.5 p-2 bg-[var(--bg-surface-alt)] rounded-lg border border-[var(--border)] flex items-center justify-between text-[11px]">
-                    <span className="text-[var(--text-secondary)] font-mono truncate max-w-[170px]">{portalLink}</span>
-                    <Link
-                      to={portalLink}
-                      className="text-[var(--accent-dark)] dark:text-[var(--accent)] hover:underline font-oswald uppercase tracking-wider font-bold flex items-center gap-1 shrink-0"
-                      title="Acessar portal individual"
+                {/* BLOCO: CREDENCIAIS & 1º ACESSO (Visível no Admin Master) */}
+                <div className="mt-3 p-3 rounded-xl bg-[var(--bg-surface-alt)] border border-[var(--border)] space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-oswald uppercase tracking-wider text-[11px] font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+                      <KeyRound className="w-3.5 h-3.5 text-[var(--accent)]" />
+                      Acesso & Credenciais
+                    </span>
+                    <span
+                      className={`text-[9px] font-oswald uppercase font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${
+                        isPendingFirstAccess
+                          ? 'bg-amber-500/15 text-amber-500 border border-amber-500/30'
+                          : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                      }`}
                     >
-                      Acessar <ExternalLink className="w-3 h-3" />
+                      {isPendingFirstAccess ? (
+                        <>
+                          <Clock className="w-2.5 h-2.5" /> Aguarda 1º Acesso
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-2.5 h-2.5" /> Acesso Ativo
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Senha Criada pelo Colaborador (Visível para o Master Admin) */}
+                  <div className="flex items-center justify-between bg-[var(--bg-surface)] p-2 rounded-lg border border-[var(--border)]">
+                    <span className="text-[10px] text-[var(--text-secondary)] font-oswald uppercase">Senha Criada:</span>
+                    <div className="flex items-center gap-1.5">
+                      {hasPassword ? (
+                        <>
+                          <span className="font-mono text-[11px] font-semibold text-[var(--accent)] tracking-wider">
+                            {revealedPasswords[u.id] ? u.senha_acesso : '••••••••'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => togglePasswordReveal(u.id)}
+                            className="p-1 text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors rounded"
+                            title={revealedPasswords[u.id] ? 'Ocultar senha' : 'Ver senha criada'}
+                          >
+                            {revealedPasswords[u.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyPassword(u)}
+                            className="p-1 text-[var(--text-muted)] hover:text-emerald-400 transition-colors rounded"
+                            title="Copiar senha"
+                          >
+                            {copiedPasswordId === u.id ? <CheckCheck className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-[10px] text-amber-500/90 italic">
+                          Aguardando criação no link
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Ações de Compartilhamento de Link */}
+                  <div className="pt-1 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyActivationLink(u)}
+                      className="flex-1 py-1.5 px-2 bg-[var(--bg-surface)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] hover:border-[var(--accent)] rounded-lg text-[10px] font-oswald uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-1"
+                      title="Copiar link para o colaborador cadastrar e-mail e criar senha"
+                    >
+                      {copiedLinkId === u.id ? (
+                        <>
+                          <CheckCheck className="w-3 h-3 text-emerald-400" />
+                          <span className="text-emerald-400">Link Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <LinkIcon className="w-3 h-3 text-[var(--accent)]" />
+                          <span>Copiar Link 1º Acesso</span>
+                        </>
+                      )}
+                    </button>
+
+                    <a
+                      href={getWhatsAppInviteLink(u)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-1.5 px-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-[10px] font-oswald uppercase tracking-wider font-semibold transition-all flex items-center gap-1 shrink-0"
+                      title="Enviar convite de acesso com link via WhatsApp"
+                    >
+                      <MessageCircle className="w-3 h-3" />
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+
+                  {/* Rota Universal (/equipe) */}
+                  <div className="flex items-center justify-between text-[10px] text-[var(--text-muted)] pt-1 border-t border-[var(--border)]/60">
+                    <span>Rota: <strong className="text-[var(--text-secondary)] font-mono">/equipe</strong></span>
+                    <Link
+                      to="/equipe"
+                      className="text-[var(--accent)] hover:underline flex items-center gap-1 font-oswald uppercase tracking-wider"
+                    >
+                      Abrir Portal <ExternalLink className="w-2.5 h-2.5" />
                     </Link>
                   </div>
-                )}
+                </div>
               </div>
 
               <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-end gap-2 font-oswald uppercase">
@@ -498,10 +685,10 @@ export const CollaboratorManagement: React.FC = () => {
                 <button
                   onClick={() => handleOpenPasswordModal(u)}
                   className="px-2.5 py-1.5 bg-[var(--bg-surface-alt)] hover:bg-[var(--border)] text-[var(--accent-dark)] dark:text-[var(--accent)] border border-[var(--border)] hover:border-[var(--accent)] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-                  title="Alterar a senha deste usuário"
+                  title="Redefinir a senha deste usuário"
                 >
                   <KeyRound className="w-3 h-3" />
-                  Senha
+                  Redefinir
                 </button>
                 <button
                   onClick={() => handleOpenModal(u)}
@@ -545,42 +732,55 @@ export const CollaboratorManagement: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">Nível de Acesso *</label>
+                  <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">
+                    Nível de Acesso *
+                  </label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as any)}
                     className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-oswald uppercase tracking-wider font-semibold"
                   >
-                    <option value="colaborador">Colaborador</option>
-                    <option value="recepcionista">Recepcionista</option>
-                    <option value="master">Master (Dono)</option>
+                    <option value="colaborador">Colaborador (/equipe)</option>
+                    <option value="recepcionista">Recepcionista (/recepcao)</option>
+                    <option value="master">Master (Dono) (/admin)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">Slug da URL (/equipe/slug)</label>
+                  <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">
+                    Telefone / WhatsApp
+                  </label>
                   <input
                     type="text"
-                    placeholder="danilinho-barber"
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-mono"
+                    placeholder="(71) 99999-0000"
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-inter"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">E-mail de Login *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold">
+                    E-mail de Acesso (Opcional)
+                  </label>
+                  <span className="text-[10px] text-amber-500 font-inter font-medium">
+                    Pode definir via Link de 1º acesso
+                  </span>
+                </div>
                 <input
                   type="email"
-                  required
-                  placeholder="profissional@hypetatu.com.br"
+                  placeholder="profissional@hypetatu.com.br (ou deixe em branco)"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] focus:border-[var(--accent)] outline-none font-inter"
                 />
+                <p className="text-[10px] text-[var(--text-muted)] mt-1 font-inter">
+                  💡 Se deixar em branco, basta copiar o link de ativação após salvar e enviar para o colaborador escolher seu próprio e-mail e senha.
+                </p>
               </div>
 
               <div>

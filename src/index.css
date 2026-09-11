@@ -2,55 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* ==========================================================================
-     LAYOUT FIXO HYPE TATU — DUAS ZONAS (Sidebar Escura + Conteúdo Claro)
-     ========================================================================== */
-  
-  /* Zona Direita (Conteúdo Claro, Leitura Fácil) */
-  --bg-primary:     #F0F2F4;   /* fundo geral da área de conteúdo */
-  --bg-surface:     #FFFFFF;   /* cards, modais, tabelas, header */
-  --bg-surface-alt: #F5F7F9;   /* cabeçalho de tabelas, linhas alternadas, hover */
-  
-  /* Zona Esquerda (Sidebar Escura Oficial) */
-  --bg-sidebar:     #1A1F25;   /* sidebar com fundo escuro */
-  --border-sidebar: rgba(140, 189, 173, 0.15); /* divisor vertical da sidebar */
-  --sidebar-text:   #AAB6BE;
+/* ==========================================================================
+   TEMA 1: BRANCO (Fundo Branco, Superfícies Limpas, Alto Contraste Diurno)
+   ========================================================================== */
+:root, [data-theme="light"] {
+  --bg-primary:         #F3F5F7;
+  --bg-surface:         #FFFFFF;
+  --bg-surface-alt:     #EBF0F5;
+  --bg-header:          #FFFFFF;
+  --bg-sidebar:         #14191F;
+  --border-sidebar:     rgba(140, 189, 173, 0.18);
+  --sidebar-text:       #AAB6BE;
   --sidebar-text-muted: #72808A;
+  --border:             #D1D9E2;
+  --text-primary:       #0A0D10;
+  --text-secondary:     #4A5568;
+  --text-muted:         #7A8793;
+  --accent:             #517566;
+  --accent-dark:        #385348;
+  --accent-bg:          rgba(81, 117, 102, 0.14);
+  --header-text:        #0A0D10;
+  --shadow-card:        0 1px 3px rgba(0, 0, 0, 0.08);
+  --scrollbar-track:    #F3F5F7;
+  --scrollbar-thumb:    #8CBDAD;
+}
 
-  /* Bordas do Conteúdo */
-  --border:         #DDE1E7;   /* todas as bordas e divisores dos cards */
+/* ==========================================================================
+   TEMA 2: PRETO PURO (Fundo Preto Total, Superfícies Grafite Profundo)
+   ========================================================================== */
+[data-theme="dark-black"] {
+  --bg-primary:         #000000;
+  --bg-surface:         #0F1113;
+  --bg-surface-alt:     #171A1E;
+  --bg-header:          #08090A;
+  --bg-sidebar:         #08090A;
+  --border-sidebar:     #1E2227;
+  --sidebar-text:       #C2CBD1;
+  --sidebar-text-muted: #72808A;
+  --border:             #20242A;
+  --text-primary:       #F4F6F8;
+  --text-secondary:     #9CA5AF;
+  --text-muted:         #656F7A;
+  --accent:             #8CBDAD;
+  --accent-dark:        #517566;
+  --accent-bg:          rgba(140, 189, 173, 0.16);
+  --header-text:        #F4F6F8;
+  --shadow-card:        0 2px 8px rgba(0, 0, 0, 0.7);
+  --scrollbar-track:    #08090A;
+  --scrollbar-thumb:    #262C33;
+}
 
-  /* Tipografia da Zona de Conteúdo */
-  --text-primary:   #0B0E11;   /* títulos, valores principais */
-  --text-secondary: #4A5568;   /* subtítulos, labels */
-  --text-muted:     #8A96A3;   /* timestamps, labels de métricas, placeholders */
-
-  /* Acento Oficial Hype Tatu */
-  --accent:         #8CBDAD;   /* botões primários, badges ativos, ícones de destaque */
-  --accent-dark:    #517566;   /* hover, detalhes secundários */
-  --accent-bg:      rgba(140, 189, 173, 0.12); /* fundo de badges e itens ativos */
-
-  /* Cores de Status */
-  --status-agendado-bg: rgba(140, 189, 173, 0.15);
-  --status-agendado-text: #517566;
-  --status-em-atendimento-bg: rgba(255, 193, 7, 0.18);
-  --status-em-atendimento-text: #B45309;
-  --status-concluido-bg: rgba(81, 117, 102, 0.20);
-  --status-concluido-text: #2D6A4F;
-  --status-cancelado-bg: rgba(235, 87, 87, 0.15);
-  --status-cancelado-text: #C53030;
-
-  /* Sombras e Tabelas */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --table-row-alt: #F8F9FB;
-  --table-row-hover: #EEF1F5;
-  --calendar-other-month: #C5CDD4;
-  --btn-outline-text: #517566;
-
-  /* Scrollbar */
-  --scrollbar-track: #F0F2F4;
-  --scrollbar-thumb: #8CBDAD;
+/* ==========================================================================
+   TEMA 3: ESCURO AZULADO (Fundo Slate Noturno / Tema Atual Elegante)
+   ========================================================================== */
+[data-theme="dark-blue"] {
+  --bg-primary:         #0B1118;
+  --bg-surface:         #131B24;
+  --bg-surface-alt:     #1B2633;
+  --bg-header:          #0F1620;
+  --bg-sidebar:         #0C121A;
+  --border-sidebar:     rgba(140, 189, 173, 0.15);
+  --sidebar-text:       #AAB6BE;
+  --sidebar-text-muted: #72808A;
+  --border:             #233140;
+  --text-primary:       #F0F4F8;
+  --text-secondary:     #94A3B8;
+  --text-muted:         #64748B;
+  --accent:             #8CBDAD;
+  --accent-dark:        #517566;
+  --accent-bg:          rgba(140, 189, 173, 0.16);
+  --header-text:        #F0F4F8;
+  --shadow-card:        0 2px 8px rgba(0, 0, 0, 0.4);
+  --scrollbar-track:    #0B1118;
+  --scrollbar-thumb:    #233140;
 }
 
 /* Transição suave entre temas em todos os elementos */

@@ -10,6 +10,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ReceptionDashboard } from './pages/recepcao/ReceptionDashboard';
 import { CollaboratorDashboard } from './pages/equipe/CollaboratorDashboard';
 import { LoginPage } from './pages/login/LoginPage';
+import { AtivarContaPage } from './pages/auth/AtivarContaPage';
 import { LandingPage } from './pages/public/LandingPage';
 import { ConversasPage } from './pages/conversas/ConversasPage';
 import { WhatsAppConfigPage } from './pages/admin/WhatsAppConfigPage';
@@ -38,6 +39,10 @@ export const App: React.FC = () => {
 
                 {/* 2. Tela de Login Única */}
                 <Route path="/login" element={<LoginPage />} />
+
+                {/* 2.1. Primeiro Acesso / Ativação de Conta do Colaborador */}
+                <Route path="/ativar-conta" element={<AtivarContaPage />} />
+                <Route path="/primeiro-acesso" element={<AtivarContaPage />} />
 
                 {/* 3. Área Autenticada com Layout */}
                 <Route element={<AppLayout />}>
@@ -165,9 +170,9 @@ export const App: React.FC = () => {
                     }
                   />
 
-                  {/* ROTAS COLABORADOR (/equipe/:slug) — Acesso exclusivo de role 'colaborador' */}
+                  {/* ROTAS COLABORADOR (/equipe) — Rota unificada por e-mail, sem slugs individuais */}
                   <Route
-                    path="/equipe/:slug"
+                    path="/equipe"
                     element={
                       <RoleGuard allowedRoles={['colaborador']}>
                         <CollaboratorDashboard />
@@ -175,7 +180,7 @@ export const App: React.FC = () => {
                     }
                   />
                   <Route
-                    path="/equipe/:slug/agenda"
+                    path="/equipe/agenda"
                     element={
                       <RoleGuard allowedRoles={['colaborador']}>
                         <CollaboratorDashboard />
@@ -183,7 +188,7 @@ export const App: React.FC = () => {
                     }
                   />
                   <Route
-                    path="/equipe/:slug/ganhos"
+                    path="/equipe/ganhos"
                     element={
                       <RoleGuard allowedRoles={['colaborador']}>
                         <CollaboratorDashboard />
@@ -191,7 +196,7 @@ export const App: React.FC = () => {
                     }
                   />
                   <Route
-                    path="/equipe/:slug/materiais"
+                    path="/equipe/materiais"
                     element={
                       <RoleGuard allowedRoles={['colaborador']}>
                         <CollaboratorDashboard />
@@ -199,13 +204,17 @@ export const App: React.FC = () => {
                     }
                   />
                   <Route
-                    path="/equipe/:slug/notificacoes"
+                    path="/equipe/notificacoes"
                     element={
                       <RoleGuard allowedRoles={['colaborador']}>
                         <CollaboratorDashboard />
                       </RoleGuard>
                     }
                   />
+
+                  {/* Redirecionamento de rotas legadas com :slug para a rota unificada */}
+                  <Route path="/equipe/:slug" element={<Navigate to="/equipe" replace />} />
+                  <Route path="/equipe/:slug/*" element={<Navigate to="/equipe" replace />} />
 
                   {/* 404 Interno */}
                   <Route path="*" element={<NotFound />} />

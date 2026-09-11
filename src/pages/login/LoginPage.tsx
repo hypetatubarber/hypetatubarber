@@ -22,8 +22,7 @@ export const LoginPage: React.FC = () => {
       } else if (role === 'recepcionista') {
         navigate('/recepcao', { replace: true });
       } else if (role === 'colaborador') {
-        const slug = currentUser.slug || 'danilinho-barber';
-        navigate(`/equipe/${slug}`, { replace: true });
+        navigate('/equipe', { replace: true });
       }
     }
   }, [currentUser, role, authLoading, navigate]);
@@ -43,8 +42,7 @@ export const LoginPage: React.FC = () => {
       } else if (user.role === 'recepcionista') {
         navigate('/recepcao', { replace: true });
       } else if (user.role === 'colaborador') {
-        const slug = user.slug || 'danilinho-barber';
-        navigate(`/equipe/${slug}`, { replace: true });
+        navigate('/equipe', { replace: true });
       } else {
         navigate('/admin', { replace: true });
       }

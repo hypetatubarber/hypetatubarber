@@ -136,6 +136,140 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Endpoint: Salvar Usuário/Colaborador pelo Master (Bypassa RLS com Service Role)
+  if (req.method === 'POST' && req.url === '/api/admin/save-user') {
+    let bodyStr = '';
+    req.on('data', chunk => { bodyStr += chunk; });
+    req.on('end', async () => {
+      try {
+        const userData = JSON.parse(bodyStr || '{}');
+        if (!userData || !userData.nome || !userData.email) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Nome e email são obrigatórios.' }));
+        }
+
+        if (adminSb) {
+          // Salva ou atualiza no Supabase usando a Service Role
+          const { data, error } = await adminSb
+            .from('usuarios')
+            .upsert(userData)
+            .select()
+            .single();
+
+          if (error) {
+            console.warn('[Server save-user warning]:', error.message);
+            // Se houver erro de coluna ou restrição, tenta salvar com colunas base
+            const baseUser = {
+              id: userData.id,
+              nome: userData.nome,
+              email: userData.email,
+              role: userData.role || 'colaborador',
+              slug: userData.slug,
+              especialidade: userData.especialidade,
+              foto: userData.foto,
+              status: userData.status || 'ativo',
+            };
+            const { data: baseData, error: baseErr } = await adminSb
+              .from('usuarios')
+              .upsert(baseUser)
+              .select()
+              .single();
+
+            if (baseErr) {
+              res.writeHead(400, { 'Content-Type': 'application/json' });
+              return res.end(JSON.stringify({ error: baseErr.message, user: userData }));
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ success: true, user: { ...userData, ...baseData } }));
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ success: true, user: data }));
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ success: true, user: userData, demo: true }));
+      } catch (err) {
+        console.error('[Save User Error]:', err);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message || 'Erro ao processar requisição.' }));
+      }
+    });
+    return;
+  }
+
+  // Endpoint: Ativação de Conta pelo Colaborador (Define seu e-mail e senha)
+  if (req.method === 'POST' && req.url === '/api/colaborador/activate') {
+    let bodyStr = '';
+    req.on('data', chunk => { bodyStr += chunk; });
+    req.on('end', async () => {
+      try {
+        const { userId, email, password } = JSON.parse(bodyStr || '{}');
+        if (!userId || !email || !password || password.length < 6) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'ID do usuário, e-mail e senha válida (mínimo 6 dígitos) são obrigatórios.' }));
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+
+        if (adminSb) {
+          // 1. Tenta atualizar ou criar no Supabase Auth
+          try {
+            const { error: updateAuthErr } = await adminSb.auth.admin.updateUserById(userId, {
+              email: cleanEmail,
+              password: password,
+              email_confirm: true,
+            });
+
+            if (updateAuthErr) {
+              await adminSb.auth.admin.createUser({
+                id: userId,
+                email: cleanEmail,
+                password: password,
+                email_confirm: true,
+              });
+            }
+          } catch (authEx) {
+            console.warn('[Server activate auth warning]:', authEx.message);
+          }
+
+          // 2. Atualiza a tabela usuarios
+          const { data: updatedUser, error: dbErr } = await adminSb
+            .from('usuarios')
+            .update({
+              email: cleanEmail,
+              status: 'ativo',
+            })
+            .eq('id', userId)
+            .select()
+            .single();
+
+          if (dbErr) {
+            console.warn('[Server activate db update warning]:', dbErr.message);
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({
+            success: true,
+            user: { ...(updatedUser || { id: userId, email: cleanEmail }), senha_acesso: password, primeiro_acesso_pendente: false }
+          }));
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          success: true,
+          user: { id: userId, email: cleanEmail, senha_acesso: password, primeiro_acesso_pendente: false, status: 'ativo' },
+          demo: true
+        }));
+      } catch (err) {
+        console.error('[Activate Error]:', err);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message || 'Erro ao ativar conta.' }));
+      }
+    });
+    return;
+  }
+
   // Webhook WhatsApp (Evolution API)
   if (req.method === 'POST' && (req.url === '/webhook/whatsapp' || req.url === '/api/webhook/whatsapp')) {
     let bodyStr = '';

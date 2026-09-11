@@ -28,6 +28,7 @@ import {
 import { Pagamento, CustoFixo, RepasseComissao, Usuario, CategoriaServico, FormaPagamento } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { generateUUID } from '../../lib/uuid';
 
 type SubTab = 'visao_geral' | 'faturamento_detalhado' | 'comissoes' | 'custos_fixos' | 'resultado' | 'colaboradores';
 
@@ -254,7 +255,7 @@ export const AdminFinanceiroView: React.FC = () => {
 
     try {
       await api.saveCustoFixo({
-        id: 'cf-' + Date.now(),
+        id: generateUUID(),
         nome: custoNome.trim(),
         valor_mensal: Number(custoValor),
         dia_vencimento: Number(custoDia),

@@ -27,6 +27,8 @@ export interface Usuario {
   tipo_repasse?: TipoRepasse; // 'servico' | 'semanal' | 'quinzenal' | 'mensal'
   status_disponibilidade?: StatusDisponibilidade; // 'disponivel' | 'indisponivel'
   notificacoes_ativas?: boolean; // Se recebe alertas de jobs (padrão: true)
+  senha_acesso?: string; // Senha criada pelo profissional no primeiro acesso (visível para o Admin)
+  primeiro_acesso_pendente?: boolean; // True se ainda não ativou a conta
 }
 
 export type TipoRepasse = 'servico' | 'semanal' | 'quinzenal' | 'mensal';
@@ -167,7 +169,7 @@ export interface Agendamento {
   servico?: Servico;
 }
 
-export type UnidadeProduto = 'ml' | 'un' | 'g' | 'cx' | 'par';
+export type UnidadeProduto = 'ml' | 'un' | 'g' | 'cx' | 'par' | 'lata' | 'garrafa' | 'dose' | string;
 
 export interface Produto {
   id: string;

@@ -41,12 +41,11 @@ export const BottomNav: React.FC = () => {
     }
 
     // Colaborador
-    const slug = currentUser?.slug || 'danilinho-barber';
     return [
-      { to: `/equipe/${slug}`, label: 'Hoje', icon: CheckCircle2, end: true },
-      { to: `/equipe/${slug}/agenda`, label: 'Agenda', icon: Calendar },
-      { to: `/equipe/${slug}/ganhos`, label: 'Ganhos', icon: DollarSign },
-      { to: `/equipe/${slug}/notificacoes`, label: 'Avisos', icon: Bell, badge: unreadCount },
+      { to: '/equipe', label: 'Hoje', icon: CheckCircle2, end: true },
+      { to: '/equipe/agenda', label: 'Agenda', icon: Calendar },
+      { to: '/equipe/ganhos', label: 'Ganhos', icon: DollarSign },
+      { to: '/equipe/notificacoes', label: 'Avisos', icon: Bell, badge: unreadCount },
     ];
   };
 

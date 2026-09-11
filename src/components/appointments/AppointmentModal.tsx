@@ -4,6 +4,7 @@ import { Agendamento, Cliente, Usuario, Servico, CategoriaServico, StatusAgendam
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { generateUUID } from '../../lib/uuid';
 
 interface Props {
   isOpen: boolean;
@@ -153,7 +154,7 @@ export const AppointmentModal: React.FC<Props> = ({
 
     try {
       const created = await api.saveCliente({
-        id: 'cli-' + Date.now(),
+        id: generateUUID(),
         nome: newClientNome.trim(),
         telefone: newClientTelefone.trim(),
         email: newClientEmail.trim() || undefined,
@@ -189,7 +190,7 @@ export const AppointmentModal: React.FC<Props> = ({
     setLoading(true);
     try {
       const agendamentoData: Agendamento = {
-        id: appointmentToEdit ? appointmentToEdit.id : 'ag-' + Date.now(),
+        id: appointmentToEdit ? appointmentToEdit.id : generateUUID(),
         cliente_id: clienteId,
         colaborador_id: colaboradorId,
         servico_id: servicoId,
