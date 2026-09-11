@@ -10,6 +10,7 @@ import { CollaboratorConsumption } from '../../components/stock/CollaboratorCons
 import { ClientList } from '../../components/clients/ClientList';
 import { CollaboratorManagement } from '../../components/collaborators/CollaboratorManagement';
 import { AdminFinanceiroView } from '../../components/financeiro/AdminFinanceiroView';
+import { RegistrarPagamentoModal } from '../../components/financeiro/RegistrarPagamentoModal';
 import { api } from '../../services/api';
 import { Agendamento, Usuario, CategoriaServico } from '../../types';
 import { Calendar, DollarSign, Users, AlertTriangle, Plus, Sparkles, Flame } from 'lucide-react';
@@ -28,6 +29,7 @@ export const AdminDashboard: React.FC = () => {
   const [isRotativoModalOpen, setIsRotativoModalOpen] = useState(false);
   const [appointmentToEdit, setAppointmentToEdit] = useState<Agendamento | null>(null);
   const [initialSlotData, setInitialSlotData] = useState<{ colabId?: string; time?: string }>({});
+  const [pagamentoModalAgendamento, setPagamentoModalAgendamento] = useState<Agendamento | null>(null);
 
   // Aba ativa conforme a URL
   const getTabFromPath = () => {
@@ -220,6 +222,7 @@ export const AdminDashboard: React.FC = () => {
             onSlotClick={handleSlotClick}
             onAppointmentClick={handleAppointmentClick}
             onChamarRotativo={() => setIsRotativoModalOpen(true)}
+            onRegistrarPagamento={(ag) => setPagamentoModalAgendamento(ag)}
           />
         </div>
       )}
@@ -240,6 +243,7 @@ export const AdminDashboard: React.FC = () => {
         initialTime={initialSlotData.time}
         initialColaboradorId={initialSlotData.colabId}
         onSaved={loadData}
+        onRegistrarPagamento={(ag) => setPagamentoModalAgendamento(ag)}
       />
 
       {/* Modal de Solicitação de Tatuador Rotativo */}
@@ -247,6 +251,14 @@ export const AdminDashboard: React.FC = () => {
         isOpen={isRotativoModalOpen}
         onClose={() => setIsRotativoModalOpen(false)}
         initialDate={selectedDate}
+        onSuccess={loadData}
+      />
+
+      {/* Modal Registrar Pagamento (PIX, Crédito à Vista, Parcelado, Débito ou Dinheiro) */}
+      <RegistrarPagamentoModal
+        isOpen={!!pagamentoModalAgendamento}
+        onClose={() => setPagamentoModalAgendamento(null)}
+        agendamento={pagamentoModalAgendamento}
         onSuccess={loadData}
       />
     </div>

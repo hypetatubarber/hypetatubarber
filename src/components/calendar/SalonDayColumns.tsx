@@ -289,29 +289,40 @@ export const SalonDayColumns: React.FC<Props> = ({
                               {ag.servico && <span className="font-mono font-bold text-[var(--text-primary)]">R$ {ag.servico.preco.toFixed(2)}</span>}
                             </div>
 
-                            {/* Botão Registrar Pagamento se Concluído */}
-                            {ag.status === 'concluido' && (
-                              <div className="mt-2 pt-1.5 border-t border-[var(--border)]">
-                                {ag.pago ? (
-                                  <div className="w-full py-0.5 rounded bg-[rgba(39,174,96,0.12)] text-[#27AE60] text-[10px] font-oswald uppercase font-bold text-center flex items-center justify-center gap-1">
-                                    <CheckCircle2 className="w-3 h-3" />
-                                    Pago
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onRegistrarPagamento?.(ag);
-                                    }}
-                                    className="w-full py-1 rounded bg-[#27AE60] hover:bg-[#219653] text-white text-[10px] font-oswald uppercase tracking-wider font-bold text-center flex items-center justify-center gap-1 transition-colors shadow-sm"
-                                  >
-                                    <DollarSign className="w-3 h-3" />
-                                    Registrar Pagamento
-                                  </button>
-                                )}
-                              </div>
-                            )}
+                            {/* Botão Registrar Pagamento se Concluído ou Horário Passado */}
+                            {(() => {
+                              const now = new Date();
+                              const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                              const currentHourMin = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                              const isPastTime = selectedDate < todayStr || (selectedDate === todayStr && ag.hora_fim <= currentHourMin);
+                              const podeRegistrar = (ag.status === 'concluido' || isPastTime) && ag.status !== 'cancelado';
+
+                              if (!podeRegistrar) return null;
+
+                              return (
+                                <div className="mt-2 pt-1.5 border-t border-[var(--border)]">
+                                  {ag.pago ? (
+                                    <div className="w-full py-0.5 rounded bg-[rgba(39,174,96,0.12)] text-[#27AE60] text-[10px] font-oswald uppercase font-bold text-center flex items-center justify-center gap-1">
+                                      <CheckCircle2 className="w-3 h-3" />
+                                      Pago
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRegistrarPagamento?.(ag);
+                                      }}
+                                      className="w-full py-1 rounded bg-[#27AE60] hover:bg-[#219653] text-white text-[10px] font-oswald uppercase tracking-wider font-bold text-center flex items-center justify-center gap-1 transition-colors shadow-sm active:scale-95"
+                                      title="Clique para lançar pagamento (PIX, Cartão, Parcelado ou Dinheiro)"
+                                    >
+                                      <DollarSign className="w-3 h-3" />
+                                      Registrar Pagamento
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         ) : (
                           // Continuação visual de agendamento longo (>30 min)

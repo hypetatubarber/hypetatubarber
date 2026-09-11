@@ -216,85 +216,129 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
             <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-2">
               Forma de Pagamento *
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {/* 1. PIX */}
               <button
                 type="button"
                 onClick={() => handleFormaChange('pix')}
-                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center gap-1.5 transition-all ${
+                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center justify-center gap-1 transition-all text-center ${
                   formaPagamento === 'pix'
-                    ? 'bg-[rgba(39,174,96,0.18)] border-[#27AE60] text-[#27AE60] shadow-sm'
-                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]'
+                    ? 'bg-[#27AE60]/20 border-[#27AE60] text-[#27AE60] shadow-sm ring-1 ring-[#27AE60]'
+                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 <QrCode className="w-4 h-4" />
-                PIX (0%)
+                <span>PIX</span>
+                <span className="text-[10px] opacity-80 font-normal">0% taxa</span>
               </button>
 
+              {/* 2. CRÉDITO À VISTA */}
               <button
                 type="button"
-                onClick={() => handleFormaChange('dinheiro')}
-                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center gap-1.5 transition-all ${
-                  formaPagamento === 'dinheiro'
-                    ? 'bg-[rgba(39,174,96,0.18)] border-[#27AE60] text-[#27AE60] shadow-sm'
-                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]'
+                onClick={() => handleFormaChange('credito', 1)}
+                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center justify-center gap-1 transition-all text-center ${
+                  formaPagamento === 'credito'
+                    ? 'bg-blue-500/20 border-blue-500 text-blue-500 shadow-sm ring-1 ring-blue-500'
+                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]'
                 }`}
               >
-                <Banknote className="w-4 h-4" />
-                Dinheiro
+                <CreditCard className="w-4 h-4" />
+                <span>Crédito 1x</span>
+                <span className="text-[10px] opacity-80 font-normal">À vista</span>
               </button>
 
+              {/* 3. CRÉDITO PARCELADO */}
+              <button
+                type="button"
+                onClick={() => handleFormaChange('credito_parcelado', parcelas > 1 ? parcelas : 2)}
+                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center justify-center gap-1 transition-all text-center ${
+                  formaPagamento === 'credito_parcelado'
+                    ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-sm ring-1 ring-purple-500'
+                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Parcelado</span>
+                <span className="text-[10px] opacity-80 font-normal">2x até 12x</span>
+              </button>
+
+              {/* 4. DÉBITO */}
               <button
                 type="button"
                 onClick={() => handleFormaChange('debito')}
-                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center gap-1.5 transition-all ${
+                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center justify-center gap-1 transition-all text-center ${
                   formaPagamento === 'debito'
-                    ? 'bg-[rgba(140,189,173,0.22)] border-[var(--accent)] text-[var(--text-primary)] shadow-sm'
-                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]'
+                    ? 'bg-teal-500/20 border-teal-500 text-teal-400 shadow-sm ring-1 ring-teal-500'
+                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 <CreditCard className="w-4 h-4" />
-                Débito (1.9%)
+                <span>Débito</span>
+                <span className="text-[10px] opacity-80 font-normal">1.9% taxa</span>
               </button>
 
+              {/* 5. DINHEIRO */}
               <button
                 type="button"
-                onClick={() => handleFormaChange('credito')}
-                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center gap-1.5 transition-all ${
-                  formaPagamento === 'credito' || formaPagamento === 'credito_parcelado'
-                    ? 'bg-[rgba(140,189,173,0.22)] border-[var(--accent)] text-[var(--text-primary)] shadow-sm'
-                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]'
+                onClick={() => handleFormaChange('dinheiro')}
+                className={`p-2.5 rounded-xl border text-xs font-oswald uppercase tracking-wider font-bold flex flex-col items-center justify-center gap-1 transition-all text-center ${
+                  formaPagamento === 'dinheiro'
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-500 shadow-sm ring-1 ring-amber-500'
+                    : 'bg-[var(--bg-surface-alt)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]'
                 }`}
               >
-                <CreditCard className="w-4 h-4" />
-                Cartão Crédito
+                <Banknote className="w-4 h-4" />
+                <span>Dinheiro</span>
+                <span className="text-[10px] opacity-80 font-normal">Espécie</span>
               </button>
             </div>
           </div>
 
-          {/* Opções Avançadas se Crédito (Parcelamento & Taxa da Maquininha) */}
-          {(formaPagamento === 'credito' || formaPagamento === 'credito_parcelado') && (
-            <div className="p-3.5 rounded-xl bg-[var(--bg-surface-alt)]/70 border border-[var(--border)] space-y-3 animate-fadeIn">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Detalhamento Visual da Forma Selecionada */}
+          {formaPagamento === 'credito_parcelado' && (
+            <div className="p-4 rounded-xl bg-[var(--bg-surface-alt)] border border-purple-500/30 space-y-3 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-oswald uppercase tracking-wider text-purple-400 font-bold flex items-center gap-1.5">
+                  <CreditCard className="w-4 h-4" /> Parcelamento no Cartão (2x a 12x)
+                </span>
+                <span className="text-xs font-mono font-bold text-[var(--text-primary)]">
+                  {parcelas}x de R$ {(bruto / parcelas).toFixed(2)}
+                </span>
+              </div>
+
+              {/* Botões Rápidos de Parcelas */}
+              <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+                {[2, 3, 4, 5, 6, 10, 12].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => handleParcelasChange(n)}
+                    className={`py-2 px-1 rounded-lg text-xs font-oswald uppercase font-bold transition-all text-center border ${
+                      parcelas === n
+                        ? 'bg-purple-600 text-white border-purple-400 shadow-sm'
+                        : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] border-[var(--border)] hover:border-purple-400 hover:text-[var(--text-primary)]'
+                    }`}
+                  >
+                    <div>{n}x</div>
+                    <div className="text-[9px] font-mono opacity-80">R$ {(bruto / n).toFixed(0)}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Seletor dropdown completo + taxa da maquininha */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
                   <label className="text-[11px] font-oswald uppercase tracking-wider text-[var(--text-secondary)] font-semibold block mb-1">
-                    Opção de Parcelamento
+                    Número de Parcelas
                   </label>
                   <select
-                    value={formaPagamento === 'credito_parcelado' ? parcelas : 1}
-                    onChange={(e) => {
-                      const p = Number(e.target.value);
-                      if (p === 1) {
-                        handleFormaChange('credito', 1);
-                      } else {
-                        handleFormaChange('credito_parcelado', p);
-                      }
-                    }}
-                    className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-oswald uppercase font-semibold outline-none focus:border-[var(--accent)]"
+                    value={parcelas}
+                    onChange={(e) => handleParcelasChange(Number(e.target.value))}
+                    className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-oswald uppercase font-semibold outline-none focus:border-purple-500"
                   >
-                    <option value={1}>Crédito à Vista (1x)</option>
-                    {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => (
+                    {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
                       <option key={n} value={n}>
-                        Crédito em {n}x (R$ {(bruto / n).toFixed(2)}/mês)
+                        {n}x de R$ {(bruto / n).toFixed(2)} (Total: R$ {bruto.toFixed(2)})
                       </option>
                     ))}
                   </select>
@@ -303,10 +347,10 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] font-oswald uppercase tracking-wider text-[var(--text-secondary)] font-semibold">
-                      Taxa da Maquininha (%)
+                      Taxa da Maquininha ({parcelas}x)
                     </label>
-                    <span className="text-[10px] text-[var(--text-muted)] font-mono">
-                      = R$ {taxaValor.toFixed(2)}
+                    <span className="text-[10px] text-[#EB5757] font-mono font-bold">
+                      - R$ {taxaValor.toFixed(2)}
                     </span>
                   </div>
                   <div className="relative">
@@ -318,11 +362,82 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
                       max="30"
                       value={taxaMaquininhaPct}
                       onChange={(e) => setTaxaMaquininhaPct(parseFloat(e.target.value) || 0)}
-                      className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono font-bold outline-none focus:border-[var(--accent)]"
+                      className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono font-bold outline-none focus:border-purple-500"
                     />
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {formaPagamento === 'credito' && (
+            <div className="p-3.5 rounded-xl bg-[var(--bg-surface-alt)] border border-blue-500/30 space-y-2 animate-fadeIn">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-oswald uppercase tracking-wider text-blue-400 font-bold flex items-center gap-1.5">
+                  <CreditCard className="w-4 h-4" /> Crédito à Vista (1x)
+                </span>
+                <span className="font-mono font-bold text-[var(--text-primary)]">
+                  R$ {bruto.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 text-xs pt-1">
+                <label className="text-[11px] font-oswald uppercase tracking-wider text-[var(--text-secondary)] font-semibold">
+                  Taxa da Maquininha (%):
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-[#EB5757] font-mono font-bold">
+                    = - R$ {taxaValor.toFixed(2)}
+                  </span>
+                  <div className="relative w-24">
+                    <Percent className="w-3 h-3 text-[var(--text-muted)] absolute left-2 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="30"
+                      value={taxaMaquininhaPct}
+                      onChange={(e) => setTaxaMaquininhaPct(parseFloat(e.target.value) || 0)}
+                      className="w-full text-xs pl-6 pr-2 py-1 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono font-bold outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {formaPagamento === 'debito' && (
+            <div className="p-3 rounded-xl bg-[var(--bg-surface-alt)] border border-teal-500/30 flex items-center justify-between text-xs animate-fadeIn">
+              <span className="font-oswald uppercase tracking-wider text-teal-400 font-bold flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4" /> Cartão de Débito
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-[var(--text-secondary)] font-oswald uppercase">Taxa:</span>
+                <span className="text-xs font-mono font-bold text-[#EB5757]">
+                  {taxaMaquininhaPct}% (- R$ {taxaValor.toFixed(2)})
+                </span>
+              </div>
+            </div>
+          )}
+
+          {formaPagamento === 'pix' && (
+            <div className="p-3 rounded-xl bg-[#27AE60]/10 border border-[#27AE60]/30 flex items-center justify-between text-xs animate-fadeIn">
+              <span className="font-oswald uppercase tracking-wider text-[#27AE60] font-bold flex items-center gap-1.5">
+                <QrCode className="w-4 h-4" /> PIX Instantâneo
+              </span>
+              <span className="text-xs font-mono font-bold text-[#27AE60]">
+                0% de taxa • Creditado integralmente
+              </span>
+            </div>
+          )}
+
+          {formaPagamento === 'dinheiro' && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs animate-fadeIn">
+              <span className="font-oswald uppercase tracking-wider text-amber-500 font-bold flex items-center gap-1.5">
+                <Banknote className="w-4 h-4" /> Dinheiro em Espécie
+              </span>
+              <span className="text-xs font-mono font-bold text-amber-500">
+                0% de taxa • Lançamento no Caixa Físico
+              </span>
             </div>
           )}
 
@@ -374,7 +489,7 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
             </label>
             <input
               type="text"
-              placeholder="Ex: Cliente dividiu 50% no PIX e 50% no crédito, ou gorjeta opcional..."
+              placeholder="Ex: Cliente dividiu no PIX e cartão, ou gorjeta opcional..."
               value={observacoes}
               onChange={(e) => setObservacoes(e.target.value)}
               className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] font-inter"
@@ -397,7 +512,11 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
               className="px-5 py-2.5 bg-[#27AE60] hover:bg-[#219653] text-white text-xs font-oswald uppercase tracking-wider font-bold rounded-xl transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
-              {loading ? 'Processando...' : 'Confirmar e Registrar Pagamento'}
+              {loading
+                ? 'Processando...'
+                : formaPagamento === 'credito_parcelado'
+                ? `Confirmar Pagamento (${parcelas}x de R$ ${(bruto / parcelas).toFixed(2)})`
+                : `Confirmar Pagamento (R$ ${bruto.toFixed(2)})`}
             </button>
           </div>
         </form>
