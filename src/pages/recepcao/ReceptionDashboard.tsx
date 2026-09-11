@@ -93,16 +93,16 @@ export const ReceptionDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Topo do Painel Recepção */}
-      <div className="bg-[#FFFFFF] text-[#0B0E11] p-6 rounded-2xl border border-[#DDE1E7] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[var(--bg-surface)] text-[var(--text-primary)] p-6 rounded-2xl border border-[var(--border)] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[rgba(140,189,173,0.12)] border border-[rgba(140,189,173,0.25)] text-[#517566] text-xs font-oswald uppercase tracking-wider font-semibold mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent-bg)] border border-[var(--border)] text-[var(--accent-dark)] dark:text-[var(--accent)] text-xs font-oswald uppercase tracking-wider font-semibold mb-2">
             <Sparkles className="w-3.5 h-3.5" />
             Recepção & Agendamentos
           </div>
-          <h1 className="font-display uppercase text-2xl sm:text-3xl tracking-wide text-[#0B0E11]">
+          <h1 className="font-display uppercase text-2xl sm:text-3xl tracking-wide text-[var(--text-primary)]">
             AGENDA GERAL DO SALÃO
           </h1>
-          <p className="text-xs text-[#4A5568] mt-0.5 font-inter">
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-inter">
             Gerencie horários de todos os barbeiros e tatuadores, cadastre clientes e envie avisos imediatos.
           </p>
         </div>
@@ -110,7 +110,7 @@ export const ReceptionDashboard: React.FC = () => {
         <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
           <button
             onClick={() => setIsRotativoModalOpen(true)}
-            className="bg-[rgba(81,117,102,0.18)] hover:bg-[rgba(81,117,102,0.30)] text-[#517566] dark:text-[#6FCF97] border border-[rgba(81,117,102,0.40)] font-oswald uppercase font-bold text-xs py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all"
+            className="bg-[var(--accent-bg)] hover:bg-[var(--accent)]/30 text-[#27AE60] dark:text-[#6FCF97] border border-[var(--accent)]/40 font-oswald uppercase font-bold text-xs py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all"
           >
             <Flame className="w-4 h-4 text-[#27AE60]" />
             Chamar Rotativo
@@ -122,7 +122,7 @@ export const ReceptionDashboard: React.FC = () => {
               setInitialSlotData({});
               setIsAppModalOpen(true);
             }}
-            className="bg-[#8CBDAD] hover:bg-[#517566] text-[#0B0E11] hover:text-[#FFFFFF] font-oswald uppercase font-bold text-xs py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all"
+            className="bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[var(--text-primary)] font-oswald uppercase font-bold text-xs py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all"
           >
             <Plus className="w-4 h-4" />
             + Novo Agendamento

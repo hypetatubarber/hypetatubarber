@@ -6,25 +6,25 @@
    TEMA 1: BRANCO (Fundo Branco, Superfícies Limpas, Alto Contraste Diurno)
    ========================================================================== */
 :root, [data-theme="light"] {
-  --bg-primary:         #F3F5F7;
+  --bg-primary:         #F4F6F8;
   --bg-surface:         #FFFFFF;
-  --bg-surface-alt:     #EBF0F5;
+  --bg-surface-alt:     #F0F3F6;
   --bg-header:          #FFFFFF;
-  --bg-sidebar:         #14191F;
-  --border-sidebar:     rgba(140, 189, 173, 0.18);
-  --sidebar-text:       #AAB6BE;
-  --sidebar-text-muted: #72808A;
-  --border:             #D1D9E2;
-  --text-primary:       #0A0D10;
+  --bg-sidebar:         #FFFFFF;
+  --border-sidebar:     #E2E8F0;
+  --sidebar-text:       #2D3748;
+  --sidebar-text-muted: #718096;
+  --border:             #E2E8F0;
+  --text-primary:       #1A202C;
   --text-secondary:     #4A5568;
-  --text-muted:         #7A8793;
-  --accent:             #517566;
-  --accent-dark:        #385348;
-  --accent-bg:          rgba(81, 117, 102, 0.14);
-  --header-text:        #0A0D10;
+  --text-muted:         #718096;
+  --accent:             #317A60;
+  --accent-dark:        #225442;
+  --accent-bg:          rgba(49, 122, 96, 0.12);
+  --header-text:        #1A202C;
   --shadow-card:        0 1px 3px rgba(0, 0, 0, 0.08);
-  --scrollbar-track:    #F3F5F7;
-  --scrollbar-thumb:    #8CBDAD;
+  --scrollbar-track:    #F4F6F8;
+  --scrollbar-thumb:    #CBD5E1;
 }
 
 /* ==========================================================================
@@ -32,28 +32,28 @@
    ========================================================================== */
 [data-theme="dark-black"] {
   --bg-primary:         #000000;
-  --bg-surface:         #0F1113;
-  --bg-surface-alt:     #171A1E;
-  --bg-header:          #08090A;
-  --bg-sidebar:         #08090A;
-  --border-sidebar:     #1E2227;
-  --sidebar-text:       #C2CBD1;
-  --sidebar-text-muted: #72808A;
-  --border:             #20242A;
-  --text-primary:       #F4F6F8;
-  --text-secondary:     #9CA5AF;
-  --text-muted:         #656F7A;
+  --bg-surface:         #0A0C0E;
+  --bg-surface-alt:     #13161A;
+  --bg-header:          #000000;
+  --bg-sidebar:         #050607;
+  --border-sidebar:     #1E2226;
+  --sidebar-text:       #CBD5E1;
+  --sidebar-text-muted: #64748B;
+  --border:             #1E2226;
+  --text-primary:       #F8FAFC;
+  --text-secondary:     #94A3B8;
+  --text-muted:         #64748B;
   --accent:             #8CBDAD;
   --accent-dark:        #517566;
   --accent-bg:          rgba(140, 189, 173, 0.16);
-  --header-text:        #F4F6F8;
-  --shadow-card:        0 2px 8px rgba(0, 0, 0, 0.7);
-  --scrollbar-track:    #08090A;
-  --scrollbar-thumb:    #262C33;
+  --header-text:        #F8FAFC;
+  --shadow-card:        0 2px 8px rgba(0, 0, 0, 0.8);
+  --scrollbar-track:    #000000;
+  --scrollbar-thumb:    #1E2226;
 }
 
 /* ==========================================================================
-   TEMA 3: ESCURO AZULADO (Fundo Slate Noturno / Tema Atual Elegante)
+   TEMA 3: ESCURO AZULADO (Fundo Slate Noturno / Tema Padrão Elegante)
    ========================================================================== */
 [data-theme="dark-blue"] {
   --bg-primary:         #0B1118;

@@ -89,25 +89,25 @@ export const SalonDayColumns: React.FC<Props> = ({
   })();
 
   return (
-    <div className="bg-[#FFFFFF] rounded-xl border border-[#DDE1E7] shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex flex-col h-[750px] overflow-hidden">
+    <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] shadow-sm flex flex-col h-[750px] overflow-hidden transition-colors">
       {/* Barra de Título & Filtros Superiores */}
-      <div className="p-4 sm:p-5 border-b border-[#DDE1E7] bg-[#FFFFFF] shrink-0">
+      <div className="p-4 sm:p-5 border-b border-[var(--border)] bg-[var(--bg-surface)] shrink-0">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#8CBDAD]" />
-              <h3 className="font-display uppercase tracking-wide text-base sm:text-lg text-[#0B0E11] capitalize">
+              <Clock className="w-4 h-4 text-[var(--accent)]" />
+              <h3 className="font-display uppercase tracking-wide text-base sm:text-lg text-[var(--text-primary)] capitalize">
                 Agenda do Dia — {formattedDate}
               </h3>
             </div>
-            <p className="text-xs text-[#8A96A3] mt-0.5 font-inter">
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-inter">
               Horários de atendimento das 08h às 22h. Clique em qualquer horário livre para agendar.
             </p>
           </div>
 
           {/* Filtros em Linha */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5 text-xs text-[#517566] font-oswald uppercase tracking-wider font-semibold">
+            <div className="flex items-center gap-1.5 text-xs text-[var(--accent)] font-oswald uppercase tracking-wider font-semibold">
               <Filter className="w-3.5 h-3.5" />
               <span>Filtros:</span>
             </div>
@@ -116,7 +116,7 @@ export const SalonDayColumns: React.FC<Props> = ({
             <select
               value={selectedColaboradorId}
               onChange={(e) => setSelectedColaboradorId(e.target.value)}
-              className="text-xs bg-[#F0F2F4] border border-[#DDE1E7] rounded-lg px-2.5 py-1.5 font-inter text-[#4A5568] outline-none focus:border-[#8CBDAD]"
+              className="text-xs bg-[var(--bg-surface-alt)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 font-inter text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
             >
               <option value="all">Todos os Profissionais</option>
               {colaboradores.map((c) => (
@@ -130,7 +130,7 @@ export const SalonDayColumns: React.FC<Props> = ({
             <select
               value={selectedCategoriaId}
               onChange={(e) => setSelectedCategoriaId(e.target.value)}
-              className="text-xs bg-[#F0F2F4] border border-[#DDE1E7] rounded-lg px-2.5 py-1.5 font-inter text-[#4A5568] outline-none focus:border-[#8CBDAD]"
+              className="text-xs bg-[var(--bg-surface-alt)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 font-inter text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
             >
               <option value="all">Todas as Categorias</option>
               {categorias.map((cat) => (
@@ -144,7 +144,7 @@ export const SalonDayColumns: React.FC<Props> = ({
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="text-xs bg-[#F0F2F4] border border-[#DDE1E7] rounded-lg px-2.5 py-1.5 font-inter text-[#4A5568] outline-none focus:border-[#8CBDAD]"
+              className="text-xs bg-[var(--bg-surface-alt)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 font-inter text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
             >
               <option value="all">Todos os Status</option>
               <option value="agendado">Agendado</option>
@@ -159,7 +159,7 @@ export const SalonDayColumns: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={onChamarRotativo}
-                className="px-3 py-1.5 rounded-lg bg-[rgba(81,117,102,0.15)] hover:bg-[rgba(81,117,102,0.30)] text-[#517566] dark:text-[#6FCF97] border border-[rgba(81,117,102,0.40)] text-xs font-oswald uppercase tracking-wider font-bold flex items-center gap-1.5 transition-all shadow-sm shrink-0"
+                className="px-3 py-1.5 rounded-lg bg-[var(--accent-bg)] hover:bg-[var(--accent)]/30 text-[#27AE60] dark:text-[#6FCF97] border border-[var(--accent)]/40 text-xs font-oswald uppercase tracking-wider font-bold flex items-center gap-1.5 transition-all shadow-sm shrink-0"
                 title="Chamar tatuador rotativo para atender cliente hoje"
               >
                 <Flame className="w-3.5 h-3.5 text-[#27AE60]" />
@@ -172,8 +172,8 @@ export const SalonDayColumns: React.FC<Props> = ({
 
       {/* Banner Inteligente de Alta Demanda (quando todos os tatuadores estão ocupados) */}
       {todosTatuadoresOcupados && onChamarRotativo && (
-        <div className="bg-[rgba(81,117,102,0.12)] border-b border-[rgba(81,117,102,0.30)] py-2 px-4 flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-[#517566] dark:text-[#6FCF97]">
+        <div className="bg-[var(--accent-bg)] border-b border-[var(--accent)]/30 py-2 px-4 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-[#27AE60] dark:text-[#6FCF97]">
             <Flame className="w-4 h-4 text-[#27AE60] shrink-0 animate-pulse" />
             <span className="font-inter">
               <strong>Agenda de Tatuagem Cheia:</strong> Todos os tatuadores fixos possuem clientes marcados neste dia.
@@ -194,9 +194,9 @@ export const SalonDayColumns: React.FC<Props> = ({
       <div className="flex-1 overflow-x-auto overflow-y-auto">
         <div className="inline-block min-w-full align-middle">
           {/* Cabeçalho das Colunas com Foto e Nome dos Colaboradores */}
-          <div className="sticky top-0 z-20 bg-[#F5F7F9] border-b border-[#DDE1E7] flex">
+          <div className="sticky top-0 z-20 bg-[var(--bg-surface-alt)] border-b border-[var(--border)] flex">
             {/* Coluna fixa de Horários */}
-            <div className="w-16 sm:w-20 p-3 text-center text-xs font-oswald uppercase tracking-wider font-semibold text-[#8A96A3] shrink-0 border-r border-[#DDE1E7] bg-[#F5F7F9]">
+            <div className="w-16 sm:w-20 p-3 text-center text-xs font-oswald uppercase tracking-wider font-semibold text-[var(--text-muted)] shrink-0 border-r border-[var(--border)] bg-[var(--bg-surface-alt)]">
               Hora
             </div>
 
@@ -206,15 +206,15 @@ export const SalonDayColumns: React.FC<Props> = ({
               return (
                 <div
                   key={colab.id}
-                  className={`w-56 sm:w-64 p-3 shrink-0 border-r border-[#DDE1E7] flex items-center gap-2.5 ${
-                    isRotativo ? 'bg-[rgba(81,117,102,0.08)]' : 'bg-[#F5F7F9]'
+                  className={`w-56 sm:w-64 p-3 shrink-0 border-r border-[var(--border)] flex items-center gap-2.5 ${
+                    isRotativo ? 'bg-[var(--accent-bg)]' : 'bg-[var(--bg-surface-alt)]'
                   }`}
                 >
                   <div className="relative shrink-0">
                     <img
                       src={colab.foto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
                       alt={colab.nome}
-                      className="w-8 h-8 rounded-full object-cover border border-[#8CBDAD]/40"
+                      className="w-8 h-8 rounded-full object-cover border border-[var(--accent)]/40"
                     />
                     {isRotativo && (
                       <span
@@ -227,14 +227,14 @@ export const SalonDayColumns: React.FC<Props> = ({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <h4 className="text-xs font-oswald uppercase tracking-wider text-[#0B0E11] truncate">{colab.nome}</h4>
+                      <h4 className="text-xs font-oswald uppercase tracking-wider text-[var(--text-primary)] truncate">{colab.nome}</h4>
                       {isRotativo && (
                         <span className="px-1.5 py-0.2 rounded text-[8px] font-oswald uppercase font-bold bg-[rgba(81,117,102,0.25)] text-[#27AE60] border border-[rgba(81,117,102,0.40)]">
                           Rotativo
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-[#8A96A3] truncate font-inter">{colab.especialidade || 'Colaborador'}</p>
+                    <p className="text-[10px] text-[var(--text-muted)] truncate font-inter">{colab.especialidade || 'Colaborador'}</p>
                   </div>
                 </div>
               );
@@ -242,7 +242,7 @@ export const SalonDayColumns: React.FC<Props> = ({
           </div>
 
           {/* Linhas de Horário (Grade 30 min) */}
-          <div className="divide-y divide-[#DDE1E7]">
+          <div className="divide-y divide-[var(--border)]">
             {timeSlots.map((time) => (
               <div key={time} className="flex min-h-[58px]">
                 {/* Marcador de Horário */}

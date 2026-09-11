@@ -60,9 +60,9 @@ export const Sidebar: React.FC = () => {
   const links = getLinks();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-[#1A1F25] text-[#AAB6BE] border-r border-[rgba(140,189,173,0.15)] shrink-0 transition-colors">
+    <aside className="hidden md:flex flex-col w-64 bg-[var(--bg-sidebar)] text-[var(--sidebar-text)] border-r border-[var(--border-sidebar)] shrink-0 transition-colors">
       {/* Informações do Estúdio & Logo Oficial */}
-      <div className="p-5 border-b border-[rgba(140,189,173,0.15)]">
+      <div className="p-5 border-b border-[var(--border-sidebar)]">
         <div className="flex items-center gap-3">
           <img
             src="/logo.png"
@@ -70,14 +70,14 @@ export const Sidebar: React.FC = () => {
             className="h-9 w-auto object-contain max-w-[140px]"
           />
           <div>
-            <div className="text-xs text-[#72808A] font-inter">Lauro de Freitas — BA</div>
+            <div className="text-xs text-[var(--sidebar-text-muted)] font-inter">Lauro de Freitas — BA</div>
           </div>
         </div>
       </div>
 
       {/* Navegação */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <div className="px-3 pb-2 text-[10px] font-oswald uppercase tracking-[0.08em] font-semibold text-[#517566]">
+        <div className="px-3 pb-2 text-[10px] font-oswald uppercase tracking-[0.08em] font-semibold text-[var(--accent)]">
           Navegação Principal
         </div>
         {links.map((link) => {
@@ -90,17 +90,17 @@ export const Sidebar: React.FC = () => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 text-xs font-oswald uppercase tracking-wider font-semibold transition-all duration-150 ${
                   isActive
-                    ? 'bg-[rgba(140,189,173,0.12)] text-[#8CBDAD] border-l-[3px] border-[#8CBDAD] rounded-r-lg rounded-l-none'
-                    : 'text-[#AAB6BE] hover:text-[#F2F5F7] hover:bg-[rgba(255,255,255,0.04)] rounded-lg'
+                    ? 'bg-[var(--accent-bg)] text-[var(--accent)] border-l-[3px] border-[var(--accent)] rounded-r-lg rounded-l-none'
+                    : 'text-[var(--sidebar-text)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] rounded-lg'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#8CBDAD]' : 'text-[#72808A]'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--accent)]' : 'text-[var(--sidebar-text-muted)]'}`} />
                   <span className="truncate flex-1">{link.label}</span>
                   {link.badge && link.badge > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full bg-[#8CBDAD] text-[#0B0E11] text-[10px] font-black leading-none shrink-0 shadow-sm">
+                    <span className="px-2 py-0.5 rounded-full bg-[var(--accent)] text-[#0B0E11] text-[10px] font-black leading-none shrink-0 shadow-sm">
                       {link.badge}
                     </span>
                   ) : null}
@@ -112,13 +112,13 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Rodapé da Sidebar (PWA & Notificações) */}
-      <div className="p-4 border-t border-[rgba(140,189,173,0.15)]">
-        <div className="bg-[rgba(140,189,173,0.07)] rounded-xl p-3 border border-[rgba(140,189,173,0.15)]">
-          <div className="flex items-center gap-1.5 text-[#8CBDAD] text-xs font-oswald uppercase tracking-wider font-semibold mb-1">
+      <div className="p-4 border-t border-[var(--border-sidebar)]">
+        <div className="bg-[var(--bg-surface-alt)] rounded-xl p-3 border border-[var(--border)]">
+          <div className="flex items-center gap-1.5 text-[var(--accent)] text-xs font-oswald uppercase tracking-wider font-semibold mb-1">
             <Sparkles className="w-3.5 h-3.5" />
             <span>PWA & Notificações</span>
           </div>
-          <p className="text-[11px] text-[#AAB6BE] leading-relaxed font-inter">
+          <p className="text-[11px] text-[var(--sidebar-text-muted)] leading-relaxed font-inter">
             Instale o app na tela inicial para receber notificações em tempo real de novos agendamentos.
           </p>
         </div>

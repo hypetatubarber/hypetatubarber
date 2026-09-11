@@ -54,7 +54,7 @@ export const MonthCalendar: React.FC<Props> = ({ selectedDate, onSelectDate, age
       days.push(
         <div
           key={`prev-${i}`}
-          className="h-14 sm:h-20 p-1.5 text-[#C5CDD4] bg-[#F5F7F9]/50 rounded-lg text-xs font-inter flex flex-col justify-between"
+          className="h-14 sm:h-20 p-1.5 text-[var(--text-muted)] opacity-35 bg-[var(--bg-surface-alt)]/40 rounded-lg text-xs font-inter flex flex-col justify-between"
         >
           <span>{prevLastDay - i}</span>
         </div>
@@ -77,14 +77,14 @@ export const MonthCalendar: React.FC<Props> = ({ selectedDate, onSelectDate, age
           onClick={() => onSelectDate(dateStr)}
           className={`h-14 sm:h-20 p-1.5 sm:p-2 rounded-xl text-left flex flex-col justify-between transition-all relative border ${
             isToday
-              ? 'bg-[#8CBDAD] text-[#0B0E11] font-bold border-[#8CBDAD]'
+              ? 'bg-[var(--accent)] text-[#0B0E11] font-bold border-[var(--accent)] shadow-accent'
               : isSelected
-              ? 'bg-[rgba(140,189,173,0.15)] text-[#0B0E11] font-bold border-2 border-[#8CBDAD]'
-              : 'bg-[#FFFFFF] hover:bg-[#F5F7F9] text-[#0B0E11] border-[#DDE1E7]'
+              ? 'bg-[var(--accent-bg)] text-[var(--text-primary)] font-bold border-2 border-[var(--accent)]'
+              : 'bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-alt)] text-[var(--text-primary)] border-[var(--border)]'
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <span className={`text-xs sm:text-sm font-inter ${isToday ? 'text-[#0B0E11] font-bold' : 'text-[#0B0E11]'}`}>
+            <span className={`text-xs sm:text-sm font-inter ${isToday ? 'text-[#0B0E11] font-bold' : 'text-[var(--text-primary)]'}`}>
               {day}
             </span>
             {isToday && (
@@ -95,7 +95,7 @@ export const MonthCalendar: React.FC<Props> = ({ selectedDate, onSelectDate, age
           {count > 0 && (
             <div className="mt-auto w-full">
               <div
-                className="text-[10px] font-oswald uppercase tracking-wider px-1.5 py-0.5 rounded truncate text-center bg-[#517566] text-[#FFFFFF]"
+                className="text-[10px] font-oswald uppercase tracking-wider px-1.5 py-0.5 rounded truncate text-center bg-[var(--accent)] text-[#0B0E11] font-bold"
               >
                 {count} {count === 1 ? 'agend.' : 'agends.'}
               </div>
@@ -109,12 +109,12 @@ export const MonthCalendar: React.FC<Props> = ({ selectedDate, onSelectDate, age
   };
 
   return (
-    <div className="bg-[#FFFFFF] rounded-xl p-4 sm:p-6 border border-[#DDE1E7] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+    <div className="bg-[var(--bg-surface)] text-[var(--text-primary)] rounded-xl p-4 sm:p-6 border border-[var(--border)] shadow-sm transition-colors">
       {/* Cabeçalho do Calendário */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CalendarIcon className="w-5 h-5 text-[#8CBDAD]" />
-          <h2 className="font-display uppercase tracking-wide text-lg sm:text-xl text-[#0B0E11]">
+          <CalendarIcon className="w-5 h-5 text-[var(--accent)]" />
+          <h2 className="font-display uppercase tracking-wide text-lg sm:text-xl text-[var(--text-primary)]">
             {monthNames[month]} de {year}
           </h2>
         </div>
@@ -122,21 +122,21 @@ export const MonthCalendar: React.FC<Props> = ({ selectedDate, onSelectDate, age
         <div className="flex items-center gap-2">
           <button
             onClick={handleJumpToToday}
-            className="text-xs font-oswald uppercase tracking-wider font-semibold px-3 py-1.5 rounded-lg border border-[#DDE1E7] bg-[#F5F7F9] hover:bg-[#DDE1E7] text-[#0B0E11] transition-colors"
+            className="text-xs font-oswald uppercase tracking-wider font-semibold px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] hover:bg-[var(--accent)] hover:text-[#0B0E11] text-[var(--text-primary)] transition-colors"
           >
             Hoje
           </button>
-          <div className="flex items-center border border-[#DDE1E7] rounded-lg overflow-hidden bg-[#F5F7F9]">
+          <div className="flex items-center border border-[var(--border)] rounded-lg overflow-hidden bg-[var(--bg-surface-alt)]">
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 hover:bg-[#DDE1E7] text-[#4A5568] hover:text-[#0B0E11] transition-colors"
+              className="p-1.5 hover:bg-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Mês anterior"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={handleNextMonth}
-              className="p-1.5 hover:bg-[#DDE1E7] text-[#4A5568] hover:text-[#0B0E11] transition-colors"
+              className="p-1.5 hover:bg-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Próximo mês"
             >
               <ChevronRight className="w-4 h-4" />
@@ -145,8 +145,8 @@ export const MonthCalendar: React.FC<Props> = ({ selectedDate, onSelectDate, age
         </div>
       </div>
 
-      {/* Cabeçalho dos Dias da Semana: Oswald uppercase 12px #8A96A3 */}
-      <div className="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2 text-center text-xs font-oswald uppercase tracking-wider font-semibold text-[#8A96A3]">
+      {/* Cabeçalho dos Dias da Semana */}
+      <div className="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2 text-center text-xs font-oswald uppercase tracking-wider font-semibold text-[var(--text-muted)]">
         <div>Dom</div>
         <div>Seg</div>
         <div>Ter</div>
