@@ -1066,10 +1066,22 @@ export class MockDatabase {
     if (idx >= 0) {
       this.servicos[idx] = servico;
     } else {
-      this.servicos.push(servico);
+      this.servicos.unshift(servico);
     }
     saveToStorage(STORAGE_KEYS.SERVICOS, this.servicos);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hype_servicos_changed', { detail: servico }));
+    }
     return servico;
+  }
+  static deleteServico(id: string): boolean {
+    const initialLen = this.servicos.length;
+    this.servicos = this.servicos.filter(s => s.id !== id);
+    saveToStorage(STORAGE_KEYS.SERVICOS, this.servicos);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hype_servicos_changed', { detail: { id, deleted: true } }));
+    }
+    return this.servicos.length < initialLen;
   }
   static saveCategoria(cat: CategoriaServico): CategoriaServico {
     const idx = this.categorias.findIndex(c => c.id === cat.id);
@@ -1142,10 +1154,22 @@ export class MockDatabase {
     if (idx >= 0) {
       this.produtos[idx] = produto;
     } else {
-      this.produtos.push(produto);
+      this.produtos.unshift(produto);
     }
     saveToStorage(STORAGE_KEYS.PRODUTOS, this.produtos);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hype_produtos_changed', { detail: produto }));
+    }
     return produto;
+  }
+  static deleteProduto(id: string): boolean {
+    const initialLen = this.produtos.length;
+    this.produtos = this.produtos.filter(p => p.id !== id);
+    saveToStorage(STORAGE_KEYS.PRODUTOS, this.produtos);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hype_produtos_changed', { detail: { id, deleted: true } }));
+    }
+    return this.produtos.length < initialLen;
   }
 
   // Registrar Entrada de Estoque

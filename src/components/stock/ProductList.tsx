@@ -14,6 +14,7 @@ import {
   List,
   SlidersHorizontal,
   Edit2,
+  Trash2,
   Scissors,
   Sparkles,
   Wine,
@@ -338,12 +339,44 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
         estoque_minimo: Number(estoqueMinimo),
       };
 
-      await api.saveProduto(prodData);
+      const saved = await api.saveProduto(prodData);
+      setProdutos((prev) => {
+        const exists = prev.some((p) => p.id === saved.id);
+        if (exists) {
+          return prev.map((p) => (p.id === saved.id ? saved : p));
+        }
+        return [saved, ...prev];
+      });
+
+      // Auto-seleciona a pasta da categoria salva se o usuário estava em outra pasta filtrada
+      const finalCatNormalized = finalCategoria === 'Geral' ? 'Descartáveis' : finalCategoria;
+      if (selectedFolder !== 'TODAS' && selectedFolder.toLowerCase() !== finalCatNormalized.toLowerCase()) {
+        setSelectedFolder(finalCatNormalized);
+      }
+
       showToast('Produto salvo no estoque com sucesso!', 'success');
       setIsProductModalOpen(false);
-      loadData();
+      await loadData();
     } catch (err: any) {
       showToast(err.message || 'Erro ao salvar produto.', 'error');
+    }
+  };
+
+  const handleDeleteProduct = async (prod: Produto) => {
+    if (!window.confirm(`Tem certeza que deseja excluir permanentemente o produto "${prod.nome}" do estoque?`)) {
+      return;
+    }
+
+    try {
+      await api.deleteProduto(prod.id);
+      setProdutos((prev) => prev.filter((p) => p.id !== prod.id));
+      showToast(`Produto "${prod.nome}" excluído do estoque com sucesso!`, 'success');
+      if (editingProduct?.id === prod.id) {
+        setIsProductModalOpen(false);
+      }
+      await loadData();
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao excluir produto.', 'error');
     }
   };
 
@@ -939,20 +972,27 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
 
                           {/* Botões de Ação */}
                           {!readOnly && role === 'master' ? (
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleOpenQuickEntrada(prod)}
-                                className="px-3 py-2 rounded-xl bg-[var(--bg-surface-alt)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] hover:border-[#6FCF97] text-xs font-oswald uppercase tracking-wider font-semibold flex items-center justify-center gap-1.5 transition-all"
+                                className="flex-1 px-3 py-2 rounded-xl bg-[var(--bg-surface-alt)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] hover:border-[#6FCF97] text-xs font-oswald uppercase tracking-wider font-semibold flex items-center justify-center gap-1.5 transition-all"
                               >
                                 <ArrowUpRight className="w-3.5 h-3.5 text-[#6FCF97]" />
                                 + Entrada
                               </button>
                               <button
                                 onClick={() => handleOpenProductModal(prod)}
-                                className="px-3 py-2 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[var(--text-primary)] text-xs font-oswald uppercase tracking-wider font-bold flex items-center justify-center gap-1.5 transition-all shadow-accent"
+                                className="flex-1 px-3 py-2 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[var(--text-primary)] text-xs font-oswald uppercase tracking-wider font-bold flex items-center justify-center gap-1.5 transition-all shadow-accent"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
-                                Editar Ficha
+                                Editar
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(prod)}
+                                className="p-2 rounded-xl bg-[var(--bg-surface-alt)] hover:bg-[#EB5757]/15 text-[var(--text-muted)] hover:text-[#EB5757] border border-[var(--border)] hover:border-[#EB5757]/40 transition-all"
+                                title="Excluir Produto"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           ) : (
@@ -1064,6 +1104,13 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                                   className="px-2.5 py-1 text-xs font-oswald uppercase tracking-wider font-semibold text-[var(--accent-dark)] dark:text-[var(--accent)] hover:bg-[var(--accent-bg)] rounded-lg transition-colors border border-[var(--border)]"
                                 >
                                   Editar
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteProduct(prod)}
+                                  className="p-1.5 rounded-lg bg-[var(--bg-surface-alt)] hover:bg-[#EB5757]/15 text-[var(--text-muted)] hover:text-[#EB5757] border border-[var(--border)] hover:border-[#EB5757]/40 transition-colors"
+                                  title="Excluir produto"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </td>
@@ -1287,21 +1334,35 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-[var(--border)]">
-                <button
-                  type="button"
-                  onClick={() => setIsProductModalOpen(false)}
-                  className="px-4 py-2 text-xs font-oswald uppercase tracking-wider font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] rounded-lg"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[var(--text-primary)] text-xs font-oswald uppercase tracking-wider font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-accent"
-                >
-                  <Check className="w-4 h-4" />
-                  Salvar Ficha
-                </button>
+              <div className="flex items-center justify-between gap-2 pt-4 border-t border-[var(--border)]">
+                <div>
+                  {editingProduct && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteProduct(editingProduct)}
+                      className="px-3.5 py-2 text-xs font-oswald uppercase tracking-wider font-semibold text-[#EB5757] hover:bg-[#EB5757]/10 rounded-lg transition-colors border border-[#EB5757]/40 flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Excluir Produto
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsProductModalOpen(false)}
+                    className="px-4 py-2 text-xs font-oswald uppercase tracking-wider font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] rounded-lg"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[var(--text-primary)] text-xs font-oswald uppercase tracking-wider font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-accent"
+                  >
+                    <Check className="w-4 h-4" />
+                    Salvar Ficha
+                  </button>
+                </div>
               </div>
             </form>
           </div>

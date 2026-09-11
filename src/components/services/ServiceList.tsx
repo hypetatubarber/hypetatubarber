@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Check, Clock, X } from 'lucide-react';
+import { Plus, Edit2, Check, Clock, X, Trash2 } from 'lucide-react';
 import { Servico, CategoriaServico } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -86,15 +86,39 @@ export const ServiceList: React.FC = () => {
         ativo,
       };
 
-      await api.saveServico(srvData);
+      const saved = await api.saveServico(srvData);
+      setServicos((prev) => {
+        const exists = prev.some((s) => s.id === saved.id);
+        if (exists) {
+          return prev.map((s) => (s.id === saved.id ? saved : s));
+        }
+        return [saved, ...prev];
+      });
       showToast(
         editingService ? 'Serviço atualizado com sucesso!' : 'Novo serviço criado com sucesso!',
         'success'
       );
       setIsModalOpen(false);
-      loadData();
+      await loadData();
     } catch (err: any) {
       showToast(err.message || 'Erro ao salvar serviço.', 'error');
+    }
+  };
+
+  const handleDeleteService = async (srv: Servico) => {
+    if (!window.confirm(`Tem certeza que deseja excluir permanentemente o serviço "${srv.nome}"? Esta ação não poderá ser desfeita.`)) {
+      return;
+    }
+    try {
+      await api.deleteServico(srv.id);
+      setServicos((prev) => prev.filter((s) => s.id !== srv.id));
+      showToast(`Serviço "${srv.nome}" excluído com sucesso!`, 'success');
+      if (editingService?.id === srv.id) {
+        setIsModalOpen(false);
+      }
+      await loadData();
+    } catch (err: any) {
+      showToast(err.message || 'Erro ao excluir serviço.', 'error');
     }
   };
 
@@ -102,7 +126,7 @@ export const ServiceList: React.FC = () => {
     try {
       await api.saveServico({ ...srv, ativo: !srv.ativo });
       showToast(`Serviço "${srv.nome}" ${!srv.ativo ? 'ativado' : 'desativado'} com sucesso!`, 'info');
-      loadData();
+      await loadData();
     } catch (err) {
       showToast('Erro ao atualizar status do serviço.', 'error');
     }
@@ -230,10 +254,17 @@ export const ServiceList: React.FC = () => {
                 </button>
                 <button
                   onClick={() => handleOpenModal(srv)}
-                  className="p-1.5 text-[var(--accent-dark)] dark:text-[var(--accent)] hover:bg-[var(--accent-bg)] rounded-lg transition-colors"
+                  className="p-1.5 text-[var(--accent-dark)] dark:text-[var(--accent)] hover:bg-[var(--accent-bg)] rounded-lg transition-colors border border-[var(--border)]"
                   title="Editar serviço"
                 >
                   <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteService(srv)}
+                  className="p-1.5 text-[var(--text-muted)] hover:text-[#EB5757] hover:bg-[#EB5757]/15 rounded-lg transition-colors border border-[var(--border)] hover:border-[#EB5757]/40"
+                  title="Excluir serviço permanentemente"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -338,21 +369,35 @@ export const ServiceList: React.FC = () => {
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border)]">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs font-oswald uppercase tracking-wider font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] rounded-lg"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[var(--text-primary)] text-xs font-oswald uppercase tracking-wider font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-accent"
-                >
-                  <Check className="w-4 h-4" />
-                  Salvar Serviço
-                </button>
+              <div className="flex items-center justify-between gap-2 pt-3 border-t border-[var(--border)]">
+                <div>
+                  {editingService && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteService(editingService)}
+                      className="px-3 py-2 text-xs font-oswald uppercase tracking-wider font-semibold text-[#EB5757] hover:bg-[#EB5757]/10 rounded-lg transition-colors border border-[#EB5757]/40 flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Excluir
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 text-xs font-oswald uppercase tracking-wider font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] rounded-lg"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-[var(--text-primary)] text-xs font-oswald uppercase tracking-wider font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-accent"
+                  >
+                    <Check className="w-4 h-4" />
+                    Salvar Serviço
+                  </button>
+                </div>
               </div>
             </form>
           </div>

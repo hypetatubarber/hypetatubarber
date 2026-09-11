@@ -321,6 +321,17 @@ export const api = {
     return MockDatabase.saveServico(validServ);
   },
 
+  async deleteServico(id: string): Promise<void> {
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('servicos').delete().eq('id', id);
+      } catch (err) {
+        console.warn('[API Supabase deleteServico]:', err);
+      }
+    }
+    MockDatabase.deleteServico(id);
+  },
+
   // ==========================================================================
   // AGENDAMENTOS (CALENDÁRIO & SALÃO)
   // ==========================================================================
@@ -461,6 +472,17 @@ export const api = {
     }
 
     return MockDatabase.saveProduto(validProd);
+  },
+
+  async deleteProduto(id: string): Promise<void> {
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('produtos').delete().eq('id', id);
+      } catch (err) {
+        console.warn('[API Supabase deleteProduto]:', err);
+      }
+    }
+    MockDatabase.deleteProduto(id);
   },
 
   async registrarEntradaEstoque(produtoId: string, quantidade: number, motivo: string, usuarioId: string): Promise<void> {
