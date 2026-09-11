@@ -197,9 +197,13 @@
   background-color: var(--accent-bg);
 }
 
-/* Suporte a entalhe de tela em celulares (iPhone Notch / Android) */
+/* Suporte a entalhe de tela e barra de status superior em celulares (iPhone Notch / Dynamic Island / Android Status Bar) */
+.safe-area-top {
+  padding-top: max(env(safe-area-inset-top, 0px), 1.75rem);
+}
+
 .safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 12px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
 }
 
 /* Scrollbar com suporte aos temas */

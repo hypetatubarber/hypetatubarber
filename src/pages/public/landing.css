@@ -4,14 +4,13 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. Variáveis Globais (Design Tokens)
+   1. Variáveis Globais (Design Tokens) - Escopadas para a Landing Page
    -------------------------------------------------------------------------- */
-:root,
 html.hype-landing-page,
 body.hype-landing-page,
 .hype-landing-container {
   /* ==========================================================================
-     TEMA OFICIAL HYPE TATU (Fixo e permanente: Dark Luxury #0B0E11)
+     TEMA OFICIAL HYPE TATU (Fixo e permanente para a Landing Page: Dark Luxury #0B0E11)
      ========================================================================== */
   --color-bg-primary:        #0B0E11 !important;   /* fundo geral de todas as páginas */
   --color-bg-card:           #12171C !important;   /* cards, modais, painéis */
@@ -100,16 +99,9 @@ body.hype-landing-page,
 }
 
 /* --------------------------------------------------------------------------
-   2. Reset e Estilos Globais
+   2. Reset e Estilos da Landing Page
    -------------------------------------------------------------------------- */
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html.hype-landing-page,
-html {
+html.hype-landing-page {
   scroll-behavior: smooth;
   scroll-padding-top: var(--header-height);
   font-size: 16px;
@@ -119,8 +111,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-body.hype-landing-page,
-body {
+body.hype-landing-page {
   font-family: var(--font-body);
   background-color: #0B0E11 !important;
   color: #F2F5F7 !important;
@@ -142,30 +133,33 @@ body {
   color: #F2F5F7 !important;
 }
 
-a {
+.hype-landing-container a {
   color: inherit;
   text-decoration: none;
   transition: var(--transition-fast);
 }
 
-ul {
+.hype-landing-container ul {
   list-style: none;
 }
 
-img {
+.hype-landing-container img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-button, input, textarea, select {
+.hype-landing-container button,
+.hype-landing-container input,
+.hype-landing-container textarea,
+.hype-landing-container select {
   font-family: inherit;
   font-size: inherit;
   outline: none;
   border: none;
 }
 
-button {
+.hype-landing-container button {
   cursor: pointer;
   background: none;
 }

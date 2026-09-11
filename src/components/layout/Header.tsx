@@ -126,13 +126,13 @@ export const Header: React.FC = () => {
   );
 
   return (
-    <header className="sticky top-0 z-30 bg-[var(--bg-header)] border-b border-[var(--border)] px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between shadow-sm transition-colors duration-200">
+    <header className="sticky top-0 z-30 bg-[var(--bg-header)] border-b border-[var(--border)] px-3 sm:px-6 pt-[max(env(safe-area-inset-top,0px),2rem)] pb-2.5 sm:py-0 min-h-[4.75rem] sm:min-h-0 sm:h-16 flex items-center justify-between shadow-sm transition-colors duration-200">
       {/* Lado Esquerdo: Marca & Papel */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
         <img
           src="/logo.png"
           alt="Hype Tatu"
-          className="h-7 sm:h-9 w-auto object-contain shrink-0"
+          className="h-6 sm:h-9 w-auto object-contain shrink-0"
         />
         <div className="hidden sm:block">
           <span className="text-[10px] sm:text-xs text-[var(--accent-dark)] dark:text-[var(--accent)] font-oswald uppercase tracking-widest block leading-tight font-semibold">
@@ -151,7 +151,7 @@ export const Header: React.FC = () => {
         {/* Botão "+ NOVO AGENDAMENTO" - Compacto no mobile */}
         <button
           onClick={handleNewAppointmentClick}
-          className="flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-oswald uppercase tracking-wider font-bold bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-white transition-all shadow-sm active:scale-95"
+          className="flex items-center justify-center gap-1 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-oswald uppercase tracking-wider font-bold bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-[#0B0E11] hover:text-white transition-all shadow-sm active:scale-95 shrink-0"
           title="Criar novo agendamento no sistema"
         >
           <Plus className="w-4 h-4 shrink-0" />
@@ -161,7 +161,7 @@ export const Header: React.FC = () => {
         {/* Botão "INSTALAR APP" (Apenas desktop/tablet) */}
         <button
           onClick={handleInstallPWA}
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-oswald uppercase tracking-wider font-semibold bg-[var(--bg-surface-alt)] hover:bg-[var(--bg-surface)] text-[var(--text-primary)] border border-[var(--border)] transition-all"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-oswald uppercase tracking-wider font-semibold bg-[var(--bg-surface-alt)] hover:bg-[var(--bg-surface)] text-[var(--text-primary)] border border-[var(--border)] transition-all shrink-0"
           title="Instalar App no Celular ou Desktop"
         >
           <Smartphone className="w-3.5 h-3.5 text-[var(--accent)]" />
@@ -169,10 +169,10 @@ export const Header: React.FC = () => {
         </button>
 
         {/* Seletor de Tema / Cores (Disponível no Admin e no Celular) */}
-        <div className="relative" ref={themeRef}>
+        <div className="relative shrink-0" ref={themeRef}>
           <button
             onClick={() => setShowThemeMenu(!showThemeMenu)}
-            className="flex items-center gap-1.5 p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] border border-[var(--border)] transition-colors"
+            className="flex items-center gap-1 p-1.5 sm:p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] border border-[var(--border)] transition-colors shrink-0"
             title="Escolher cor do tema (Branco, Preto ou Azulado)"
             aria-label="Escolher cor do tema"
           >
@@ -220,10 +220,10 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Notificações Push Popover */}
-        <div className="relative" ref={notifRef}>
+        <div className="relative shrink-0" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] border border-[var(--border)] transition-colors"
+            className="relative p-1.5 sm:p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-alt)] border border-[var(--border)] transition-colors shrink-0"
             aria-label="Abrir notificações"
           >
             <Bell className="w-4 h-4" />
@@ -235,7 +235,7 @@ export const Header: React.FC = () => {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[var(--bg-surface)] rounded-2xl shadow-2xl border border-[var(--border)] py-3 z-50 animate-in fade-in slide-in-from-top-2">
+            <div className="absolute -right-10 sm:right-0 mt-2 w-[calc(100vw-24px)] max-w-sm sm:w-96 bg-[var(--bg-surface)] rounded-2xl shadow-2xl border border-[var(--border)] py-3 z-50 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center justify-between px-4 pb-2 border-b border-[var(--border)]">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-[var(--accent)]" />
@@ -299,11 +299,11 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Informações do Usuário & Sair */}
-        <div className="flex items-center gap-2 pl-2 border-l border-[var(--border)]">
+        <div className="flex items-center gap-1 sm:gap-2 pl-1.5 sm:pl-2 border-l border-[var(--border)] shrink-0">
           <img
             src={currentUser?.foto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
             alt={currentUser?.nome}
-            className="w-8 h-8 rounded-full object-cover border border-[var(--accent)]/30"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-[var(--accent)]/30 shrink-0"
           />
           <div className="hidden lg:block text-left">
             <div className="text-xs font-medium text-[var(--text-primary)] truncate max-w-[120px] font-inter">{currentUser?.nome}</div>
@@ -311,7 +311,7 @@ export const Header: React.FC = () => {
           </div>
           <button
             onClick={handleLogout}
-            className="p-1.5 text-[var(--text-muted)] hover:text-[#EB5757] rounded-lg hover:bg-[var(--bg-surface-alt)] transition-colors"
+            className="p-1 sm:p-1.5 text-[var(--text-muted)] hover:text-[#EB5757] rounded-lg hover:bg-[var(--bg-surface-alt)] transition-colors shrink-0"
             title="Sair do sistema"
           >
             <LogOut className="w-4 h-4" />
