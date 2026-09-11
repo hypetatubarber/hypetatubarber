@@ -12,6 +12,7 @@ import { CollaboratorManagement } from '../../components/collaborators/Collabora
 import { AdminFinanceiroView } from '../../components/financeiro/AdminFinanceiroView';
 import { RegistrarPagamentoModal } from '../../components/financeiro/RegistrarPagamentoModal';
 import { api } from '../../services/api';
+import { MockDatabase } from '../../services/mockData';
 import { Agendamento, Usuario, CategoriaServico, Produto } from '../../types';
 import { Calendar, DollarSign, Users, AlertTriangle, Plus, Sparkles, Flame, Package, ArrowRight, CheckCircle2, TrendingDown, RefreshCw } from 'lucide-react';
 
@@ -24,7 +25,7 @@ export const AdminDashboard: React.FC = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [colaboradores, setColaboradores] = useState<Usuario[]>([]);
   const [categorias, setCategorias] = useState<CategoriaServico[]>([]);
-  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [produtos, setProdutos] = useState<Produto[]>(() => MockDatabase.getProdutos());
   const [stockFilterFolder, setStockFilterFolder] = useState<string>('TODAS');
 
   // Modais

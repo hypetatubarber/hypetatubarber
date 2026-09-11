@@ -567,15 +567,15 @@ export const api = {
 
   async getMovimentacoes(): Promise<MovimentacaoEstoque[]> {
     if (isSupabaseConfigured()) {
-      const { data, error } = await supabase
-        .from('movimentacoes_estoque')
-        .select('*, produto:produtos(*), usuario:usuarios(*)')
-        .order('data', { ascending: false });
-      if (error) {
-        console.error('[API Supabase] Erro ao buscar movimentações de estoque:', error);
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from('movimentacoes_estoque')
+          .select('*, produto:produtos(*), usuario:usuarios(*)')
+          .order('data', { ascending: false });
+        if (!error && data && data.length > 0) return data;
+      } catch (err) {
+        console.warn('[API Supabase] Erro ao buscar movimentações de estoque:', err);
       }
-      return data || [];
     }
     return MockDatabase.getMovimentacoes();
   },
@@ -585,14 +585,14 @@ export const api = {
   // ==========================================================================
   async getNotificacoes(usuarioId?: string): Promise<Notificacao[]> {
     if (isSupabaseConfigured()) {
-      let query = supabase.from('notificacoes').select('*').order('criado_em', { ascending: false });
-      if (usuarioId) query = query.eq('usuario_id', usuarioId);
-      const { data, error } = await query;
-      if (error) {
-        console.error('[API Supabase] Erro ao buscar notificações:', error);
-        throw error;
+      try {
+        let query = supabase.from('notificacoes').select('*').order('criado_em', { ascending: false });
+        if (usuarioId) query = query.eq('usuario_id', usuarioId);
+        const { data, error } = await query;
+        if (!error && data) return data;
+      } catch (err) {
+        console.warn('[API Supabase] Erro ao buscar notificações:', err);
       }
-      return data || [];
     }
     return MockDatabase.getNotificacoes(usuarioId);
   },
@@ -661,47 +661,47 @@ export const api = {
   // ==========================================================================
   async getConversas(): Promise<Conversa[]> {
     if (isSupabaseConfigured()) {
-      const { data, error } = await supabase
-        .from('conversas')
-        .select('*, cliente:clientes(*)')
-        .order('ultima_mensagem_em', { ascending: false });
-      if (error) {
-        console.error('[API Supabase] Erro ao buscar conversas:', error);
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from('conversas')
+          .select('*, cliente:clientes(*)')
+          .order('ultima_mensagem_em', { ascending: false });
+        if (!error && data && data.length > 0) return data;
+      } catch (err) {
+        console.warn('[API Supabase] Erro ao buscar conversas:', err);
       }
-      return data || [];
     }
     return MockDatabase.getConversas();
   },
 
   async getConversaById(id: string): Promise<Conversa | null> {
     if (isSupabaseConfigured()) {
-      const { data, error } = await supabase
-        .from('conversas')
-        .select('*, cliente:clientes(*)')
-        .eq('id', id)
-        .maybeSingle();
-      if (error) {
-        console.error('[API Supabase] Erro ao buscar conversa por id:', error);
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from('conversas')
+          .select('*, cliente:clientes(*)')
+          .eq('id', id)
+          .maybeSingle();
+        if (!error && data) return data;
+      } catch (err) {
+        console.warn('[API Supabase] Erro ao buscar conversa por id:', err);
       }
-      return data || null;
     }
     return MockDatabase.getConversaById(id) || null;
   },
 
   async getMensagens(conversaId: string): Promise<Mensagem[]> {
     if (isSupabaseConfigured()) {
-      const { data, error } = await supabase
-        .from('mensagens')
-        .select('*')
-        .eq('conversa_id', conversaId)
-        .order('criado_em', { ascending: true });
-      if (error) {
-        console.error('[API Supabase] Erro ao buscar mensagens:', error);
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from('mensagens')
+          .select('*')
+          .eq('conversa_id', conversaId)
+          .order('criado_em', { ascending: true });
+        if (!error && data) return data;
+      } catch (err) {
+        console.warn('[API Supabase] Erro ao buscar mensagens:', err);
       }
-      return data || [];
     }
     return MockDatabase.getMensagens(conversaId);
   },

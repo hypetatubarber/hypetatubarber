@@ -23,10 +23,11 @@ import {
   ArrowRight,
   TrendingDown,
   CircleDollarSign,
+  RefreshCw,
 } from 'lucide-react';
 import { Produto, MovimentacaoEstoque, UnidadeProduto } from '../../types';
 import { api } from '../../services/api';
-import { getProductSetor, getProductSubcategoria } from '../../services/mockData';
+import { getProductSetor, getProductSubcategoria, MockDatabase } from '../../services/mockData';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { generateUUID } from '../../lib/uuid';
@@ -125,8 +126,8 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
   const { showToast } = useToast();
   const { currentUser, role } = useAuth();
 
-  const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [movimentacoes, setMovimentacoes] = useState<MovimentacaoEstoque[]>([]);
+  const [produtos, setProdutos] = useState<Produto[]>(() => MockDatabase.getProdutos());
+  const [movimentacoes, setMovimentacoes] = useState<MovimentacaoEstoque[]>(() => MockDatabase.getMovimentacoes());
   const [mainTab, setMainTab] = useState<'estoque' | 'movimentacoes'>('estoque');
 
   // Filtros de Categoria e Estilo de Pasta
@@ -158,17 +159,36 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
 
   const loadData = async () => {
     try {
-      const [prodList, movList] = await Promise.all([
-        api.getProdutos(),
-        api.getMovimentacoes(),
-      ]);
+      let prodList: Produto[] = [];
+      try {
+        prodList = await api.getProdutos();
+      } catch (pErr) {
+        console.warn('Fallback busca produtos:', pErr);
+        prodList = MockDatabase.getProdutos();
+      }
+
+      if (!prodList || prodList.length === 0) {
+        prodList = MockDatabase.seedDefaultProdutos();
+      }
       setProdutos(prodList);
-      setMovimentacoes(movList);
+
+      let movList: MovimentacaoEstoque[] = [];
+      try {
+        movList = await api.getMovimentacoes();
+      } catch (mErr) {
+        console.warn('Fallback busca movimentações:', mErr);
+        movList = MockDatabase.getMovimentacoes();
+      }
+      setMovimentacoes(movList || []);
+
       if (prodList.length > 0 && !entradaProdutoId) {
         setEntradaProdutoId(prodList[0].id);
       }
     } catch (err) {
       console.error('Erro ao carregar estoque:', err);
+      const fallbackProds = MockDatabase.seedDefaultProdutos();
+      setProdutos(fallbackProds);
+      setMovimentacoes(MockDatabase.getMovimentacoes());
     }
   };
 
@@ -463,6 +483,18 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
 
           {!readOnly && role === 'master' && (
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const seeded = MockDatabase.seedDefaultProdutos();
+                  setProdutos(seeded);
+                  showToast('30 produtos sementes do salão restaurados no estoque!', 'success');
+                }}
+                className="px-3.5 py-2.5 bg-[var(--bg-surface-alt)] hover:bg-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] rounded-xl text-xs font-oswald uppercase tracking-wider font-semibold flex items-center gap-1.5 transition-all shadow-xs"
+                title="Recarrega todos os produtos de demonstração do estúdio"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="hidden sm:inline">Restaurar Padrões</span>
+              </button>
               <button
                 onClick={() => {
                   setEntradaCategoriaFiltro(selectedFolder !== 'TODAS' ? selectedFolder : 'TODAS');
@@ -858,12 +890,24 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                     Tente ajustar o termo de busca, limpar os filtros ou cadastrar um novo item nesta categoria.
                   </p>
                   {!readOnly && role === 'master' && (
-                    <button
-                      onClick={() => handleOpenProductModal()}
-                      className="mt-4 px-4 py-2 bg-[var(--accent)] text-[#0B0E11] rounded-xl text-xs font-oswald uppercase tracking-wider font-bold inline-flex items-center gap-1.5 shadow-accent"
-                    >
-                      <Plus className="w-4 h-4" /> Cadastrar Novo Insumo
-                    </button>
+                    <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
+                      <button
+                        onClick={() => {
+                          const seeded = MockDatabase.seedDefaultProdutos();
+                          setProdutos(seeded);
+                          showToast('30 produtos do salão carregados no estoque!', 'success');
+                        }}
+                        className="px-4 py-2 bg-[var(--accent)] text-[#0B0E11] rounded-xl text-xs font-oswald uppercase tracking-wider font-bold inline-flex items-center gap-1.5 shadow-accent hover:scale-105 transition-transform"
+                      >
+                        <RefreshCw className="w-4 h-4" /> Carregar Produtos do Salão
+                      </button>
+                      <button
+                        onClick={() => handleOpenProductModal()}
+                        className="px-4 py-2 bg-[var(--bg-surface-alt)] hover:bg-[var(--border)] text-[var(--text-primary)] border border-[var(--border)] rounded-xl text-xs font-oswald uppercase tracking-wider font-semibold inline-flex items-center gap-1.5 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" /> Cadastrar Novo Insumo
+                      </button>
+                    </div>
                   )}
                 </div>
               ) : (
