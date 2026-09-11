@@ -65,7 +65,7 @@ export const BottomNav: React.FC = () => {
                 `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all relative font-oswald uppercase tracking-wider ${
                   isActive
                     ? 'text-[var(--accent)] font-bold'
-                    : 'text-[var(--sidebar-text-muted)] hover:text-[var(--text-primary)]'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`
               }
             >
