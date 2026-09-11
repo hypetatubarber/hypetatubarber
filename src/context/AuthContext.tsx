@@ -8,6 +8,7 @@ interface AuthContextType {
   role: UserRole | null;
   loading: boolean;
   loginWithEmail: (email: string, pass: string) => Promise<Usuario>;
+  setUserSession: (user: Usuario) => void;
   logout: () => Promise<void>;
   switchCollaborator: (slug: string) => Promise<void>;
 }
@@ -17,8 +18,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = 'hype_auth_user_v2';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Inicialização síncrona a partir do localStorage para evitar deslogar no F5
+  const [currentUser, setCurrentUser] = useState<Usuario | null>(() => {
+    try {
+      const saved = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.id && parsed.role) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('[AuthContext] Erro ao carregar usuário inicial do localStorage:', e);
+    }
+    return null;
+  });
+
+  // Se já há usuário restaurado, loading inicia como false
+  const [loading, setLoading] = useState<boolean>(() => {
+    try {
+      return !Boolean(localStorage.getItem(AUTH_STORAGE_KEY));
+    } catch {
+      return true;
+    }
+  });
+
+  const setUserSession = (user: Usuario) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    } catch (e) {
+      console.warn('[AuthContext] Erro ao salvar sessão:', e);
+    }
+  };
 
   // Inicializa e sincroniza a sessão de autenticação
   useEffect(() => {
@@ -65,21 +97,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
           
-          // Sem sessão no Supabase
+          // Se não há sessão no Supabase, mas temos usuário salvo no localStorage (login local/colaborador), mantém logado!
+          const saved = localStorage.getItem(AUTH_STORAGE_KEY);
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (parsed && parsed.id && parsed.role && mounted) {
+                setCurrentUser(parsed);
+                return;
+              }
+            } catch {}
+          }
+
           if (mounted) {
             setCurrentUser(null);
-            localStorage.removeItem(AUTH_STORAGE_KEY);
           }
         } else {
           // Modo Local / Demo sem Supabase
           const saved = localStorage.getItem(AUTH_STORAGE_KEY);
           if (saved && mounted) {
-            setCurrentUser(JSON.parse(saved));
+            try {
+              setCurrentUser(JSON.parse(saved));
+            } catch {}
           }
         }
       } catch (err) {
         console.warn('[AuthContext] Erro ao restaurar sessão:', err);
-        if (mounted) setCurrentUser(null);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -91,10 +134,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let subscription: any = null;
     if (isSupabaseConfigured()) {
       const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_OUT' || !session) {
+        // Apenas desloga se o evento for explicitamente SIGNED_OUT
+        if (event === 'SIGNED_OUT') {
           if (mounted) {
             setCurrentUser(null);
             localStorage.removeItem(AUTH_STORAGE_KEY);
+          }
+        } else if (event === 'SIGNED_IN' && session?.user) {
+          const { data: profile } = await supabase
+            .from('usuarios')
+            .select('*')
+            .or(`id.eq.${session.user.id},email.eq.${session.user.email}`)
+            .maybeSingle();
+
+          if (profile && mounted) {
+            setCurrentUser(profile);
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(profile));
           }
         }
       });
@@ -248,6 +303,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role,
         loading,
         loginWithEmail,
+        setUserSession,
         logout,
         switchCollaborator,
       }}

@@ -10,7 +10,7 @@ export const AtivarContaPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { loginWithEmail } = useAuth();
+  const { loginWithEmail, setUserSession } = useAuth();
 
   const userId = searchParams.get('id') || searchParams.get('token') || searchParams.get('colab');
 
@@ -79,15 +79,18 @@ export const AtivarContaPage: React.FC = () => {
       const cleanEmail = email.trim().toLowerCase();
 
       // Ativa a conta e salva a senha/e-mail no perfil
-      await api.ativarContaColaborador(colaborador.id, cleanEmail, senha);
+      const updatedUser = await api.ativarContaColaborador(colaborador.id, cleanEmail, senha);
+
+      // Define imediatamente a sessão do usuário de forma persistente
+      setUserSession(updatedUser);
 
       showToast('Conta ativada com sucesso! Conectando ao seu painel...', 'success');
 
-      // Tenta logar automaticamente com as novas credenciais
+      // Tenta logar no Supabase em segundo plano
       try {
         await loginWithEmail(cleanEmail, senha);
       } catch (loginErr) {
-        console.warn('Login automático falhou, redirecionando para login:', loginErr);
+        console.warn('Login em segundo plano no Supabase:', loginErr);
       }
 
       navigate('/equipe', { replace: true });
