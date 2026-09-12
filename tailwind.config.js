@@ -37,8 +37,9 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        display: ['Anton', 'sans-serif'],
-        oswald: ['Oswald', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        heading: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        oswald: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
         anton: ['Anton', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],
       },

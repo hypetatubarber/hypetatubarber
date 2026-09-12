@@ -19,7 +19,7 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
 }) => {
   const { showToast } = useToast();
 
-  const [valorCobrado, setValorCobrado] = useState<number>(0);
+  const [valorCobrado, setValorCobrado] = useState<string>('');
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>('pix');
   const [parcelas, setParcelas] = useState<number>(1);
   const [taxaMaquininhaPct, setTaxaMaquininhaPct] = useState<number>(0);
@@ -30,8 +30,8 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
   // Inicializa dados quando o modal abre com o agendamento
   useEffect(() => {
     if (agendamento && isOpen) {
-      const precoOriginal = agendamento.servico?.preco || 0;
-      setValorCobrado(precoOriginal);
+      const precoOriginal = agendamento.servico?.preco ?? 0;
+      setValorCobrado(precoOriginal > 0 ? String(precoOriginal) : '');
       setFormaPagamento('pix');
       setParcelas(1);
       setTaxaMaquininhaPct(0);
@@ -87,7 +87,9 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
   }
 
   // Cálculos Automáticos
-  const bruto = Number(valorCobrado) || 0;
+  const bruto = typeof valorCobrado === 'number'
+    ? valorCobrado
+    : parseFloat(String(valorCobrado).replace(',', '.')) || 0;
   const taxaPct = (formaPagamento === 'credito' || formaPagamento === 'credito_parcelado' || formaPagamento === 'debito') 
     ? Number(taxaMaquininhaPct) || 0 
     : 0;
@@ -98,7 +100,7 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (bruto <= 0) {
+    if (!bruto || bruto <= 0 || isNaN(bruto)) {
       showToast('Informe um valor cobrado válido maior que zero.', 'warning');
       return;
     }
@@ -179,7 +181,7 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="p-5 space-y-4">
           {/* Valor Cobrado */}
           <div>
             <div className="flex items-center justify-between mb-1">
@@ -189,7 +191,7 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
               {agendamento.servico && (
                 <button
                   type="button"
-                  onClick={() => setValorCobrado(agendamento.servico?.preco || 0)}
+                  onClick={() => setValorCobrado(String(agendamento.servico?.preco || '0'))}
                   className="text-[10px] text-[var(--text-secondary)] hover:text-[var(--accent)] font-mono underline"
                 >
                   Usar valor tabela (R$ {agendamento.servico.preco.toFixed(2)})
@@ -200,11 +202,11 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-display text-lg text-[var(--text-muted)]">R$</span>
               <input
                 type="number"
-                step="0.50"
-                min="0.01"
+                step="any"
+                min="0"
                 required
-                value={valorCobrado || ''}
-                onChange={(e) => setValorCobrado(parseFloat(e.target.value) || 0)}
+                value={valorCobrado}
+                onChange={(e) => setValorCobrado(e.target.value)}
                 className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] font-display text-2xl font-bold focus:border-[var(--accent)] outline-none"
                 placeholder="0.00"
               />
@@ -357,9 +359,9 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
                     <Percent className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="number"
-                      step="0.1"
+                      step="any"
                       min="0"
-                      max="30"
+                      max="100"
                       value={taxaMaquininhaPct}
                       onChange={(e) => setTaxaMaquininhaPct(parseFloat(e.target.value) || 0)}
                       className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono font-bold outline-none focus:border-purple-500"
@@ -392,9 +394,9 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
                     <Percent className="w-3 h-3 text-[var(--text-muted)] absolute left-2 top-1/2 -translate-y-1/2" />
                     <input
                       type="number"
-                      step="0.1"
+                      step="any"
                       min="0"
-                      max="30"
+                      max="100"
                       value={taxaMaquininhaPct}
                       onChange={(e) => setTaxaMaquininhaPct(parseFloat(e.target.value) || 0)}
                       className="w-full text-xs pl-6 pr-2 py-1 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono font-bold outline-none focus:border-blue-500"

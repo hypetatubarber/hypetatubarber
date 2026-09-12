@@ -582,7 +582,7 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
               {/* ABA: TODAS AS PASTAS */}
               <button
                 onClick={() => setSelectedFolder('TODAS')}
-                className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-oswald uppercase tracking-wider font-bold transition-all shrink-0 border-t border-x ${
+                className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold tracking-wide transition-all shrink-0 border-t border-x ${
                   selectedFolder === 'TODAS'
                     ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--accent)] -mb-[1px] z-10 shadow-sm'
                     : 'bg-[var(--bg-surface-alt)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-surface-alt)]'
@@ -609,7 +609,7 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                   <button
                     key={catKey}
                     onClick={() => setSelectedFolder(catKey)}
-                    className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-oswald uppercase tracking-wider font-bold transition-all shrink-0 border-t border-x ${
+                    className={`group relative flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-bold tracking-wide transition-all shrink-0 border-t border-x ${
                       isSelected
                         ? `bg-[var(--bg-surface)] text-[var(--text-primary)] ${config.accentBorder} -mb-[1px] z-10 shadow-sm`
                         : 'bg-[var(--bg-surface-alt)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-surface-alt)]'
@@ -674,7 +674,7 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                             <Icon className="w-4 h-4" />
                           </div>
                           <div>
-                            <h3 className="font-display uppercase tracking-wide text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-dark)] dark:group-hover:text-[var(--accent)] transition-colors">
+                            <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-dark)] dark:group-hover:text-[var(--accent)] transition-colors tracking-normal">
                               {config.label}
                             </h3>
                             <div className="text-[10px] text-[var(--text-muted)] font-inter truncate max-w-[150px]">
@@ -743,7 +743,7 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                       {folderStats[selectedFolder]?.total || 0} itens registrados
                     </span>
                   </div>
-                  <h3 className="font-display uppercase tracking-wide text-lg sm:text-xl text-[var(--text-primary)]">
+                  <h3 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] tracking-normal">
                     {getFolderConfig(selectedFolder).label}
                   </h3>
                   <p className="text-xs text-[var(--text-secondary)] font-inter mt-0.5">
@@ -974,7 +974,7 @@ export const ProductList: React.FC<Props> = ({ readOnly = false }) => {
                           </div>
 
                           {/* Nome do Produto */}
-                          <h3 className="font-display uppercase tracking-wide text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-dark)] dark:group-hover:text-[var(--accent)] transition-colors leading-snug">
+                          <h3 className="text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-dark)] dark:group-hover:text-[var(--accent)] transition-colors leading-snug tracking-normal">
                             {prod.nome}
                           </h3>
 

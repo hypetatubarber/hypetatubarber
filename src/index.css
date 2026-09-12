@@ -100,42 +100,44 @@
     min-height: 100vh;
   }
 
-  /* Fonte 1 — TÍTULOS DE IMPACTO: Anton */
-  h1, h2, .font-display, .font-anton {
-    font-family: 'Anton', sans-serif !important;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  /* Fonte 1 — TÍTULOS DE IMPACTO: Plus Jakarta Sans / Inter (Moderna, Ampla, Altamente Legível) */
+  h1, h2, .font-display, .font-heading {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-weight: 700;
+    letter-spacing: 0.015em;
   }
 
-  /* Fonte 2 — CABEÇALHOS, LABELS E ETIQUETAS: Oswald */
-  h3, h4, h5, .font-oswald, .font-heading {
-    font-family: 'Oswald', sans-serif !important;
-    font-weight: 500;
-    text-transform: uppercase;
+  /* Fonte 2 — SUBTÍTULOS, CABEÇALHOS DE CARDS E CATEGORIAS: Aberta e Clara (Sem letras coladas) */
+  h3, h4, h5, .font-oswald {
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* Fonte exclusiva para posters gigantes ou logo específico se desejado */
+  .font-anton {
+    font-family: 'Anton', sans-serif !important;
     letter-spacing: 0.08em;
   }
 
   /* Fonte 3 — TEXTO CORRIDO E DADOS: Inter */
-  p, span, label, input, textarea, select, td, .font-inter {
-    font-family: 'Inter', sans-serif;
+  p, span, input, textarea, select, td, .font-inter {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
-  /* Labels de formulários */
+  /* Labels de formulários: Legíveis e sem condensação */
   label {
-    font-family: 'Oswald', sans-serif !important;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
+    letter-spacing: 0.025em;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-secondary);
   }
 
   /* Botões globais */
   button {
-    font-family: 'Oswald', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    letter-spacing: 0.02em;
   }
 
   /* Inputs padrão */
