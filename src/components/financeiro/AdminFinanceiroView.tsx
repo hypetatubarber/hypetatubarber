@@ -29,6 +29,7 @@ import { Pagamento, CustoFixo, RepasseComissao, Usuario, CategoriaServico, Forma
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { generateUUID } from '../../lib/uuid';
+import { parseMoedaInput } from './RegistrarPagamentoModal';
 
 type SubTab = 'visao_geral' | 'faturamento_detalhado' | 'comissoes' | 'custos_fixos' | 'resultado' | 'colaboradores';
 
@@ -298,7 +299,11 @@ export const AdminFinanceiroView: React.FC = () => {
 
   // Abrir Modal de Quitação de Repasse
   const handleOpenRepasseModal = (colab: Usuario, pags: Pagamento[]) => {
-    const pagsPendentes = pags.filter(p => p.status_repasse !== 'pago');
+    const colabNomeLower = colab.nome.toLowerCase();
+    const colabPags = pags.length > 0 ? pags : pagamentos.filter(
+      p => p.colaborador_id === colab.id || (p.colaborador_nome && p.colaborador_nome.toLowerCase() === colabNomeLower)
+    );
+    const pagsPendentes = colabPags.filter(p => p.status_repasse !== 'pago');
     const valor = pagsPendentes.reduce((sum, p) => sum + p.comissao_valor, 0);
     setRepasseColab(colab);
     setRepasseValor(valor);
@@ -307,24 +312,47 @@ export const AdminFinanceiroView: React.FC = () => {
     setIsRepasseModalOpen(true);
   };
 
-  // Confirmar Quitação de Repasse
-  const handleConfirmRepasse = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!repasseColab || repassePagamentosIds.length === 0) {
-      showToast('Nenhum atendimento pendente para quitação.', 'warning');
+  // Confirmar Quitação de Repasse (Realizar como Pago)
+  const handleConfirmRepasse = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!repasseColab) {
+      showToast('Selecione um profissional para quitação.', 'warning');
       return;
     }
 
     try {
-      await api.marcarComissaoPaga(
-        repasseColab.id,
-        repassePagamentosIds,
+      const colabId = repasseColab.id;
+      const colabNome = repasseColab.nome;
+      const colabNomeLower = colabNome.toLowerCase();
+      const ids = [...repassePagamentosIds];
+
+      // 1. Atualização otimista imediata no estado local do React
+      setPagamentos(prev => prev.map(p => {
+        if (
+          ids.includes(p.id) ||
+          p.colaborador_id === colabId ||
+          (p.colaborador_nome && p.colaborador_nome.toLowerCase() === colabNomeLower)
+        ) {
+          return { ...p, status_repasse: 'pago' };
+        }
+        return p;
+      }));
+
+      // 2. Chamada à API
+      const rep = await api.marcarComissaoPaga(
+        colabId,
+        ids,
         repasseValor,
         'Admin Master'
       );
-      showToast(`Comissão de R$ ${repasseValor.toFixed(2)} marcada como PAGA para ${repasseColab.nome}!`, 'success');
+
+      // 3. Atualiza repasses locais
+      setRepasses(prev => [rep, ...prev.filter(r => r.id !== rep.id)]);
+      showToast(`Comissão de R$ ${repasseValor.toFixed(2)} marcada como PAGA para ${colabNome}! Card agora está verde/quitado.`, 'success');
       setIsRepasseModalOpen(false);
-      loadData();
+
+      // 4. Sincroniza em segundo plano
+      await loadData();
     } catch (err: any) {
       showToast(err.message || 'Erro ao registrar quitação de repasse.', 'error');
     }
@@ -735,52 +763,130 @@ export const AdminFinanceiroView: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
               {colaboradores.map((colab) => {
-                const colabPags = pagamentos.filter((p) => p.colaborador_id === colab.id);
+                const colabNomeLower = colab.nome.toLowerCase();
+                const colabPags = pagamentos.filter((p) => 
+                  p.colaborador_id === colab.id || 
+                  (p.colaborador_nome && p.colaborador_nome.toLowerCase() === colabNomeLower)
+                );
                 const comissaoTotal = colabPags.reduce((sum, p) => sum + p.comissao_valor, 0);
                 const comissaoPaga = colabPags.filter((p) => p.status_repasse === 'pago').reduce((sum, p) => sum + p.comissao_valor, 0);
                 const comissaoPendente = colabPags.filter((p) => p.status_repasse !== 'pago').reduce((sum, p) => sum + p.comissao_valor, 0);
 
+                const repassesColab = repasses.filter((r) => 
+                  r.colaborador_id === colab.id || 
+                  (r.colaborador_nome && r.colaborador_nome.toLowerCase() === colabNomeLower)
+                );
+                const ultimoRepasse = repassesColab[0];
+
+                // Identifica se está quitado/pago: sem pendência e (com total pago ou com repasse registrado)
+                const isPago = (comissaoPendente === 0 && comissaoPaga > 0) || (comissaoPendente === 0 && Boolean(ultimoRepasse));
+
                 return (
-                  <div key={colab.id} className="p-4 rounded-xl bg-[var(--bg-surface-alt)] border border-[var(--border)] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <img
-                          src={colab.foto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
-                          alt={colab.nome}
-                          className="w-10 h-10 rounded-xl object-cover border border-[var(--accent)]"
-                        />
+                  <div
+                    key={colab.id}
+                    className={`p-5 rounded-2xl transition-all duration-300 relative space-y-3.5 ${
+                      isPago
+                        ? 'bg-gradient-to-br from-[#27AE60]/20 via-[#27AE60]/10 to-[var(--bg-surface-alt)] border-2 border-[#27AE60] shadow-[0_4px_25px_rgba(39,174,96,0.25)] ring-1 ring-[#27AE60]/40'
+                        : comissaoPendente > 0
+                        ? 'bg-[var(--bg-surface-alt)] border border-amber-500/40 hover:border-amber-500 shadow-soft'
+                        : 'bg-[var(--bg-surface-alt)] border border-[var(--border)]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <img
+                            src={colab.foto || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
+                            alt={colab.nome}
+                            className={`w-11 h-11 rounded-xl object-cover border-2 transition-colors ${
+                              isPago ? 'border-[#27AE60] shadow-sm' : 'border-[var(--accent)]'
+                            }`}
+                          />
+                          {isPago && (
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#27AE60] text-white rounded-full flex items-center justify-center ring-2 ring-[var(--bg-surface)]">
+                              <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            </div>
+                          )}
+                        </div>
                         <div>
                           <strong className="text-xs font-bold text-[var(--text-primary)] block truncate font-inter">
                             {colab.nome}
                           </strong>
-                          <span className="text-[10px] text-[var(--text-muted)] font-oswald uppercase">
-                            {colab.tipo_colaborador === 'rotativo' ? 'Tatuador Rotativo' : 'Fixo'} • {colab.tipo_repasse || 'semanal'}
+                          <span className="text-[10px] text-[var(--text-muted)] font-oswald uppercase block">
+                            {colab.tipo_colaborador === 'rotativo' ? 'Tatuador Rotativo' : 'Fixo'} • Repasse {colab.tipo_repasse || 'semanal'}
                           </span>
                         </div>
                       </div>
 
-                      {comissaoPendente > 0 && (
+                      {/* Status / Ação */}
+                      {isPago ? (
+                        <div className="px-3 py-1.5 rounded-full bg-[#27AE60] text-white text-[11px] font-oswald uppercase font-bold tracking-wider shadow-sm flex items-center gap-1.5 shrink-0 animate-fadeIn">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>PAGO / QUITADO</span>
+                        </div>
+                      ) : comissaoPendente > 0 ? (
                         <button
                           type="button"
                           onClick={() => handleOpenRepasseModal(colab, colabPags)}
-                          className="px-2.5 py-1.5 rounded-lg bg-[#27AE60] hover:bg-[#219653] text-white text-[11px] font-oswald uppercase font-bold transition-all shadow-sm flex items-center gap-1"
+                          className="px-3.5 py-2 rounded-xl bg-[#27AE60] hover:bg-[#219653] text-white text-xs font-oswald uppercase font-bold tracking-wider transition-all shadow-md flex items-center gap-1.5 shrink-0 hover:scale-105 active:scale-95 cursor-pointer"
                         >
                           <Check className="w-3.5 h-3.5" />
-                          Marcar como Pago
+                          Realizar como Pago
                         </button>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-lg bg-[var(--bg-surface)] text-[var(--text-muted)] text-[10px] font-oswald uppercase font-semibold border border-[var(--border)] shrink-0">
+                          Sem Pendências
+                        </span>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--border)] text-xs font-inter">
+                    {/* Métricas */}
+                    <div className={`grid grid-cols-2 gap-2 pt-2.5 border-t text-xs font-inter ${isPago ? 'border-[#27AE60]/30' : 'border-[var(--border)]'}`}>
                       <div>
-                        <span className="text-[10px] text-[var(--text-muted)] font-oswald uppercase block">Total Pago</span>
-                        <strong className="font-mono text-[#27AE60]">R$ {comissaoPaga.toFixed(2)}</strong>
+                        <span className={`text-[10px] font-oswald uppercase block ${isPago ? 'text-[#27AE60] dark:text-[#8CBDAD] font-bold' : 'text-[var(--text-muted)]'}`}>
+                          Total Pago / Repassado
+                        </span>
+                        <strong className="font-mono text-sm text-[#27AE60] font-bold">
+                          R$ {comissaoPaga.toFixed(2)}
+                        </strong>
                       </div>
                       <div>
-                        <span className="text-[10px] text-[var(--text-muted)] font-oswald uppercase block">A Pagar (Pendente)</span>
-                        <strong className="font-mono text-[#E5A93C]">R$ {comissaoPendente.toFixed(2)}</strong>
+                        <span className={`text-[10px] font-oswald uppercase block ${isPago ? 'text-[#27AE60] dark:text-[#8CBDAD] font-bold' : 'text-amber-500 font-semibold'}`}>
+                          {isPago ? 'Status' : 'A Pagar (Pendente)'}
+                        </span>
+                        {isPago ? (
+                          <span className="font-mono text-xs font-bold text-[#27AE60] flex items-center gap-1 mt-0.5">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> R$ 0,00 (Quitado)
+                          </span>
+                        ) : (
+                          <strong className="font-mono text-sm text-[#E5A93C] font-bold">
+                            R$ {comissaoPendente.toFixed(2)}
+                          </strong>
+                        )}
                       </div>
                     </div>
+
+                    {/* Rodapé do Card */}
+                    {isPago ? (
+                      <div className="p-2 rounded-xl bg-[#27AE60]/15 border border-[#27AE60]/30 flex items-center justify-between text-[11px] font-inter text-[#27AE60] dark:text-[#8CBDAD]">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          Repasse deste período 100% quitado
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenRepasseModal(colab, colabPags)}
+                          className="text-[10px] underline font-oswald uppercase font-bold hover:text-[var(--text-primary)] transition-colors ml-2 shrink-0"
+                        >
+                          Novo Repasse
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-[var(--text-muted)] font-inter flex items-center justify-between pt-0.5">
+                        <span>{colabPags.filter(p => p.status_repasse !== 'pago').length} atendimento(s) pendente(s)</span>
+                        <span className="font-mono">Total comissões: R$ {comissaoTotal.toFixed(2)}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -1231,37 +1337,64 @@ export const AdminFinanceiroView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[var(--bg-surface)] border border-[var(--border)] w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
-              <h3 className="font-display uppercase tracking-wide text-lg text-[var(--text-primary)]">
-                Quitar Repasse de Comissões
-              </h3>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#27AE60]/20 text-[#27AE60] flex items-center justify-center">
+                  <Check className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-display uppercase tracking-wide text-lg text-[var(--text-primary)]">
+                    Realizar Repasse como Pago
+                  </h3>
+                  <p className="text-[11px] text-[var(--text-secondary)] font-inter">
+                    {repasseColab.nome} • Quitação de Comissões
+                  </p>
+                </div>
+              </div>
               <button onClick={() => setIsRepasseModalOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleConfirmRepasse} className="space-y-4">
-              <div className="p-4 rounded-xl bg-[rgba(39,174,96,0.08)] border border-[rgba(39,174,96,0.30)] text-center space-y-1">
+              <div className="p-4 rounded-xl bg-[rgba(39,174,96,0.10)] border border-[rgba(39,174,96,0.35)] text-center space-y-1">
                 <span className="text-[10px] text-[var(--text-muted)] font-oswald uppercase block">
                   Valor Total a Transferir para {repasseColab.nome}
                 </span>
                 <div className="font-display text-3xl font-extrabold text-[#27AE60]">
-                  R$ {repasseValor.toFixed(2)}
+                  R$ {repasseValor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
                 <div className="text-[11px] text-[var(--text-secondary)] font-inter">
-                  Referente a {repassePagamentosIds.length} atendimento(s) concluídos
+                  Referente a {repassePagamentosIds.length > 0 ? repassePagamentosIds.length : 'todos os'} atendimento(s) do período
                 </div>
               </div>
 
               <div>
                 <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">
-                  Observação / Comprovante
+                  Valor do Repasse (R$)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-display text-sm text-[var(--text-muted)]">R$</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={repasseValor}
+                    onChange={(e) => setRepasseValor(parseMoedaInput(e.target.value))}
+                    className="w-full text-sm pl-10 pr-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] font-mono font-bold outline-none focus:border-[#27AE60]"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-oswald uppercase tracking-wider text-[var(--accent-dark)] dark:text-[var(--accent)] font-semibold block mb-1">
+                  Observação / Forma de Repasse
                 </label>
                 <input
                   type="text"
                   value={repasseObs}
                   onChange={(e) => setRepasseObs(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-                  placeholder="Ex: Transferido via PIX chave celular..."
+                  className="w-full text-xs p-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] outline-none focus:border-[#27AE60]"
+                  placeholder="Ex: Transferido via PIX, dinheiro em mãos..."
                 />
               </div>
 
@@ -1275,10 +1408,10 @@ export const AdminFinanceiroView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#27AE60] hover:bg-[#219653] text-white text-xs font-oswald uppercase font-bold transition-all shadow-md flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-[#27AE60] hover:bg-[#219653] text-white text-xs font-oswald uppercase font-bold tracking-wider transition-all shadow-md flex items-center gap-1.5 hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  Confirmar Quitação
+                  Realizar como Pago (R$ {repasseValor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
                 </button>
               </div>
             </form>

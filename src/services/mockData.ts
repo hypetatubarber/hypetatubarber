@@ -1700,12 +1700,17 @@ export class MockDatabase {
       pagamentos_ids: pagamentosIds,
       pago_em: now,
       pago_por: pagoPor || 'Admin Master',
-      observacoes: `Repasse quitado de ${pagamentosIds.length} serviço(s).`
+      observacoes: `Repasse quitado de ${pagamentosIds.length > 0 ? pagamentosIds.length : 'atendimentos'} serviço(s).`
     };
 
     // Atualiza o status dos pagamentos correspondentes para 'pago'
+    // Se pagamentosIds foi passado, atualiza esses; também atualiza qualquer pagamento pendente do colaborador
+    const colabNomeLower = colab?.nome?.toLowerCase() || '';
     this.pagamentos.forEach(p => {
-      if (pagamentosIds.includes(p.id)) {
+      const matchId = pagamentosIds.includes(p.id);
+      const matchColab = p.colaborador_id === colaboradorId || (colabNomeLower && p.colaborador_nome?.toLowerCase() === colabNomeLower);
+      
+      if (matchId || (matchColab && p.status_repasse !== 'pago')) {
         p.status_repasse = 'pago';
         p.repasse_id = repasse.id;
       }
@@ -1715,8 +1720,10 @@ export class MockDatabase {
     saveToStorage(STORAGE_KEYS.PAGAMENTOS, this.pagamentos);
     saveToStorage(STORAGE_KEYS.REPASSES, this.repasses);
 
-    window.dispatchEvent(new CustomEvent('hype_pagamentos_changed'));
-    window.dispatchEvent(new CustomEvent('hype_repasses_changed', { detail: repasse }));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hype_pagamentos_changed', { detail: this.pagamentos }));
+      window.dispatchEvent(new CustomEvent('hype_repasses_changed', { detail: repasse }));
+    }
     return repasse;
   }
 }

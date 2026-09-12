@@ -1109,19 +1109,39 @@ export const api = {
   // ==========================================================================
 
   async getPagamentos(colaboradorId?: string): Promise<Pagamento[]> {
+    const mockPags = MockDatabase.getPagamentos(colaboradorId);
     if (isSupabaseConfigured()) {
-      let query = supabase.from('pagamentos').select('*').order('criado_em', { ascending: false });
-      if (colaboradorId) {
-        query = query.eq('colaborador_id', colaboradorId);
+      try {
+        let query = supabase.from('pagamentos').select('*').order('criado_em', { ascending: false });
+        if (colaboradorId) {
+          query = query.eq('colaborador_id', colaboradorId);
+        }
+        const { data, error } = await query;
+        if (error || !data) {
+          console.warn('[API Supabase] Erro ao buscar pagamentos, fallback para mock:', error);
+          return mockPags;
+        }
+
+        // Mescla pagamentos de forma segura: preserva 'pago' se foi atualizado localmente
+        const map = new Map<string, Pagamento>();
+        data.forEach((p: Pagamento) => map.set(p.id, p));
+        mockPags.forEach((p: Pagamento) => {
+          if (!map.has(p.id)) {
+            map.set(p.id, p);
+          } else {
+            const existing = map.get(p.id)!;
+            if (p.status_repasse === 'pago' && existing.status_repasse !== 'pago') {
+              map.set(p.id, { ...existing, status_repasse: 'pago', repasse_id: p.repasse_id || existing.repasse_id });
+            }
+          }
+        });
+        return Array.from(map.values()).sort((a, b) => (b.criado_em || '').localeCompare(a.criado_em || ''));
+      } catch (err) {
+        console.warn('[API Supabase] Falha ao consultar pagamentos:', err);
+        return mockPags;
       }
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[API Supabase] Erro ao buscar pagamentos, fallback para mock:', error);
-        return MockDatabase.getPagamentos(colaboradorId);
-      }
-      return data || [];
     }
-    return MockDatabase.getPagamentos(colaboradorId);
+    return mockPags;
   },
 
   async registrarPagamento(params: {
@@ -1301,15 +1321,26 @@ export const api = {
   },
 
   async getRepassesComissao(): Promise<RepasseComissao[]> {
+    const mockReps = MockDatabase.getRepassesComissao();
     if (isSupabaseConfigured()) {
-      const { data, error } = await supabase.from('repasses_comissao').select('*').order('pago_em', { ascending: false });
-      if (error) {
-        console.warn('[API Supabase] Erro ao buscar repasses, usando mock:', error);
-        return MockDatabase.getRepassesComissao();
+      try {
+        const { data, error } = await supabase.from('repasses_comissao').select('*').order('pago_em', { ascending: false });
+        if (error || !data) {
+          console.warn('[API Supabase] Erro ao buscar repasses, usando mock:', error);
+          return mockReps;
+        }
+        const map = new Map<string, RepasseComissao>();
+        data.forEach((r: RepasseComissao) => map.set(r.id, r));
+        mockReps.forEach((r: RepasseComissao) => {
+          if (!map.has(r.id)) map.set(r.id, r);
+        });
+        return Array.from(map.values()).sort((a, b) => (b.pago_em || '').localeCompare(a.pago_em || ''));
+      } catch (err) {
+        console.warn('[API Supabase] Erro ao buscar repasses:', err);
+        return mockReps;
       }
-      return data || [];
     }
-    return MockDatabase.getRepassesComissao();
+    return mockReps;
   },
 
   async marcarComissaoPaga(
@@ -1318,36 +1349,47 @@ export const api = {
     valorTotal: number,
     pagoPor?: string
   ): Promise<RepasseComissao> {
+    // 1. SEMPRE persiste imediatamente no MockDatabase local como garantia de atualização instantânea
+    const localRepasse = MockDatabase.marcarComissaoPaga(colaboradorId, pagamentosIds, valorTotal, pagoPor);
+
+    // 2. Se o Supabase estiver configurado, espelha no banco remoto
     if (isSupabaseConfigured()) {
       try {
         const now = new Date().toISOString();
         const users = await this.getUsuarios();
         const colab = users.find(u => u.id === colaboradorId);
-        const repasse: RepasseComissao = {
-          id: 'rep-' + Date.now(),
+        const repasseRemoto: RepasseComissao = {
+          id: localRepasse?.id || ('rep-' + Date.now()),
           colaborador_id: colaboradorId,
-          colaborador_nome: colab?.nome || 'Colaborador',
+          colaborador_nome: colab?.nome || localRepasse?.colaborador_nome || 'Colaborador',
           valor_total: valorTotal,
           pagamentos_ids: pagamentosIds,
           pago_em: now,
           pago_por: pagoPor || 'Admin Master',
-          observacoes: `Repasse de ${pagamentosIds.length} atendimento(s) quitado.`
+          observacoes: `Repasse de ${pagamentosIds.length > 0 ? pagamentosIds.length : 'atendimentos'} serviço(s) quitado.`
         };
 
-        await supabase.from('repasses_comissao').insert(repasse);
-        await supabase
-          .from('pagamentos')
-          .update({ status_repasse: 'pago', repasse_id: repasse.id })
-          .in('id', pagamentosIds);
+        const { error: repErr } = await supabase.from('repasses_comissao').insert(repasseRemoto);
+        if (repErr) {
+          console.warn('[API Supabase repasses_comissao insert error]:', repErr);
+        }
 
-        window.dispatchEvent(new CustomEvent('hype_pagamentos_changed'));
-        window.dispatchEvent(new CustomEvent('hype_repasses_changed', { detail: repasse }));
-        return repasse;
+        if (pagamentosIds.length > 0) {
+          const { error: updErr } = await supabase
+            .from('pagamentos')
+            .update({ status_repasse: 'pago', repasse_id: repasseRemoto.id })
+            .in('id', pagamentosIds);
+          if (updErr) {
+            console.warn('[API Supabase pagamentos update status_repasse error]:', updErr);
+          }
+        }
       } catch (e) {
-        console.warn('[API Supabase] Erro ao marcar repasse, fallback para mock:', e);
-        return MockDatabase.marcarComissaoPaga(colaboradorId, pagamentosIds, valorTotal, pagoPor);
+        console.warn('[API Supabase] Erro ao sincronizar repasse remoto:', e);
       }
     }
-    return MockDatabase.marcarComissaoPaga(colaboradorId, pagamentosIds, valorTotal, pagoPor);
+
+    window.dispatchEvent(new CustomEvent('hype_pagamentos_changed'));
+    window.dispatchEvent(new CustomEvent('hype_repasses_changed', { detail: localRepasse }));
+    return localRepasse;
   },
 };

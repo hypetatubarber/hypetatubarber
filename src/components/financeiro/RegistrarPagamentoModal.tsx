@@ -4,6 +4,41 @@ import { Agendamento, FormaPagamento, Usuario } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
+// Utilitário universal para interpretar qualquer formato de valor digitado:
+// 95 -> 95.00
+// 10,99 ou 10.99 -> 10.99
+// 1000,00 ou 1.000,00 ou 1.000 ou 1000 -> 1000.00
+export const parseMoedaInput = (raw: string | number): number => {
+  if (typeof raw === 'number') return isNaN(raw) ? 0 : raw;
+  if (!raw) return 0;
+  let str = String(raw).trim().replace(/[R$\s]/g, '');
+  if (!str) return 0;
+
+  if (str.includes('.') && str.includes(',')) {
+    const lastDot = str.lastIndexOf('.');
+    const lastComma = str.lastIndexOf(',');
+    if (lastComma > lastDot) {
+      str = str.replace(/\./g, '').replace(',', '.');
+    } else {
+      str = str.replace(/,/g, '');
+    }
+  } else if (str.includes(',')) {
+    str = str.replace(',', '.');
+  } else if (str.includes('.')) {
+    const parts = str.split('.');
+    if (parts.length === 2) {
+      if (parts[1].length === 3 && parts[0].length >= 1) {
+        str = parts[0] + parts[1];
+      }
+    } else if (parts.length > 2) {
+      str = parts.join('');
+    }
+  }
+
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : num;
+};
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -86,10 +121,8 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
     comissaoPct = colaborador?.comissao_porcentagem || 50;
   }
 
-  // Cálculos Automáticos
-  const bruto = typeof valorCobrado === 'number'
-    ? valorCobrado
-    : parseFloat(String(valorCobrado).replace(',', '.')) || 0;
+  // Cálculos Automáticos sem restrições ou regras rígidas
+  const bruto = parseMoedaInput(valorCobrado);
   const taxaPct = (formaPagamento === 'credito' || formaPagamento === 'credito_parcelado' || formaPagamento === 'debito') 
     ? Number(taxaMaquininhaPct) || 0 
     : 0;
@@ -201,15 +234,20 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-display text-lg text-[var(--text-muted)]">R$</span>
               <input
-                type="number"
-                step="any"
-                min="0"
-                required
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 value={valorCobrado}
                 onChange={(e) => setValorCobrado(e.target.value)}
-                className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] font-display text-2xl font-bold focus:border-[var(--accent)] outline-none"
-                placeholder="0.00"
+                className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface-alt)] text-[var(--text-primary)] font-display text-2xl font-bold focus:border-[var(--accent)] outline-none transition-colors"
+                placeholder="Ex: 95 ou 10,99 ou 1.000,00"
               />
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-[var(--text-secondary)] mt-1.5 px-1 font-inter">
+              <span className="text-[var(--text-muted)]">Aceita qualquer formato (ex: 95, 10,99 ou 1.000,00)</span>
+              <span className="font-mono font-bold text-[#27AE60]">
+                Valor a cobrar: R$ {bruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
             </div>
           </div>
 
@@ -358,12 +396,10 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
                   <div className="relative">
                     <Percent className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
-                      type="number"
-                      step="any"
-                      min="0"
-                      max="100"
+                      type="text"
+                      inputMode="decimal"
                       value={taxaMaquininhaPct}
-                      onChange={(e) => setTaxaMaquininhaPct(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => setTaxaMaquininhaPct(parseMoedaInput(e.target.value))}
                       className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono font-bold outline-none focus:border-purple-500"
                     />
                   </div>
@@ -393,12 +429,10 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
                   <div className="relative w-24">
                     <Percent className="w-3 h-3 text-[var(--text-muted)] absolute left-2 top-1/2 -translate-y-1/2" />
                     <input
-                      type="number"
-                      step="any"
-                      min="0"
-                      max="100"
+                      type="text"
+                      inputMode="decimal"
                       value={taxaMaquininhaPct}
-                      onChange={(e) => setTaxaMaquininhaPct(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => setTaxaMaquininhaPct(parseMoedaInput(e.target.value))}
                       className="w-full text-xs pl-6 pr-2 py-1 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] font-mono font-bold outline-none focus:border-blue-500"
                     />
                   </div>
@@ -517,8 +551,8 @@ export const RegistrarPagamentoModal: React.FC<Props> = ({
               {loading
                 ? 'Processando...'
                 : formaPagamento === 'credito_parcelado'
-                ? `Confirmar Pagamento (${parcelas}x de R$ ${(bruto / parcelas).toFixed(2)})`
-                : `Confirmar Pagamento (R$ ${bruto.toFixed(2)})`}
+                ? `Confirmar Pagamento (${parcelas}x de R$ ${(bruto / parcelas).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
+                : `Confirmar Pagamento (R$ ${bruto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
             </button>
           </div>
         </form>
